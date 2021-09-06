@@ -22,7 +22,7 @@ to take the burden of this into their own hand without having to rely on
 plugins doing unsafe things.
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index b42272b574e31d695ee31bd3fb76a4b906713442..7e4ac2699eca8aebba675f3ffdac3a4dad422e4c 100644
+index ce4ab03a40fac6a840f4c4b78da0a96bb6fb6823..a6d27dcdf954bc2682aba1d9efab42d2d626f8da 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
 @@ -314,4 +314,18 @@ public class PaperConfig {

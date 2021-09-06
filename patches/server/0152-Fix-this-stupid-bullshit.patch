@@ -31,7 +31,7 @@ index c7d5018cb6acef12e6da90626c75543ac279a101..64576ddd8363be55755fa50d1c16d95e
              Bootstrap.isBootstrapped = true;
              if (Registry.REGISTRY.keySet().isEmpty()) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index b91f4e86ae2e9ea4e55d3c8d935cb79d7844d0e0..920ba98fdd82ae3f9d507c940020d3142a466682 100644
+index bbf552bf586de94d8dfc5fb1c18e0af6f75aebe1..1da136f365664d4f8ace3d2d135b19eb97e55304 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -228,10 +228,12 @@ public class Main {

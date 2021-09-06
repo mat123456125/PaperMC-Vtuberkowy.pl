@@ -16,7 +16,7 @@ intent to remove) and replace it with two new methods, clearly named and
 documented as to their purpose.
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index 4f93f576bbbf7e8d0217f8d30f4c578ad917477a..95690ac3b3404ebe3d2308aaee09d9ec52b8f76d 100644
+index a0530081a1d4bf2b46d82f15013dd3d8d289ee47..b3af35120834a907ca05aa98f43d5b4be7f2248d 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
 @@ -219,6 +219,7 @@ public class ServerPlayer extends Player {

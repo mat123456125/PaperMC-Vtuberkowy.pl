@@ -7,7 +7,7 @@ This patch contains config migrations for when upstream adds options
 which Paper already had.
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 8007220fa0646414c9cec66161aca2394e62dde3..6b952280399833eec54a72e87d916e65ae4c7339 100644
+index 5bb6f09d138f981329378edab707f8275cdfc5a0..3d5fd6be97bef7ec47893a85cae771f4a4451092 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
 @@ -288,4 +288,22 @@ public class PaperConfig {

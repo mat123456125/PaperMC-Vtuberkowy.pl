@@ -6,7 +6,7 @@ Subject: [PATCH] Book Size Limits
 Puts some limits on the size of books.
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 26de4e9daf0826b97a5f12304d7691dc815feee8..40818f1e90dd3aca77e164365370782828f765f4 100644
+index 26ac165135ef53cec9e065ae1c15220a8fba5869..34e82edf683a33f140f3b4580b3245f29a775fcd 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
 @@ -365,6 +365,13 @@ public class PaperConfig {

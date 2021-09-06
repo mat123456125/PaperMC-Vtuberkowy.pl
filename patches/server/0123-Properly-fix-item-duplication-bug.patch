@@ -6,10 +6,10 @@ Subject: [PATCH] Properly fix item duplication bug
 Credit to prplz for figuring out the real issue
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index 8832c36a9f2885514eb7a9e6c37744ae45617b66..9761078ba0c984eec303e96d1ee64fbce659075c 100644
+index 7e7bbb6817ceddbbb90c1ac45d8e974d3f95c089..d4614faa22485dce226f3dc17ef984212ac8fcb9 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-@@ -2129,7 +2129,7 @@ public class ServerPlayer extends Player {
+@@ -2128,7 +2128,7 @@ public class ServerPlayer extends Player {
  
      @Override
      public boolean isImmobile() {
