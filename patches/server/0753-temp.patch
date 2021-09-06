@@ -1,0 +1,160 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mateusz Jarzemski <mat>
+Date: Mon, 6 Sep 2021 18:05:37 +0200
+Subject: [PATCH] temp
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+index 2e0191e5cfe8e29fb0a6c4fc6a2a570d4b8ae449..bbfc9ed2f1d4ea5766c22682f8dee21b0dba6cbe 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+@@ -442,10 +442,10 @@ public class PaperConfig {
+         midTickChunkTasks = getInt("settings.chunk-tasks-per-tick", midTickChunkTasks);
+     }
+ 
+-    public static boolean allowBlockPermanentBreakingExploits = false;
++    public static boolean allowBlockPermanentBreakingExploits = true;
+     private static void allowBlockPermanentBreakingExploits() {
+         if (config.contains("allow-perm-block-break-exploits")) {
+-            allowBlockPermanentBreakingExploits = config.getBoolean("allow-perm-block-break-exploits", false);
++            allowBlockPermanentBreakingExploits = config.getBoolean("allow-perm-block-break-exploits", true);
+             config.set("allow-perm-block-break-exploits", null);
+         }
+ 
+diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+index 261633687b5dd55559b2ddb305c3a21a8b308ada..c062636796133d5cefce21417232c0f263a89c90 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+@@ -107,7 +107,7 @@ public class PaperWorldConfig {
+         fixClimbingBypassingCrammingRule = getBoolean("fix-climbing-bypassing-cramming-rule", fixClimbingBypassingCrammingRule);
+     }
+ 
+-    public boolean fixCuringZombieVillagerDiscountExploit = true;
++    public boolean fixCuringZombieVillagerDiscountExploit = false;
+     private void fixCuringExploit() {
+         fixCuringZombieVillagerDiscountExploit = getBoolean("game-mechanics.fix-curing-zombie-villager-discount-exploit", fixCuringZombieVillagerDiscountExploit);
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java b/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java
+index 2d124ff784b943f5a9d164ee7cdc001465502ce4..b57a78a4cb015828dad2804833f938e8c8f35cbc 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java
++++ b/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java
+@@ -31,6 +31,7 @@ import net.minecraft.util.VisibleForDebug;
+ public class GossipContainer {
+     public static final int DISCARD_THRESHOLD = 2;
+     private final Map<UUID, GossipContainer.EntityGossips> gossips = Maps.newHashMap(); public Map<UUID, GossipContainer.EntityGossips> getReputations() { return this.gossips; } // Paper - add getter for reputations
++    private final UUID globalGossipsId = UUID.fromString("38400000-8cf0-11bd-b23e-10b96e4ef00d");
+ 
+     @VisibleForDebug
+     public Map<UUID, Object2IntMap<GossipType>> getGossipEntries() {
+@@ -116,6 +117,14 @@ public class GossipContainer {
+ 
+         });
+     }
++    public int getGlobalReputation()
++    {
++        GossipContainer.EntityGossips entityGossips = this.gossips.get(globalGossipsId);
++        Predicate<GossipType> gossipTypeFilter = (reputationtype) -> {
++            return true;
++        };
++        return entityGossips != null ? entityGossips.weightedValue(gossipTypeFilter) : 0;
++    }
+ 
+     public int getReputation(UUID target, Predicate<GossipType> gossipTypeFilter) {
+         GossipContainer.EntityGossips entityGossips = this.gossips.get(target);
+@@ -128,6 +137,12 @@ public class GossipContainer {
+         }).count();
+     }
+ 
++    public void addWithGlobal(UUID target, GossipType type, int value)
++    {
++        this.add(globalGossipsId, type, value);
++        this.add(target, type, value);
++    }
++
+     public void add(UUID target, GossipType type, int value) {
+         GossipContainer.EntityGossips entityGossips = this.getOrCreate(target);
+         entityGossips.entries.mergeInt(type, value, (integer, integer2) -> {
+diff --git a/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java b/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
+index 8336ea928faa92c6f58f8cdfb9faf1d8e26c9ccf..c2db0485b7157fbe16e82eba402747209dfb6aa7 100644
+--- a/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
++++ b/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
+@@ -106,11 +106,7 @@ public class FallingBlockEntity extends Entity {
+ 
+     @Override
+     public void tick() {
+-        // Paper start - fix sand duping
+-        if (this.isRemoved()) {
+-            return;
+-        }
+-        // Paper end - fix sand duping
++
+         if (this.blockState.isAir()) {
+             this.discard();
+         } else {
+@@ -143,11 +139,7 @@ public class FallingBlockEntity extends Entity {
+ 
+             this.move(MoverType.SELF, this.getDeltaMovement());
+ 
+-            // Paper start - fix sand duping
+-            if (this.isRemoved()) {
+-                return;
+-            }
+-            // Paper end - fix sand duping
++
+ 
+             // Paper start - Configurable EntityFallingBlock height nerf
+             if (this.level.paperConfig.fallingBlockHeightNerf != 0 && this.getY() > this.level.paperConfig.fallingBlockHeightNerf) {
+diff --git a/src/main/java/net/minecraft/world/entity/npc/Villager.java b/src/main/java/net/minecraft/world/entity/npc/Villager.java
+index eaefa4f5f86f1c836aa29dd64ea786baced4b34d..8a9b4ca14ea80855956f13da8029201bd6641283 100644
+--- a/src/main/java/net/minecraft/world/entity/npc/Villager.java
++++ b/src/main/java/net/minecraft/world/entity/npc/Villager.java
+@@ -467,7 +467,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+     }
+ 
+     private void updateSpecialPrices(Player player) {
+-        int i = this.getPlayerReputation(player);
++        int i = this.getPlayerReputation(null);  // get global reputation
+ 
+         if (i != 0) {
+             Iterator iterator = this.getOffers().iterator();
+@@ -749,6 +749,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+     }
+ 
+     public int getPlayerReputation(Player player) {
++        if(player == null) return this.gossips.getGlobalReputation();
+         return this.gossips.getReputation(player.getUUID(), (reputationtype) -> {
+             return true;
+         });
+@@ -1065,14 +1066,14 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+                 }
+             }
+             // Paper end
+-            this.gossips.add(entity.getUUID(), GossipType.MAJOR_POSITIVE, 20);
+-            this.gossips.add(entity.getUUID(), GossipType.MINOR_POSITIVE, 25);
++            this.gossips.addWithGlobal(entity.getUUID(), GossipType.MAJOR_POSITIVE, 20);
++            this.gossips.addWithGlobal(entity.getUUID(), GossipType.MINOR_POSITIVE, 25);
+         } else if (interaction == ReputationEventType.TRADE) {
+-            this.gossips.add(entity.getUUID(), GossipType.TRADING, 2);
++            this.gossips.addWithGlobal(entity.getUUID(), GossipType.TRADING, 2);
+         } else if (interaction == ReputationEventType.VILLAGER_HURT) {
+-            this.gossips.add(entity.getUUID(), GossipType.MINOR_NEGATIVE, 25);
++            this.gossips.addWithGlobal(entity.getUUID(), GossipType.MINOR_NEGATIVE, 25);
+         } else if (interaction == ReputationEventType.VILLAGER_KILLED) {
+-            this.gossips.add(entity.getUUID(), GossipType.MAJOR_NEGATIVE, 25);
++            this.gossips.addWithGlobal(entity.getUUID(), GossipType.MAJOR_NEGATIVE, 25);
+         }
+ 
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java b/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
+index 541ca82405d0b4d1457dcd63b58dc61eb67482d6..87839e66723124ae06f8addbc6a5b6502a036387 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
+@@ -103,7 +103,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+         Entity entity = this.getOwner();
+ 
+         if (entity instanceof Player && !entity.isAlive()) {
+-            this.discard();
++            //this.discard();
+         } else {
+             super.tick();
+         }
