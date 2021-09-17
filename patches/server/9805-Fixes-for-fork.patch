@@ -1,18 +1,23 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Mateusz Jarzemski <mat>
-Date: Mon, 6 Sep 2021 18:05:37 +0200
-Subject: [PATCH] temp
+Date: Sat, 28 Aug 2021 00:29:28 +0200
+Subject: [PATCH] Fixes for fork
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 2e0191e5cfe8e29fb0a6c4fc6a2a570d4b8ae449..bbfc9ed2f1d4ea5766c22682f8dee21b0dba6cbe 100644
+index dcae40fde8087ce09ec8b9360f2abc860b88c975..cd9bcf5fd1d7bfd1911f484fc3df56a7959a2270 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-@@ -442,10 +442,10 @@ public class PaperConfig {
-         midTickChunkTasks = getInt("settings.chunk-tasks-per-tick", midTickChunkTasks);
+@@ -441,10 +441,15 @@ public class PaperConfig {
+         }
      }
  
 -    public static boolean allowBlockPermanentBreakingExploits = false;
++    public static int midTickChunkTasks = 1000;
++    private static void midTickChunkTasks() {
++        midTickChunkTasks = getInt("settings.chunk-tasks-per-tick", midTickChunkTasks);
++    }
++
 +    public static boolean allowBlockPermanentBreakingExploits = true;
      private static void allowBlockPermanentBreakingExploits() {
          if (config.contains("allow-perm-block-break-exploits")) {
@@ -22,7 +27,7 @@ index 2e0191e5cfe8e29fb0a6c4fc6a2a570d4b8ae449..bbfc9ed2f1d4ea5766c22682f8dee21b
          }
  
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 261633687b5dd55559b2ddb305c3a21a8b308ada..c062636796133d5cefce21417232c0f263a89c90 100644
+index 78024e0b05fd24a0c3340f052fe8eb40191afdd6..3de41a9fe7694c9623cccef95dda9d91af13f6ff 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 @@ -107,7 +107,7 @@ public class PaperWorldConfig {
@@ -34,6 +39,56 @@ index 261633687b5dd55559b2ddb305c3a21a8b308ada..c062636796133d5cefce21417232c0f2
      private void fixCuringExploit() {
          fixCuringZombieVillagerDiscountExploit = getBoolean("game-mechanics.fix-curing-zombie-villager-discount-exploit", fixCuringZombieVillagerDiscountExploit);
      }
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 94857a736d2a16e8ade286c6f2ddf8bd798008eb..733782123c07175ea515b96980c97ad687bd0c13 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -386,37 +386,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+     }
+     // Paper end - optimise entity tracking
+ 
+-    // Paper start - make end portalling safe
+-    public BlockPos portalBlock;
+-    public ServerLevel portalWorld;
+-    public void tickEndPortal() {
+-        BlockPos pos = this.portalBlock;
+-        ServerLevel world = this.portalWorld;
+-        this.portalBlock = null;
+-        this.portalWorld = null;
+-
+-        if (pos == null || world == null || world != this.level) {
+-            return;
+-        }
+-
+-        if (this.isPassenger() || this.isVehicle() || !this.canChangeDimensions() || this.isRemoved() || !this.valid || !this.isAlive()) {
+-            return;
+-        }
+-
+-        ResourceKey<Level> resourcekey = world.getTypeKey() == DimensionType.END_LOCATION ? Level.OVERWORLD : Level.END; // CraftBukkit - SPIGOT-6152: send back to main overworld in custom ends
+-        ServerLevel worldserver = world.getServer().getLevel(resourcekey);
+-
+-        org.bukkit.event.entity.EntityPortalEnterEvent event = new org.bukkit.event.entity.EntityPortalEnterEvent(this.getBukkitEntity(), new org.bukkit.Location(world.getWorld(), pos.getX(), pos.getY(), pos.getZ()));
+-        event.callEvent();
+-
+-        if (this instanceof ServerPlayer) {
+-            ((ServerPlayer)this).changeDimension(worldserver, PlayerTeleportEvent.TeleportCause.END_PORTAL);
+-            return;
+-        }
+-        this.teleportTo(worldserver, null);
+-    }
+-    // Paper end - make end portalling safe
+-
+     // Paper start
+     /**
+      * Overriding this field will cause memory leaks.
+@@ -2738,7 +2707,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+             }
+ 
+             this.processPortalCooldown();
+-            this.tickEndPortal(); // Paper - make end portalling safe
+         }
+     }
+ 
 diff --git a/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java b/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java
 index 2d124ff784b943f5a9d164ee7cdc001465502ce4..b57a78a4cb015828dad2804833f938e8c8f35cbc 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java
@@ -158,3 +213,41 @@ index 541ca82405d0b4d1457dcd63b58dc61eb67482d6..87839e66723124ae06f8addbc6a5b650
          } else {
              super.tick();
          }
+diff --git a/src/main/java/net/minecraft/world/level/Explosion.java b/src/main/java/net/minecraft/world/level/Explosion.java
+index 132140e00865fcf84ebe03ffcbc2f30ac11a0b35..9292b70385d60fa440284f0652f3d5dc9c158a91 100644
+--- a/src/main/java/net/minecraft/world/level/Explosion.java
++++ b/src/main/java/net/minecraft/world/level/Explosion.java
+@@ -249,7 +249,7 @@ public class Explosion {
+                         entity.forceExplosionKnockback = false;
+                         boolean wasDamaged = entity.hurt(this.getDamageSource(), (float) ((int) ((d13 * d13 + d13) / 2.0D * 7.0D * (double) f2 + 1.0D)));
+                         CraftEventFactory.entityDamage = null;
+-                        if (!wasDamaged && !(entity instanceof PrimedTnt || entity instanceof FallingBlockEntity) && !entity.forceExplosionKnockback) {
++                        if (!wasDamaged && !(entity instanceof PrimedTnt || entity instanceof FallingBlockEntity || entity instanceof Projectile) && !entity.forceExplosionKnockback) {
+                             continue;
+                         }
+                         // CraftBukkit end
+diff --git a/src/main/java/net/minecraft/world/level/block/EndPortalBlock.java b/src/main/java/net/minecraft/world/level/block/EndPortalBlock.java
+index 62c2f947a77570228dfdf4dae16c64eb97ee2f40..739c9c3a49fd3893ac39962a02a5e3620dc4fe06 100644
+--- a/src/main/java/net/minecraft/world/level/block/EndPortalBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/EndPortalBlock.java
+@@ -53,10 +53,16 @@ public class EndPortalBlock extends BaseEntityBlock {
+                 // return; // CraftBukkit - always fire event in case plugins wish to change it
+             }
+ 
+-            // Paper start - move all of this logic into portal tick
+-            entity.portalWorld = ((ServerLevel)world);
+-            entity.portalBlock = pos.immutable();
+-            // Paper end - move all of this logic into portal tick
++            // CraftBukkit start - Entity in portal
++            EntityPortalEnterEvent event = new EntityPortalEnterEvent(entity.getBukkitEntity(), new org.bukkit.Location(world.getWorld(), pos.getX(), pos.getY(), pos.getZ()));
++            world.getCraftServer().getPluginManager().callEvent(event);
++
++            if (entity instanceof ServerPlayer) {
++                ((ServerPlayer) entity).changeDimension(worldserver, PlayerTeleportEvent.TeleportCause.END_PORTAL);
++                return;
++            }
++            // CraftBukkit end
++            entity.changeDimension(worldserver);
+         }
+ 
+     }
