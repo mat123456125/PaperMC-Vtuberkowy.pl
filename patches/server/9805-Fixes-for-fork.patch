@@ -5,11 +5,11 @@ Subject: [PATCH] Fixes for fork
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index dcae40fde8087ce09ec8b9360f2abc860b88c975..cd9bcf5fd1d7bfd1911f484fc3df56a7959a2270 100644
+index f421e6a2e43e0a673dbb8a9a2b4331387e523e02..66e348d998d8872cc6374bc60779d31b1542be4e 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-@@ -441,10 +441,15 @@ public class PaperConfig {
-         }
+@@ -446,10 +446,15 @@ public class PaperConfig {
+         deobfuscateStacktraces = getBoolean("settings.loggers.deobfuscate-stacktraces", deobfuscateStacktraces);
      }
  
 -    public static boolean allowBlockPermanentBreakingExploits = false;
@@ -27,7 +27,7 @@ index dcae40fde8087ce09ec8b9360f2abc860b88c975..cd9bcf5fd1d7bfd1911f484fc3df56a7
          }
  
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 78024e0b05fd24a0c3340f052fe8eb40191afdd6..3de41a9fe7694c9623cccef95dda9d91af13f6ff 100644
+index 9a3f75288b1d743a7ec4bfd663c1c2988678d3e6..7c638093d19e35d27b6412e141e4d06bb3a1583d 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 @@ -107,7 +107,7 @@ public class PaperWorldConfig {
@@ -201,7 +201,7 @@ index eaefa4f5f86f1c836aa29dd64ea786baced4b34d..8a9b4ca14ea80855956f13da8029201b
  
      }
 diff --git a/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java b/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
-index 541ca82405d0b4d1457dcd63b58dc61eb67482d6..87839e66723124ae06f8addbc6a5b6502a036387 100644
+index 1b2ada3663cc0739782ac591f2ee1f6d0fb94841..4938b338e07a058e922a682580f3d8383e19159e 100644
 --- a/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
 +++ b/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
 @@ -103,7 +103,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
