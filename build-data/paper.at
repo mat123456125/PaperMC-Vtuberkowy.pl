@@ -66,11 +66,6 @@ public net.minecraft.util.thread.BlockableEventLoop runAllTasks()V
 # Improve death events
 public net.minecraft.world.entity.LivingEntity getDeathSound()Lnet/minecraft/sounds/SoundEvent;
 public net.minecraft.world.entity.LivingEntity getSoundVolume()F
-public net.minecraft.world.entity.ambient.Bat getSoundVolume()F
-public net.minecraft.world.entity.monster.Ghast getSoundVolume()F
-public net.minecraft.world.entity.monster.Phantom getSoundVolume()F
-public net.minecraft.world.entity.animal.Squid getSoundVolume()F
-public net.minecraft.world.entity.animal.Wolf getSoundVolume()F
 
 # Add sun related api
 public net.minecraft.world.entity.Mob isSunBurnTick()Z
@@ -241,3 +236,11 @@ public-f com.mojang.brigadier.tree.CommandNode requirement
 # Block Enderpearl Travel Exploit
 public net.minecraft.world.entity.projectile.Projectile cachedOwner
 public net.minecraft.world.entity.projectile.Projectile ownerUUID
+
+# Add missing display slots
+public org.bukkit.craftbukkit.scoreboard.CraftScoreboardTranslations
+public org.bukkit.craftbukkit.scoreboard.CraftScoreboardTranslations toBukkitSlot(I)Lorg/bukkit/scoreboard/DisplaySlot;
+public org.bukkit.craftbukkit.scoreboard.CraftScoreboardTranslations fromBukkitSlot(Lorg/bukkit/scoreboard/DisplaySlot;)I
+
+# Add methods to find targets for lightning strikes
+public net.minecraft.server.level.ServerLevel findLightningRod(Lnet/minecraft/core/BlockPos;)Ljava/util/Optional;

@@ -5,10 +5,10 @@ Subject: [PATCH] Add moon phase API
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 885c5179a3fba962d91c55e7971d04c696911c64..48cb3bd3016d33d1b168de2a1ecf33ae52b38181 100644
+index 60077813fabb0b26b23a051598cb03115a3afcc2..c21b98fbd9b410e0e993f3073e5cbb37015776eb 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-@@ -181,6 +181,11 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+@@ -183,6 +183,11 @@ public class CraftWorld extends CraftRegionAccessor implements World {
      public int getPlayerCount() {
          return world.players().size();
      }

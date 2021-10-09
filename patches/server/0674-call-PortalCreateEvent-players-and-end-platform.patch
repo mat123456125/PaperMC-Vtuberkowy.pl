@@ -5,10 +5,10 @@ Subject: [PATCH] call PortalCreateEvent players and end platform
 
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index d044ceb467621f3ddc2fd1471648d03fe4e1ec85..f388b75e6d7fc726349435f86308ae729144343a 100644
+index e1296bbc1f31f270053a47c21887efbad8718b72..0eb2df75889bcfcadd5e2b81617cb8b3abd4df50 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-@@ -1170,15 +1170,21 @@ public class ServerPlayer extends Player {
+@@ -1169,15 +1169,21 @@ public class ServerPlayer extends Player {
      private void createEndPlatform(ServerLevel world, BlockPos centerPos) {
          BlockPos.MutableBlockPos blockposition_mutableblockposition = centerPos.mutable();
  

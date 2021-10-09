@@ -5,10 +5,10 @@ Subject: [PATCH] Reset shield blocking on dimension change
 
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index 92f16e89d19543725f64cbcbd2db5fcf507ea51a..d044ceb467621f3ddc2fd1471648d03fe4e1ec85 100644
+index 8608464c1d229625a10fd459427d8cc5e217789a..e1296bbc1f31f270053a47c21887efbad8718b72 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-@@ -1143,6 +1143,11 @@ public class ServerPlayer extends Player {
+@@ -1142,6 +1142,11 @@ public class ServerPlayer extends Player {
                  this.level.getCraftServer().getPluginManager().callEvent(changeEvent);
                  // CraftBukkit end
              }
