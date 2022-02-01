@@ -4,33 +4,17 @@ Date: Sun, 16 Oct 2016 23:19:30 -0700
 Subject: [PATCH] Add EntityZapEvent
 
 
-diff --git a/src/main/java/net/minecraft/world/entity/animal/Pig.java b/src/main/java/net/minecraft/world/entity/animal/Pig.java
-index e4d811025a000f6d12ab8587de293e929c8fd970..53eaafad559cd6413bb1e10d07374da0ab907ec6 100644
---- a/src/main/java/net/minecraft/world/entity/animal/Pig.java
-+++ b/src/main/java/net/minecraft/world/entity/animal/Pig.java
-@@ -254,6 +254,11 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
-             }
- 
-             entitypigzombie.setPersistenceRequired();
-+            // Paper start
-+            if (CraftEventFactory.callEntityZapEvent(this, lightning, entitypigzombie).isCancelled()) {
-+                return;
-+            }
-+            // Paper end
-             // CraftBukkit start
-             if (CraftEventFactory.callPigZapEvent(this, lightning, entitypigzombie).isCancelled()) {
-                 return;
 diff --git a/src/main/java/net/minecraft/world/entity/npc/Villager.java b/src/main/java/net/minecraft/world/entity/npc/Villager.java
-index e6f1f9794ddd86a1ea0a6adceb9c9dc81997183f..7ddcdafdd9b60e9cab2d6b0a3c5b40694ea59506 100644
+index e2ac5290751b8c219add3823251e0131c0d2b52e..8785a112519de49e0d61eab5ab5325f9b2068d7e 100644
 --- a/src/main/java/net/minecraft/world/entity/npc/Villager.java
 +++ b/src/main/java/net/minecraft/world/entity/npc/Villager.java
-@@ -826,9 +826,17 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+@@ -834,9 +834,17 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
      @Override
      public void thunderHit(ServerLevel world, LightningBolt lightning) {
          if (world.getDifficulty() != Difficulty.PEACEFUL) {
 -            Villager.LOGGER.info("Villager {} was struck by lightning {}.", this, lightning);
 +            // Paper - move log down, event can cancel
-             Witch entitywitch = (Witch) EntityType.WITCH.create((Level) world);
+             Witch entitywitch = (Witch) EntityType.WITCH.create(world);
  
 +            // Paper start
 +            if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityZapEvent(this, lightning, entitywitch).isCancelled()) {
@@ -44,10 +28,10 @@ index e6f1f9794ddd86a1ea0a6adceb9c9dc81997183f..7ddcdafdd9b60e9cab2d6b0a3c5b4069
              entitywitch.finalizeSpawn(world, world.getCurrentDifficultyAt(entitywitch.blockPosition()), MobSpawnType.CONVERSION, (SpawnGroupData) null, (CompoundTag) null);
              entitywitch.setNoAi(this.isNoAi());
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index e172f574d5a5ab848197a113167872ec82355471..918ea9531e5cb37cc60ad00f78a1b4d31037704f 100644
+index 57c7ee1329d80fb441a4637f309d69fa120fae01..cad2a30665e059ab9f0be3f94876d332ccb29178 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-@@ -1121,6 +1121,14 @@ public class CraftEventFactory {
+@@ -1142,6 +1142,14 @@ public class CraftEventFactory {
          return event;
      }
  
