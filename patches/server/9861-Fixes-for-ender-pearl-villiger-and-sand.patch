@@ -1,21 +1,21 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Mateusz Jarzemski <mat>
-Date: Sat, 28 Aug 2021 00:29:28 +0200
-Subject: [PATCH] Fixes for fork
+From: Mateusz Jarzemski <mat123456125@gmail.com>
+Date: Wed, 2 Feb 2022 22:11:54 +0100
+Subject: [PATCH] Fixes for ender pearl, villiger and sand
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index f421e6a2e43e0a673dbb8a9a2b4331387e523e02..66e348d998d8872cc6374bc60779d31b1542be4e 100644
+index 61ea1c9881ea30c05580044af9496a65fe95d94e..c37187b59fa85d1ebad123d6b16f0804d5a73e36 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-@@ -446,10 +446,15 @@ public class PaperConfig {
+@@ -470,10 +470,15 @@ public class PaperConfig {
          deobfuscateStacktraces = getBoolean("settings.loggers.deobfuscate-stacktraces", deobfuscateStacktraces);
      }
  
 -    public static boolean allowBlockPermanentBreakingExploits = false;
 +    public static int midTickChunkTasks = 1000;
 +    private static void midTickChunkTasks() {
-+        midTickChunkTasks = getInt("settings.chunk-tasks-per-tick", midTickChunkTasks);
++                midTickChunkTasks = getInt("settings.chunk-tasks-per-tick", midTickChunkTasks);
 +    }
 +
 +    public static boolean allowBlockPermanentBreakingExploits = true;
@@ -27,10 +27,10 @@ index f421e6a2e43e0a673dbb8a9a2b4331387e523e02..66e348d998d8872cc6374bc60779d31b
          }
  
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 9a3f75288b1d743a7ec4bfd663c1c2988678d3e6..7c638093d19e35d27b6412e141e4d06bb3a1583d 100644
+index d7dcf36c8c972e30320c56e447822cf26f6d5fb3..1bd03ee4deb2e31c50d29f8a8a0ba2ee33f100f6 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-@@ -107,7 +107,7 @@ public class PaperWorldConfig {
+@@ -125,7 +125,7 @@ public class PaperWorldConfig {
          fixClimbingBypassingCrammingRule = getBoolean("fix-climbing-bypassing-cramming-rule", fixClimbingBypassingCrammingRule);
      }
  
@@ -40,13 +40,13 @@ index 9a3f75288b1d743a7ec4bfd663c1c2988678d3e6..7c638093d19e35d27b6412e141e4d06b
          fixCuringZombieVillagerDiscountExploit = getBoolean("game-mechanics.fix-curing-zombie-villager-discount-exploit", fixCuringZombieVillagerDiscountExploit);
      }
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 94857a736d2a16e8ade286c6f2ddf8bd798008eb..733782123c07175ea515b96980c97ad687bd0c13 100644
+index 4584dcec835f97e94dcf12788b66703075dafe45..e1d8c1e3ee7eb1462cda4a8595344dea6c32e99e 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
-@@ -386,37 +386,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+@@ -395,36 +395,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, i
+         return chunkMap.playerEntityTrackerTrackMaps[type.ordinal()].getObjectsInRange(MCUtil.getCoordinateKey(this));
      }
      // Paper end - optimise entity tracking
- 
 -    // Paper start - make end portalling safe
 -    public BlockPos portalBlock;
 -    public ServerLevel portalWorld;
@@ -63,8 +63,8 @@ index 94857a736d2a16e8ade286c6f2ddf8bd798008eb..733782123c07175ea515b96980c97ad6
 -        if (this.isPassenger() || this.isVehicle() || !this.canChangeDimensions() || this.isRemoved() || !this.valid || !this.isAlive()) {
 -            return;
 -        }
--
--        ResourceKey<Level> resourcekey = world.getTypeKey() == DimensionType.END_LOCATION ? Level.OVERWORLD : Level.END; // CraftBukkit - SPIGOT-6152: send back to main overworld in custom ends
+ 
+-        ResourceKey<Level> resourcekey = world.getTypeKey() == LevelStem.END ? Level.OVERWORLD : Level.END; // CraftBukkit - SPIGOT-6152: send back to main overworld in custom ends
 -        ServerLevel worldserver = world.getServer().getLevel(resourcekey);
 -
 -        org.bukkit.event.entity.EntityPortalEnterEvent event = new org.bukkit.event.entity.EntityPortalEnterEvent(this.getBukkitEntity(), new org.bukkit.Location(world.getWorld(), pos.getX(), pos.getY(), pos.getZ()));
@@ -77,11 +77,10 @@ index 94857a736d2a16e8ade286c6f2ddf8bd798008eb..733782123c07175ea515b96980c97ad6
 -        this.teleportTo(worldserver, null);
 -    }
 -    // Paper end - make end portalling safe
--
+ 
      // Paper start
      /**
-      * Overriding this field will cause memory leaks.
-@@ -2738,7 +2707,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+@@ -2767,7 +2738,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, i
              }
  
              this.processPortalCooldown();
@@ -90,7 +89,7 @@ index 94857a736d2a16e8ade286c6f2ddf8bd798008eb..733782123c07175ea515b96980c97ad6
      }
  
 diff --git a/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java b/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java
-index 2d124ff784b943f5a9d164ee7cdc001465502ce4..b57a78a4cb015828dad2804833f938e8c8f35cbc 100644
+index 616e0b8e7a9846ad8ee0874c5dc3bce06de7156f..3b0995afac86ef1761a3d06ac3c4515ebc47ee4f 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java
 +++ b/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java
 @@ -31,6 +31,7 @@ import net.minecraft.util.VisibleForDebug;
@@ -128,12 +127,12 @@ index 2d124ff784b943f5a9d164ee7cdc001465502ce4..b57a78a4cb015828dad2804833f938e8
 +
      public void add(UUID target, GossipType type, int value) {
          GossipContainer.EntityGossips entityGossips = this.getOrCreate(target);
-         entityGossips.entries.mergeInt(type, value, (integer, integer2) -> {
+         entityGossips.entries.mergeInt(type, value, (left, right) -> {
 diff --git a/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java b/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
-index 8336ea928faa92c6f58f8cdfb9faf1d8e26c9ccf..c2db0485b7157fbe16e82eba402747209dfb6aa7 100644
+index 0c94b4cb6ee0c3dffe0b67a2291d0160ae0ef96f..758e674de851a1174ff4ffc05124237c00c317a6 100644
 --- a/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
-@@ -106,11 +106,7 @@ public class FallingBlockEntity extends Entity {
+@@ -110,11 +110,7 @@ public class FallingBlockEntity extends Entity {
  
      @Override
      public void tick() {
@@ -145,8 +144,8 @@ index 8336ea928faa92c6f58f8cdfb9faf1d8e26c9ccf..c2db0485b7157fbe16e82eba40274720
 +
          if (this.blockState.isAir()) {
              this.discard();
-         } else {
-@@ -143,11 +139,7 @@ public class FallingBlockEntity extends Entity {
+         } else if (this.level.isClientSide && this.removeAtMillis > 0L) {
+@@ -152,11 +148,6 @@ public class FallingBlockEntity extends Entity {
  
              this.move(MoverType.SELF, this.getDeltaMovement());
  
@@ -155,15 +154,14 @@ index 8336ea928faa92c6f58f8cdfb9faf1d8e26c9ccf..c2db0485b7157fbe16e82eba40274720
 -                return;
 -            }
 -            // Paper end - fix sand duping
-+
  
              // Paper start - Configurable EntityFallingBlock height nerf
              if (this.level.paperConfig.fallingBlockHeightNerf != 0 && this.getY() > this.level.paperConfig.fallingBlockHeightNerf) {
 diff --git a/src/main/java/net/minecraft/world/entity/npc/Villager.java b/src/main/java/net/minecraft/world/entity/npc/Villager.java
-index eaefa4f5f86f1c836aa29dd64ea786baced4b34d..8a9b4ca14ea80855956f13da8029201bd6641283 100644
+index ea612b3c3ed7305b504d65eb6d38ed99547fd488..ad18dda2d0089026b28472efa3cb03fdff383789 100644
 --- a/src/main/java/net/minecraft/world/entity/npc/Villager.java
 +++ b/src/main/java/net/minecraft/world/entity/npc/Villager.java
-@@ -467,7 +467,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+@@ -480,7 +480,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
      }
  
      private void updateSpecialPrices(Player player) {
@@ -172,7 +170,7 @@ index eaefa4f5f86f1c836aa29dd64ea786baced4b34d..8a9b4ca14ea80855956f13da8029201b
  
          if (i != 0) {
              Iterator iterator = this.getOffers().iterator();
-@@ -749,6 +749,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+@@ -757,6 +757,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
      }
  
      public int getPlayerReputation(Player player) {
@@ -180,7 +178,7 @@ index eaefa4f5f86f1c836aa29dd64ea786baced4b34d..8a9b4ca14ea80855956f13da8029201b
          return this.gossips.getReputation(player.getUUID(), (reputationtype) -> {
              return true;
          });
-@@ -1065,14 +1066,14 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+@@ -1073,14 +1074,14 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
                  }
              }
              // Paper end
@@ -201,7 +199,7 @@ index eaefa4f5f86f1c836aa29dd64ea786baced4b34d..8a9b4ca14ea80855956f13da8029201b
  
      }
 diff --git a/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java b/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
-index 1b2ada3663cc0739782ac591f2ee1f6d0fb94841..4938b338e07a058e922a682580f3d8383e19159e 100644
+index 834ba402decb556a5f77809b37fa00578b67432e..c2ddcc4866b9760151ea2f989d86a4e8dea93e22 100644
 --- a/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
 +++ b/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
 @@ -103,7 +103,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
@@ -209,25 +207,12 @@ index 1b2ada3663cc0739782ac591f2ee1f6d0fb94841..4938b338e07a058e922a682580f3d838
  
          if (entity instanceof Player && !entity.isAlive()) {
 -            this.discard();
-+            //this.discard();
++            //this.discard(); // no remove on death
          } else {
              super.tick();
          }
-diff --git a/src/main/java/net/minecraft/world/level/Explosion.java b/src/main/java/net/minecraft/world/level/Explosion.java
-index 132140e00865fcf84ebe03ffcbc2f30ac11a0b35..9292b70385d60fa440284f0652f3d5dc9c158a91 100644
---- a/src/main/java/net/minecraft/world/level/Explosion.java
-+++ b/src/main/java/net/minecraft/world/level/Explosion.java
-@@ -249,7 +249,7 @@ public class Explosion {
-                         entity.forceExplosionKnockback = false;
-                         boolean wasDamaged = entity.hurt(this.getDamageSource(), (float) ((int) ((d13 * d13 + d13) / 2.0D * 7.0D * (double) f2 + 1.0D)));
-                         CraftEventFactory.entityDamage = null;
--                        if (!wasDamaged && !(entity instanceof PrimedTnt || entity instanceof FallingBlockEntity) && !entity.forceExplosionKnockback) {
-+                        if (!wasDamaged && !(entity instanceof PrimedTnt || entity instanceof FallingBlockEntity || entity instanceof Projectile) && !entity.forceExplosionKnockback) {
-                             continue;
-                         }
-                         // CraftBukkit end
 diff --git a/src/main/java/net/minecraft/world/level/block/EndPortalBlock.java b/src/main/java/net/minecraft/world/level/block/EndPortalBlock.java
-index 62c2f947a77570228dfdf4dae16c64eb97ee2f40..739c9c3a49fd3893ac39962a02a5e3620dc4fe06 100644
+index 19892cb3cb290add4f094dc87bb22106e4f07a24..0a7b4872f0df34829bd5e5220cda00efa9aa2145 100644
 --- a/src/main/java/net/minecraft/world/level/block/EndPortalBlock.java
 +++ b/src/main/java/net/minecraft/world/level/block/EndPortalBlock.java
 @@ -53,10 +53,16 @@ public class EndPortalBlock extends BaseEntityBlock {
@@ -242,10 +227,10 @@ index 62c2f947a77570228dfdf4dae16c64eb97ee2f40..739c9c3a49fd3893ac39962a02a5e362
 +            EntityPortalEnterEvent event = new EntityPortalEnterEvent(entity.getBukkitEntity(), new org.bukkit.Location(world.getWorld(), pos.getX(), pos.getY(), pos.getZ()));
 +            world.getCraftServer().getPluginManager().callEvent(event);
 +
-+            if (entity instanceof ServerPlayer) {
-+                ((ServerPlayer) entity).changeDimension(worldserver, PlayerTeleportEvent.TeleportCause.END_PORTAL);
-+                return;
-+            }
++                if (entity instanceof ServerPlayer) {
++                    ((ServerPlayer) entity).changeDimension(worldserver, PlayerTeleportEvent.TeleportCause.END_PORTAL);
++                    return;
++                }
 +            // CraftBukkit end
 +            entity.changeDimension(worldserver);
          }
