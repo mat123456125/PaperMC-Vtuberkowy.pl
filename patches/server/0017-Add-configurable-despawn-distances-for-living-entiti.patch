@@ -65,7 +65,7 @@ index 0a6e98ca5534430540044a32c280e5680ac9a28f..6ee62d06cc2b59c06d0f7acfb5938407
 +    }
  }
 diff --git a/src/main/java/net/minecraft/world/entity/Mob.java b/src/main/java/net/minecraft/world/entity/Mob.java
-index 9cc9c11f2ef5aa386711a0ebc70b6a2d8e5c5b97..d5d79927aeab04d24010b53f9b527fa7b05d8a47 100644
+index c180f80a1504ee10e1115d504dac36f4e62f2fb0..fca40a6ec865589392911beaf07092b7d1c61a47 100644
 --- a/src/main/java/net/minecraft/world/entity/Mob.java
 +++ b/src/main/java/net/minecraft/world/entity/Mob.java
 @@ -778,14 +778,14 @@ public abstract class Mob extends LivingEntity {

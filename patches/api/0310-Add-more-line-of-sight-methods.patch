@@ -5,10 +5,10 @@ Subject: [PATCH] Add more line of sight methods
 
 
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index facbf08b5427cf3841d58cfb946129bf7d7f8ea3..a0e4264b5dc8df806b5bec52a8cb831005833161 100644
+index def9f0f9803e71cbe57abcffeb9114a5ab462e54..d149dd1d3d2703a428006e0c3ab5f9251e560882 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
-@@ -74,6 +74,14 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
+@@ -76,6 +76,14 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
       */
      @NotNull
      io.papermc.paper.world.MoonPhase getMoonPhase();

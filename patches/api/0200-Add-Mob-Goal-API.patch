@@ -227,10 +227,10 @@ index 0000000000000000000000000000000000000000..e21f7574763dd4f13794f91bbef192ef
 +}
 diff --git a/src/main/java/com/destroystokyo/paper/entity/ai/VanillaGoal.java b/src/main/java/com/destroystokyo/paper/entity/ai/VanillaGoal.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..2405254739a83b2fb517da7fa4ea0721c68f9f6d
+index 0000000000000000000000000000000000000000..8fd399f791b45eb7fc62693ca954eea0c68e2881
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/entity/ai/VanillaGoal.java
-@@ -0,0 +1,289 @@
+@@ -0,0 +1,291 @@
 +package com.destroystokyo.paper.entity.ai;
 +
 +import com.destroystokyo.paper.entity.RangedEntity;
@@ -429,6 +429,8 @@ index 0000000000000000000000000000000000000000..2405254739a83b2fb517da7fa4ea0721
 +    GoalKey<Raider> RAIDER_CELEBRATION = GoalKey.of(Raider.class, NamespacedKey.minecraft("raider_celebration"));
 +    GoalKey<Raider> RAIDER_MOVE_THROUGH_VILLAGE = GoalKey.of(Raider.class, NamespacedKey.minecraft("raider_move_through_village"));
 +    GoalKey<Creature> PARROT_WANDER = GoalKey.of(Creature.class, NamespacedKey.minecraft("parrot_wander"));
++    GoalKey<Mob> CLIMB_ON_TOP_OF_POWDER_SNOW = GoalKey.of(Mob.class, NamespacedKey.minecraft("climb_on_top_of_powder_snow"));
++    GoalKey<Wolf> WOLF_PANIC = GoalKey.of(Wolf.class, NamespacedKey.minecraft("wolf_panic"));
 +
 +    /**
 +     * @deprecated removed in 1.16
@@ -521,10 +523,10 @@ index 0000000000000000000000000000000000000000..2405254739a83b2fb517da7fa4ea0721
 +    @Deprecated GoalKey<Mob> UNIVERSAL_ANGER_RESET = GoalKey.of(Mob.class, NamespacedKey.minecraft("universal_anger_reset"));
 +}
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index 92bebf6f46cdd2ff5bc09af32e2d6d2ef0f4f45b..0a29ddee94051e398780b9fa07e5ce2b46c51b97 100644
+index 61060bf1cf43fdaea941129bb408123912700d5b..46331d6c7eef313128437fd032290f4aaadfee1b 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
-@@ -2076,6 +2076,16 @@ public final class Bukkit {
+@@ -2242,6 +2242,16 @@ public final class Bukkit {
      public static boolean isStopping() {
          return server.isStopping();
      }
@@ -542,10 +544,10 @@ index 92bebf6f46cdd2ff5bc09af32e2d6d2ef0f4f45b..0a29ddee94051e398780b9fa07e5ce2b
  
      @NotNull
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index f9b25ecf5642c30c04f5e0483a654ff33d1c188d..a8e187a3f386210c712ab7d620d6a4aa91bf42f8 100644
+index bba460283ce37fee5b13913d8e78dcb4efdde2c9..072e5b35cfa483dc23be6cff2dd9ac1aaa7e9da7 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -1818,5 +1818,13 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+@@ -1971,5 +1971,13 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
       * @return true if server is in the process of being shutdown
       */
      boolean isStopping();

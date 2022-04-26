@@ -25,7 +25,7 @@ index 791ccdebd5d37afd83eb87671034b3553e305f8f..ec3fb557fa31b153de20c4990066182a
 +    }
  }
 diff --git a/src/main/java/net/minecraft/world/entity/monster/Zombie.java b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
-index a58d2945beb3ed72ea0fb49c0d63c56afdafdcc8..42f3f632caba1897b762a6897923585901a63bd1 100644
+index f83b3d750b97c987748b940b810d5a88ee355049..45cfbf30d27139036dee5379a88ed24a5cee51b4 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/Zombie.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
 @@ -76,7 +76,7 @@ import org.bukkit.event.entity.EntityTransformEvent;

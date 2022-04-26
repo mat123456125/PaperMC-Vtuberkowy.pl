@@ -5,10 +5,10 @@ Subject: [PATCH] Expose protocol version
 
 
 diff --git a/src/main/java/org/bukkit/UnsafeValues.java b/src/main/java/org/bukkit/UnsafeValues.java
-index 2392efea1b514671014c39d75407f59fdea842ef..8f85c41be166ea720a0bf5b6b58bc51a6d2c71cc 100644
+index 8cbd493f695229a7dad46916087aeb3159328bfe..45a5e148ae5582a805e350b526cfb3ad87f6f945 100644
 --- a/src/main/java/org/bukkit/UnsafeValues.java
 +++ b/src/main/java/org/bukkit/UnsafeValues.java
-@@ -161,5 +161,12 @@ public interface UnsafeValues {
+@@ -174,5 +174,12 @@ public interface UnsafeValues {
       * @return the itemstack rarity
       */
      public io.papermc.paper.inventory.ItemRarity getItemStackRarity(ItemStack itemStack);

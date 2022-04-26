@@ -18,7 +18,7 @@ Y range: [0, 1023]
 X, Z range: [-67 108 864, 67 108 863]
 
 diff --git a/src/main/java/org/bukkit/Location.java b/src/main/java/org/bukkit/Location.java
-index 36ed248f0716f2cc465c08ab851b7d83d4c7c0a7..58728a0f0722b378efa129e26f0c822b63d1af36 100644
+index 36ed248f0716f2cc465c08ab851b7d83d4c7c0a7..5c5e05673e0912f4dbd6c728f4c3b7fcdae8f0e8 100644
 --- a/src/main/java/org/bukkit/Location.java
 +++ b/src/main/java/org/bukkit/Location.java
 @@ -15,7 +15,6 @@ import org.jetbrains.annotations.Nullable;
@@ -29,7 +29,7 @@ index 36ed248f0716f2cc465c08ab851b7d83d4c7c0a7..58728a0f0722b378efa129e26f0c822b
  import java.util.function.Predicate;
  import org.bukkit.entity.Entity;
  import org.bukkit.entity.LivingEntity;
-@@ -605,6 +604,17 @@ public class Location implements Cloneable, ConfigurationSerializable {
+@@ -605,6 +604,19 @@ public class Location implements Cloneable, ConfigurationSerializable {
          blockLoc.setZ(getBlockZ());
          return blockLoc;
      }
@@ -38,7 +38,9 @@ index 36ed248f0716f2cc465c08ab851b7d83d4c7c0a7..58728a0f0722b378efa129e26f0c822b
 +    /**
 +     * @return The block key for this location's block location.
 +     * @see Block#getBlockKey(int, int, int)
++     * @deprecated only encodes y block ranges from -512 to 511 and represents an already changed implementation detail
 +     */
++    @Deprecated
 +    public long toBlockKey() {
 +        return Block.getBlockKey(getBlockX(), getBlockY(), getBlockZ());
 +    }
@@ -48,10 +50,10 @@ index 36ed248f0716f2cc465c08ab851b7d83d4c7c0a7..58728a0f0722b378efa129e26f0c822b
       * @return A new location where X/Y/Z are the center of the block
       */
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index dbfa490c997c515007fc0d86ee5e2b4b98d174e5..4789dafc716c3db63983d49d7af75e3f374f4f51 100644
+index a501384906fa01ddc83476ef2dbbb8d11a03fb8c..449d6882c8f41d9e0f46436c430e071b85eb2775 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
-@@ -90,6 +90,38 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
+@@ -92,6 +92,40 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
      @NotNull
      public Block getBlockAt(@NotNull Location location);
  
@@ -62,8 +64,10 @@ index dbfa490c997c515007fc0d86ee5e2b4b98d174e5..4789dafc716c3db63983d49d7af75e3f
 +     * @param key The block key. See {@link Block#getBlockKey()}
 +     * @return Block at the key
 +     * @see Block#getBlockKey(int, int, int)
++     * @deprecated only encodes y block ranges from -512 to 511 and represents an already changed implementation detail
 +     */
 +    @NotNull
++    @Deprecated
 +    public default Block getBlockAtKey(long key) {
 +        int x = Block.getBlockKeyX(key);
 +        int y = Block.getBlockKeyY(key);
@@ -91,7 +95,7 @@ index dbfa490c997c515007fc0d86ee5e2b4b98d174e5..4789dafc716c3db63983d49d7af75e3f
       * Gets the highest non-empty (impassable) coordinate at the given
       * coordinates.
 diff --git a/src/main/java/org/bukkit/block/Block.java b/src/main/java/org/bukkit/block/Block.java
-index 62ab55729e69bfac8eb4b40d877b945d95df27cd..50fb2c8cbed7a3875a81cf409238912d9b38d820 100644
+index d29bdc125dba0128d93d57e8d9393b970e6c00a9..b101f5264bdde8bd14913d5161c1047020830f8d 100644
 --- a/src/main/java/org/bukkit/block/Block.java
 +++ b/src/main/java/org/bukkit/block/Block.java
 @@ -155,6 +155,82 @@ public interface Block extends Metadatable {

@@ -5,10 +5,10 @@ Subject: [PATCH] Make the default permission message configurable
 
 
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index 23960534cbb83cfca08ccc1e37bc7a713728b791..53a361b2f6d8d8e79f215e64d3b42fcbe54b0d81 100644
+index 098a09baa481f76e63991268d3dfabc413626fcf..ca6f3a18ca8902b99c1c8c21b6da5def7fdb2aa8 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
-@@ -1990,6 +1990,15 @@ public final class Bukkit {
+@@ -2113,6 +2113,15 @@ public final class Bukkit {
          return server.suggestPlayerNamesWhenNullTabCompletions();
      }
  
@@ -22,13 +22,13 @@ index 23960534cbb83cfca08ccc1e37bc7a713728b791..53a361b2f6d8d8e79f215e64d3b42fcb
 +    }
 +
      /**
-      * Creates a PlayerProfile for the specified uuid, with name as null
-      * @param uuid UUID to create profile for
+      * Creates a PlayerProfile for the specified uuid, with name as null.
+      *
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index f7320c0797f31cc9609a6764d886bdb6dbd082af..963edbb1e7d47410b7474b8e0ce6774a76ea9d88 100644
+index 2642be263b4201ce572386bbaf3434b5af836e8d..28be40d6844f801c26e8359e509afc5e3dedd71f 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -1745,6 +1745,13 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+@@ -1857,6 +1857,13 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
       */
      boolean suggestPlayerNamesWhenNullTabCompletions();
  
@@ -40,8 +40,8 @@ index f7320c0797f31cc9609a6764d886bdb6dbd082af..963edbb1e7d47410b7474b8e0ce6774a
 +    String getPermissionMessage();
 +
      /**
-      * Creates a PlayerProfile for the specified uuid, with name as null
-      * @param uuid UUID to create profile for
+      * Creates a PlayerProfile for the specified uuid, with name as null.
+      *
 diff --git a/src/main/java/org/bukkit/command/Command.java b/src/main/java/org/bukkit/command/Command.java
 index b1152f4dede61383232cc6713d448840612eac13..95847fcb1ac2e430ee192f4f7ac94e981151c5db 100644
 --- a/src/main/java/org/bukkit/command/Command.java

@@ -72,8 +72,6 @@ public net.minecraft.server.level.ChunkMap getPoiManager()Lnet/minecraft/world/e
 # Improve death events
 public net.minecraft.world.entity.LivingEntity getDeathSound()Lnet/minecraft/sounds/SoundEvent;
 public net.minecraft.world.entity.LivingEntity getSoundVolume()F
-public net.minecraft.world.entity.Mob handItems
-public net.minecraft.world.entity.Mob armorItems
 
 # Add sun related api
 public net.minecraft.world.entity.Mob isSunBurnTick()Z
@@ -223,6 +221,11 @@ public net.minecraft.world.entity.animal.Fox isFaceplanted()Z
 public net.minecraft.world.entity.animal.Fox setFaceplanted(Z)V
 public net.minecraft.world.entity.animal.Panda getEatCounter()I
 public net.minecraft.world.entity.animal.Panda setEatCounter(I)V
+public net.minecraft.world.entity.animal.Bee isRolling()Z
+public net.minecraft.world.entity.animal.Bee setRolling(Z)V
+public net.minecraft.world.entity.monster.piglin.Piglin isChargingCrossbow()Z
+public net.minecraft.world.entity.monster.Vex hasLimitedLife
+public net.minecraft.world.entity.monster.Vex limitedLifeTicks
 
 # Cook speed multipler API
 public net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity recipeType
@@ -267,10 +270,19 @@ public net.minecraft.world.level.NaturalSpawner SPAWNING_CATEGORIES
 # Optimize isValidLocation
 public net.minecraft.world.level.chunk.LevelChunkSection states
 
-# Player.setPlayerProfile API
+# Player Profile API
 public-f net.minecraft.world.entity.player.Player gameProfile
+public org.bukkit.craftbukkit.profile.CraftProfileProperty
+public org.bukkit.craftbukkit.profile.CraftPlayerTextures
+public org.bukkit.craftbukkit.profile.CraftPlayerTextures copyFrom(Lorg/bukkit/profile/PlayerTextures;)V
+public org.bukkit.craftbukkit.profile.CraftPlayerTextures rebuildPropertyIfDirty()V
+public org.bukkit.craftbukkit.profile.CraftPlayerProfile getProperty(Ljava/lang/String;)Lcom/mojang/authlib/properties/Property;
+public org.bukkit.craftbukkit.profile.CraftPlayerProfile setProperty(Ljava/lang/String;Lcom/mojang/authlib/properties/Property;)V
+public org.bukkit.craftbukkit.profile.CraftPlayerProfile toString(Lcom/mojang/authlib/properties/PropertyMap;)Ljava/lang/String;
+public org.bukkit.craftbukkit.profile.CraftPlayerProfile equals(Lcom/mojang/authlib/properties/PropertyMap;Lcom/mojang/authlib/properties/PropertyMap;)Z
+public org.bukkit.craftbukkit.profile.CraftPlayerProfile hashCode(Lcom/mojang/authlib/properties/PropertyMap;)I
 
-# Generator Settings
+# Flat bedrock generator settings
 public net.minecraft.world.level.levelgen.SurfaceRules$Condition
 public net.minecraft.world.level.levelgen.SurfaceRules$Context
 public net.minecraft.world.level.levelgen.SurfaceRules$Context blockX
@@ -301,3 +313,22 @@ public org.bukkit.craftbukkit.block.data.CraftBlockData toNMS(Ljava/lang/Enum;Lj
 
 # Stronghold seed configuration
 public-f net.minecraft.world.level.chunk.ChunkGenerator strongholdSeed
+
+# More Sculk Sensor API
+public-f net.minecraft.world.level.gameevent.vibrations.VibrationListener listenerRange
+
+# Fix custom inventory holders
+public-f net.minecraft.world.inventory.AbstractContainerMenu dataSlots
+public-f net.minecraft.world.inventory.AbstractContainerMenu remoteDataSlots
+
+# Fix falling block spawn methods
+public net.minecraft.world.entity.item.FallingBlockEntity <init>(Lnet/minecraft/world/level/Level;DDDLnet/minecraft/world/level/block/state/BlockState;)V
+
+# Fix cancelling ProjectileHitEvent for piercing arrows
+protected net.minecraft.world.entity.projectile.Projectile hitCancelled
+
+# Expose firework item directly + manually setting flight ticks
+public net.minecraft.world.entity.projectile.FireworkRocketEntity life
+
+# More Projectile API
+public net.minecraft.world.entity.projectile.FishingHook timeUntilLured

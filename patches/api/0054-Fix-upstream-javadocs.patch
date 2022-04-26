@@ -6,10 +6,10 @@ Subject: [PATCH] Fix upstream javadocs
 Upstream still refuses to use Java 8 with the API so they are likely unaware these are even issues.
 
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index 45c4fddb8562736eaf98810d70d002ae6e3664e7..9838557d874e498e1f7cef8f219000dcaea7a263 100644
+index a5868c0bdee345195e279467b526d5d9ff7f64d2..ece84330d2700db8708d2ae2ab7badf4acb428a8 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
-@@ -1220,6 +1220,8 @@ public final class Bukkit {
+@@ -1311,6 +1311,8 @@ public final class Bukkit {
  
      /**
       * Gets every player that has ever played on this server.
@@ -19,10 +19,10 @@ index 45c4fddb8562736eaf98810d70d002ae6e3664e7..9838557d874e498e1f7cef8f219000dc
       * @return an array containing all previous players
       */
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 1db8f63d9207330acc1b403adce0773149bc879f..ad11f8271d5b6f44d7d5cf0c122b51b2b8d1af3b 100644
+index acd69a5d946974e0b50439a98712750698768ce5..3c987b2fb0f748ce92a87c4ee54a4e9722e1910e 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -1027,6 +1027,8 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+@@ -1110,6 +1110,8 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
  
      /**
       * Gets every player that has ever played on this server.
@@ -45,7 +45,7 @@ index 91fc11dda99de506be83d40df8929bf7cd8e8d85..7dc631ebd009f5f5c3ac1699c3f3515c
      // Paper end
  }
 diff --git a/src/main/java/org/bukkit/entity/HumanEntity.java b/src/main/java/org/bukkit/entity/HumanEntity.java
-index db4ba67618d29f72d695c66c27d771795565a1d0..0ab94ddd3b88eee8040233a89823bd2fadc78d55 100644
+index 50ac6f0374da5697a38ef5ec7625da91d4a4276c..f607c57275958bf1cbf8e77b4d7efa936064c228 100644
 --- a/src/main/java/org/bukkit/entity/HumanEntity.java
 +++ b/src/main/java/org/bukkit/entity/HumanEntity.java
 @@ -21,6 +21,11 @@ import org.jetbrains.annotations.Nullable;
@@ -76,10 +76,10 @@ index be9334a8b5fba9181ad63c211697e798be63da25..0514a141cb93a650be38c63d4336d46e
       * Instructs this Mob to set the specified LivingEntity as its target.
       * <p>
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index 632622b90696f0e1c8e33d897d8e14467691e760..b7a3da7a6ee0915449534f7f879eb2f40090b9dd 100644
+index a8ace9646ebcb70a5247a7d25c411a0bcf2d9185..f32eaa35d9152564300455a24c811e15d3ab694f 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
-@@ -753,7 +753,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -755,7 +755,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       *
       * Use supplied alternative character to the section symbol to represent legacy color codes.
       *
@@ -122,16 +122,3 @@ index 1b2267f4e8ebded198773ec80e2bff2c861c7084..1a58734d919fae247eeb85dd785fd599
      public Location getTo() {
          return to;
      }
-diff --git a/src/main/java/org/bukkit/inventory/PlayerInventory.java b/src/main/java/org/bukkit/inventory/PlayerInventory.java
-index 99d900b2394b6c210ccf845768dae72864f32270..515587a958041e94f03c48ae87812abc39e1791c 100644
---- a/src/main/java/org/bukkit/inventory/PlayerInventory.java
-+++ b/src/main/java/org/bukkit/inventory/PlayerInventory.java
-@@ -106,7 +106,7 @@ public interface PlayerInventory extends Inventory {
-      *
-      * @return the ItemStack in the given slot
-      */
--    @NotNull
-+    @Nullable
-     public ItemStack getItem(@NotNull EquipmentSlot slot);
- 
-     /**

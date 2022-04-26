@@ -7,22 +7,24 @@ Provides basic elements of a PlayerProfile to be used by future API/events
 
 diff --git a/src/main/java/com/destroystokyo/paper/profile/PlayerProfile.java b/src/main/java/com/destroystokyo/paper/profile/PlayerProfile.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..2ef9a7bd55e2c9cf8cb20d5f77282676ae11181f
+index 0000000000000000000000000000000000000000..d4766e2116c2202d84080637a2832bef0ab3f718
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/profile/PlayerProfile.java
-@@ -0,0 +1,177 @@
+@@ -0,0 +1,199 @@
 +package com.destroystokyo.paper.profile;
 +
 +import java.util.Collection;
 +import java.util.Set;
 +import java.util.UUID;
++
++import org.bukkit.profile.PlayerTextures;
 +import org.jetbrains.annotations.NotNull;
 +import org.jetbrains.annotations.Nullable;
 +
 +/**
 + * Represents a players profile for the game, such as UUID, Name, and textures.
 + */
-+public interface PlayerProfile {
++public interface PlayerProfile extends org.bukkit.profile.PlayerProfile {
 +
 +    /**
 +     * @return The players name, if set
@@ -37,6 +39,7 @@ index 0000000000000000000000000000000000000000..2ef9a7bd55e2c9cf8cb20d5f77282676
 +     * @return The previous Name
 +     */
 +    @NotNull
++    @Deprecated(forRemoval = true)
 +    String setName(@Nullable String name);
 +
 +    /**
@@ -51,7 +54,26 @@ index 0000000000000000000000000000000000000000..2ef9a7bd55e2c9cf8cb20d5f77282676
 +     * @return The previous UUID
 +     */
 +    @Nullable
++    @Deprecated(forRemoval = true)
 +    UUID setId(@Nullable UUID uuid);
++
++    /**
++     * Gets the {@link PlayerTextures} of this profile.
++     * This will build a snapshot of the current texture data once
++     * requested inside PlayerTextures.
++     *
++     * @return the textures, not <code>null</code>
++     */
++    @NotNull
++    PlayerTextures getTextures();
++
++    /**
++     * Copies the given textures.
++     *
++     * @param textures the textures to copy, or <code>null</code> to clear the
++     * textures
++     */
++    void setTextures(@Nullable PlayerTextures textures);
 +
 +    /**
 +     * @return A Mutable set of this players properties, such as textures.
@@ -267,16 +289,20 @@ index 0000000000000000000000000000000000000000..7b3b6ef533d32169fbeca389bd61cfc6
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index 9838557d874e498e1f7cef8f219000dcaea7a263..c7daa7c9f85c62d0effd5c3f406568d77fd8cd78 100644
+index ece84330d2700db8708d2ae2ab7badf4acb428a8..90c875ad60e473c3ec25f209933d48615d0fd6c0 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
-@@ -1975,6 +1975,40 @@ public final class Bukkit {
+@@ -2092,6 +2092,83 @@ public final class Bukkit {
      public static boolean suggestPlayerNamesWhenNullTabCompletions() {
          return server.suggestPlayerNamesWhenNullTabCompletions();
      }
 +
 +    /**
-+     * Creates a PlayerProfile for the specified uuid, with name as null
++     * Creates a PlayerProfile for the specified uuid, with name as null.
++     *
++     * If a player with the passed uuid exists on the server at the time of creation, the returned player profile will
++     * be populated with the properties of said player (including their uuid and name).
++     *
 +     * @param uuid UUID to create profile for
 +     * @return A PlayerProfile object
 +     */
@@ -286,7 +312,16 @@ index 9838557d874e498e1f7cef8f219000dcaea7a263..c7daa7c9f85c62d0effd5c3f406568d7
 +    }
 +
 +    /**
-+     * Creates a PlayerProfile for the specified name, with UUID as null
++     * Creates a PlayerProfile for the specified name, with UUID as null.
++     *
++     * If a player with the passed name exists on the server at the time of creation, the returned player profile will
++     * be populated with the properties of said player (including their uuid and name).
++     * <p>
++     * E.g. if the player 'jeb_' is currently playing on the server, calling {@code createProfile("JEB_")} will
++     * yield a profile with the name 'jeb_', their uuid and their textures.
++     * To bypass this pre-population on a case-insensitive name match, see {@link #createProfileExact(UUID, String)}.
++     * <p>
++     *
 +     * @param name Name to create profile for
 +     * @return A PlayerProfile object
 +     */
@@ -299,6 +334,16 @@ index 9838557d874e498e1f7cef8f219000dcaea7a263..c7daa7c9f85c62d0effd5c3f406568d7
 +     * Creates a PlayerProfile for the specified name/uuid
 +     *
 +     * Both UUID and Name can not be null at same time. One must be supplied.
++     * If a player with the passed uuid or name exists on the server at the time of creation, the returned player
++     * profile will be populated with the properties of said player (including their uuid and name).
++     * <p>
++     * E.g. if the player 'jeb_' is currently playing on the server, calling {@code createProfile(null, "JEB_")} will
++     * yield a profile with the name 'jeb_', their uuid and their textures.
++     * To bypass this pre-population on an case-insensitive name match, see {@link #createProfileExact(UUID, String)}.
++     * <p>
++     *
++     * The name comparison will compare the {@link String#toLowerCase()} version of both the passed name parameter and
++     * a players name to honour the case-insensitive nature of a mojang profile lookup.
 +     *
 +     * @param uuid UUID to create profile for
 +     * @param name Name to create profile for
@@ -308,20 +353,44 @@ index 9838557d874e498e1f7cef8f219000dcaea7a263..c7daa7c9f85c62d0effd5c3f406568d7
 +    public static com.destroystokyo.paper.profile.PlayerProfile createProfile(@Nullable UUID uuid, @Nullable String name) {
 +        return server.createProfile(uuid, name);
 +    }
++
++    /**
++     * Creates an exact PlayerProfile for the specified name/uuid
++     *
++     * Both UUID and Name can not be null at same time. One must be supplied.
++     * If a player with the passed uuid or name exists on the server at the time of creation, the returned player
++     * profile will be populated with the properties of said player.
++     * <p>
++     * Compared to {@link #createProfile(UUID, String)}, this method will never mutate the passed uuid or name.
++     * If a player with either the same uuid or a matching name (case-insensitive) is found on the server, their
++     * properties, such as textures, will be pre-populated in the profile, however the passed uuid and name stay intact.
++     *
++     * @param uuid UUID to create profile for
++     * @param name Name to create profile for
++     * @return A PlayerProfile object
++     */
++    @NotNull
++    public static com.destroystokyo.paper.profile.PlayerProfile createProfileExact(@Nullable UUID uuid, @Nullable String name) {
++        return server.createProfileExact(uuid, name);
++    }
      // Paper end
  
      @NotNull
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index ad11f8271d5b6f44d7d5cf0c122b51b2b8d1af3b..fb5c308d82e9103a212deea2a6fa2e158cddb931 100644
+index 3c987b2fb0f748ce92a87c4ee54a4e9722e1910e..9796ae6fcf605af88c1e5c1d29d77ea6857632cc 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -1732,5 +1732,33 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+@@ -1838,5 +1838,74 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
       * @return true if player names should be suggested
       */
      boolean suggestPlayerNamesWhenNullTabCompletions();
 +
 +    /**
-+     * Creates a PlayerProfile for the specified uuid, with name as null
++     * Creates a PlayerProfile for the specified uuid, with name as null.
++     *
++     * If a player with the passed uuid exists on the server at the time of creation, the returned player profile will
++     * be populated with the properties of said player (including their uuid and name).
++     *
 +     * @param uuid UUID to create profile for
 +     * @return A PlayerProfile object
 +     */
@@ -329,7 +398,16 @@ index ad11f8271d5b6f44d7d5cf0c122b51b2b8d1af3b..fb5c308d82e9103a212deea2a6fa2e15
 +    com.destroystokyo.paper.profile.PlayerProfile createProfile(@NotNull UUID uuid);
 +
 +    /**
-+     * Creates a PlayerProfile for the specified name, with UUID as null
++     * Creates a PlayerProfile for the specified name, with UUID as null.
++     *
++     * If a player with the passed name exists on the server at the time of creation, the returned player profile will
++     * be populated with the properties of said player (including their uuid and name).
++     * <p>
++     * E.g. if the player 'jeb_' is currently playing on the server, calling {@code createProfile("JEB_")} will
++     * yield a profile with the name 'jeb_', their uuid and their textures.
++     * To bypass this pre-population on a case-insensitive name match, see {@link #createProfileExact(UUID, String)}.
++     * <p>
++     *
 +     * @param name Name to create profile for
 +     * @return A PlayerProfile object
 +     */
@@ -340,6 +418,16 @@ index ad11f8271d5b6f44d7d5cf0c122b51b2b8d1af3b..fb5c308d82e9103a212deea2a6fa2e15
 +     * Creates a PlayerProfile for the specified name/uuid
 +     *
 +     * Both UUID and Name can not be null at same time. One must be supplied.
++     * If a player with the passed uuid or name exists on the server at the time of creation, the returned player
++     * profile will be populated with the properties of said player (including their uuid and name).
++     * <p>
++     * E.g. if the player 'jeb_' is currently playing on the server, calling {@code createProfile(null, "JEB_")} will
++     * yield a profile with the name 'jeb_', their uuid and their textures.
++     * To bypass this pre-population on an case-insensitive name match, see {@link #createProfileExact(UUID, String)}.
++     * <p>
++     *
++     * The name comparison will compare the {@link String#toLowerCase()} version of both the passed name parameter and
++     * a players name to honour the case-insensitive nature of a mojang profile lookup.
 +     *
 +     * @param uuid UUID to create profile for
 +     * @param name Name to create profile for
@@ -347,5 +435,23 @@ index ad11f8271d5b6f44d7d5cf0c122b51b2b8d1af3b..fb5c308d82e9103a212deea2a6fa2e15
 +     */
 +    @NotNull
 +    com.destroystokyo.paper.profile.PlayerProfile createProfile(@Nullable UUID uuid, @Nullable String name);
++
++    /**
++     * Creates an exact PlayerProfile for the specified name/uuid
++     *
++     * Both UUID and Name can not be null at same time. One must be supplied.
++     * If a player with the passed uuid or name exists on the server at the time of creation, the returned player
++     * profile will be populated with the properties of said player.
++     * <p>
++     * Compared to {@link #createProfile(UUID, String)}, this method will never mutate the passed uuid or name.
++     * If a player with either the same uuid or a matching name (case-insensitive) is found on the server, their
++     * properties, such as textures, will be pre-populated in the profile, however the passed uuid and name stay intact.
++     *
++     * @param uuid UUID to create profile for
++     * @param name Name to create profile for
++     * @return A PlayerProfile object
++     */
++    @NotNull
++    com.destroystokyo.paper.profile.PlayerProfile createProfileExact(@Nullable UUID uuid, @Nullable String name);
      // Paper end
  }
