@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mateusz Jarzemski <mat123456125@gmail.com>
+Date: Fri, 4 Feb 2022 20:52:00 +0100
+Subject: [PATCH] Blacklist torch merging
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/item/ItemEntity.java b/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
+index 9ca37cbf829ff4240ae79fc283bcf9e7f2c728d2..2ee502293f5e0d491d83e330a56c831ebf23277c 100644
+--- a/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
++++ b/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
+@@ -262,7 +262,8 @@ public class ItemEntity extends Entity {
+     private boolean isMergable() {
+         ItemStack itemstack = this.getItem();
+ 
+-        return this.isAlive() && this.pickupDelay != 32767 && this.age != -32768 && this.age < this.despawnRate && itemstack.getCount() < itemstack.getMaxStackSize(); // Paper - respect despawn rate in pickup check.
++        return this.isAlive() && itemstack.getItem() != Items.TORCH &&
++            this.pickupDelay != 32767 && this.age != -32768 && this.age < this.despawnRate && itemstack.getCount() < itemstack.getMaxStackSize(); // Paper - respect despawn rate in pickup check.
+     }
+ 
+     private void tryToMerge(ItemEntity other) {

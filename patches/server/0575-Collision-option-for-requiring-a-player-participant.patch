@@ -5,10 +5,10 @@ Subject: [PATCH] Collision option for requiring a player participant
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 512720c6c13edcdae8f334ee584da8c4bca30c5f..ea5f021c4ce2274869d884b90aeaba35d4e2db84 100644
+index 13fc7c21283f09fd135a12649776bb1355da4154..0bd01fb0582c27890fa94ed779103fa75472b482 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-@@ -81,6 +81,18 @@ public class PaperWorldConfig {
+@@ -110,6 +110,18 @@ public class PaperWorldConfig {
          }
      }
  
@@ -28,7 +28,7 @@ index 512720c6c13edcdae8f334ee584da8c4bca30c5f..ea5f021c4ce2274869d884b90aeaba35
      public int wanderingTraderSpawnDayTicks = 24000;
      public int wanderingTraderSpawnChanceFailureIncrement = 25;
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index dbfe16f904382f3fa3790fc8da0f5c7b5b83a501..162542958a331fd0ff0623266c9c62211152b1a6 100644
+index e53d8fe713a4c9920f40bf91d6453d36520b45f7..c14cbbf7d88d99bf5f24aad5c45fcb1504187a16 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -1631,6 +1631,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {

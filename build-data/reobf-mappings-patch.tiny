@@ -26,3 +26,7 @@ c	net/minecraft/server/level/ChunkMap	net/minecraft/server/level/PlayerChunkMap
 # Paper changes type
 c	net/minecraft/core/MappedRegistry	net/minecraft/core/RegistryMaterials
 	f	Lit/unimi/dsi/fastutil/objects/Reference2IntOpenHashMap;	toId	bE
+
+# Workaround by MoritzR200
+c	net/minecraft/server/dedicated/DedicatedServerProperties	net/minecraft/server/dedicated/DedicatedServerProperties
+	m	(Ljava/lang/String;)Ljava/lang/String;	lambda$new$3	d

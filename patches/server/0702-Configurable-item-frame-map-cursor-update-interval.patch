@@ -5,10 +5,10 @@ Subject: [PATCH] Configurable item frame map cursor update interval
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 81d47e800b1dc1ae944b12313a8241c1d877e6a4..f5c1de088ff49178aac4b2bea7059b98d5e8d338 100644
+index 68982f44fac2a3da621503cffb7921498a6f8666..4b84f633e647db439ad9390b963de6af543c8d83 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-@@ -871,6 +871,11 @@ public class PaperWorldConfig {
+@@ -924,6 +924,11 @@ public class PaperWorldConfig {
          mapItemFrameCursorLimit = getInt("map-item-frame-cursor-limit", mapItemFrameCursorLimit);
      }
  

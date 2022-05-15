@@ -676,7 +676,7 @@ index 0000000000000000000000000000000000000000..0fda52841b5e1643efeda92106124998
 +    }
 +}
 diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 131f67b5843af8feab16f14045cc496e40f9bc00..11e703e8e78fb49a5f53bdbc20d62422b573ae55 100644
+index 52e9dca37dab4cacdded3b084c40d4dd75182bb5..7bbcee19248933f67fd40f46db43363890593c73 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
 @@ -14,12 +14,15 @@ import java.util.concurrent.TimeUnit;
@@ -1405,7 +1405,7 @@ index be9a29f01d59584a1492d925248f0947610ce9d0..bfec1beb0af39e2af6be7c6423bf1eaa
  
      public UserWhiteList getWhiteList() {
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index e778f4da8b3e33b6fc9bbe21a7cbc1f185130e69..55ff800e5882841d5512901c883e308c9426e5de 100644
+index e99f7f5eae48e635f167744394ce559ea06971ea..63cbe322c272761e769abaa1e707e50c0acbfd8d 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -128,7 +128,6 @@ import org.bukkit.craftbukkit.event.CraftPortalEvent;
@@ -1911,10 +1911,10 @@ index b0ffa23faf62629043dfd613315eaf9c5fcc2cfe..00000000000000000000000000000000
 -    }
 -}
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 09f43730e40b4ab9f0a6c8d175cbcf7c9e069fac..6736fe98ddd475ab30d7c97ad334097671b25b92 100644
+index 7ff1fcfdc87bcd299da46fe8a7e090c118a42cfa..274e4d983015a5c8a8fbfcf269e7cb2cac34333f 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -2274,6 +2274,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -2276,6 +2276,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
              packet.components = components;
              CraftPlayer.this.getHandle().connection.send(packet);
          }

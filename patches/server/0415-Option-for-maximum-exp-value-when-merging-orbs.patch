@@ -5,10 +5,10 @@ Subject: [PATCH] Option for maximum exp value when merging orbs
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index e5d0168faf4988b2c033d146a798e6ab90e3b358..8a12ad8417458d1ad71664e394f78db6b3770c0b 100644
+index c16233c8cabab2efca9846988c5c843aa9441133..fcd5d4e54f339b3435888a2e9842f64aec46170f 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-@@ -648,4 +648,10 @@ public class PaperWorldConfig {
+@@ -675,4 +675,10 @@ public class PaperWorldConfig {
          phantomIgnoreCreative = getBoolean("phantoms-do-not-spawn-on-creative-players", phantomIgnoreCreative);
          phantomOnlyAttackInsomniacs = getBoolean("phantoms-only-attack-insomniacs", phantomOnlyAttackInsomniacs);
      }
@@ -20,7 +20,7 @@ index e5d0168faf4988b2c033d146a798e6ab90e3b358..8a12ad8417458d1ad71664e394f78db6
 +    }
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index d998c0dd9e03b9c0f0a6075e5a52ba50b44ed0c4..931cfbe01240e6382446aa12a545a02e44a407b9 100644
+index 1e16264b533c2205098c0569fadb8e369a032764..fb490fa7d59b1099e34a5adc7993d6dad2f10932 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 @@ -640,16 +640,30 @@ public class CraftEventFactory {
