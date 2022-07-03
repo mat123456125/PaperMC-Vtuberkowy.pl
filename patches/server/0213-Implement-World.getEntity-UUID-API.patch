@@ -5,10 +5,10 @@ Subject: [PATCH] Implement World.getEntity(UUID) API
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 567a1f957d668c509efae001242b1808a3a488b2..264bc6a4765109a16cea6413abe9bf9185b7c041 100644
+index 65c0ba9b38df848646ddd2719850f955334abd7a..41e2102d79ac6f8c3dad4b1f85d1c98e296a2730 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-@@ -1040,6 +1040,15 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+@@ -1042,6 +1042,15 @@ public class CraftWorld extends CraftRegionAccessor implements World {
          return list;
      }
  
