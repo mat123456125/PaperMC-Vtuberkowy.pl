@@ -4,46 +4,11 @@ Date: Wed, 2 Feb 2022 22:11:54 +0100
 Subject: [PATCH] Fixes for ender pearl, villiger and sand
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 1ac6cf51f2682d5eb14fe19646e79f6617d492dd..948b8d0274baee13117e15f2eacb946462819a03 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-@@ -472,10 +472,15 @@ public class PaperConfig {
-         useRgbForNamedTextColors = getBoolean("settings.loggers.use-rgb-for-named-text-colors", useRgbForNamedTextColors);
-     }
- 
--    public static boolean allowBlockPermanentBreakingExploits = false;
-+    public static int midTickChunkTasks = 1000;
-+    private static void midTickChunkTasks() {
-+                midTickChunkTasks = getInt("settings.chunk-tasks-per-tick", midTickChunkTasks);
-+    }
-+
-+    public static boolean allowBlockPermanentBreakingExploits = true;
-     private static void allowBlockPermanentBreakingExploits() {
-         if (config.contains("allow-perm-block-break-exploits")) {
--            allowBlockPermanentBreakingExploits = config.getBoolean("allow-perm-block-break-exploits", false);
-+            allowBlockPermanentBreakingExploits = config.getBoolean("allow-perm-block-break-exploits", true);
-             config.set("allow-perm-block-break-exploits", null);
-         }
- 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index fba36a0fd7036ba516e14c8d3521b470b0df17d1..2c18b82a002de150a73aeb8935ba95098b6c0529 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-@@ -158,7 +158,7 @@ public class PaperWorldConfig {
-         fixClimbingBypassingCrammingRule = getBoolean("fix-climbing-bypassing-cramming-rule", fixClimbingBypassingCrammingRule);
-     }
- 
--    public boolean fixCuringZombieVillagerDiscountExploit = true;
-+    public boolean fixCuringZombieVillagerDiscountExploit = false;
-     private void fixCuringExploit() {
-         fixCuringZombieVillagerDiscountExploit = getBoolean("game-mechanics.fix-curing-zombie-villager-discount-exploit", fixCuringZombieVillagerDiscountExploit);
-     }
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 86a2eddf344503cbe75a5243a114f6fe1578185f..5b7029098a8f906dedb6ff433fe7c3bb626b9c17 100644
+index b0728b66c54dc22a5a98f150910d07f4b38ebd7e..1cb5971ac002e275e83c5da2a9e7d4827c42258d 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
-@@ -398,36 +398,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
+@@ -459,36 +459,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
          return chunkMap.playerEntityTrackerTrackMaps[type.ordinal()].getObjectsInRange(MCUtil.getCoordinateKey(this));
      }
      // Paper end - optimise entity tracking
@@ -80,7 +45,7 @@ index 86a2eddf344503cbe75a5243a114f6fe1578185f..5b7029098a8f906dedb6ff433fe7c3bb
  
      // Paper start
      /**
-@@ -2781,7 +2752,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
+@@ -2870,7 +2841,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
              }
  
              this.processPortalCooldown();
@@ -89,10 +54,10 @@ index 86a2eddf344503cbe75a5243a114f6fe1578185f..5b7029098a8f906dedb6ff433fe7c3bb
      }
  
 diff --git a/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java b/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java
-index ea9c4bf7549f6a09bd5ac35f35686391a53838b2..938f37eabb1aaf25c0908367a2478017ce2b1f72 100644
+index aa277479f5552503a202a057b1a3ede379f2bbbf..dca01656c83dc0c57e4c5627805e739ea6981fb0 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java
 +++ b/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java
-@@ -30,6 +30,7 @@ import net.minecraft.util.VisibleForDebug;
+@@ -28,6 +28,7 @@ import net.minecraft.util.VisibleForDebug;
  public class GossipContainer {
      public static final int DISCARD_THRESHOLD = 2;
      private final Map<UUID, GossipContainer.EntityGossips> gossips = Maps.newHashMap(); public Map<UUID, GossipContainer.EntityGossips> getReputations() { return this.gossips; } // Paper - add getter for reputations
@@ -100,7 +65,7 @@ index ea9c4bf7549f6a09bd5ac35f35686391a53838b2..938f37eabb1aaf25c0908367a2478017
  
      @VisibleForDebug
      public Map<UUID, Object2IntMap<GossipType>> getGossipEntries() {
-@@ -115,6 +116,14 @@ public class GossipContainer {
+@@ -113,6 +114,14 @@ public class GossipContainer {
  
          });
      }
@@ -115,7 +80,7 @@ index ea9c4bf7549f6a09bd5ac35f35686391a53838b2..938f37eabb1aaf25c0908367a2478017
  
      public int getReputation(UUID target, Predicate<GossipType> gossipTypeFilter) {
          GossipContainer.EntityGossips entityGossips = this.gossips.get(target);
-@@ -127,6 +136,12 @@ public class GossipContainer {
+@@ -125,6 +134,12 @@ public class GossipContainer {
          }).count();
      }
  
@@ -129,7 +94,7 @@ index ea9c4bf7549f6a09bd5ac35f35686391a53838b2..938f37eabb1aaf25c0908367a2478017
          GossipContainer.EntityGossips entityGossips = this.getOrCreate(target);
          entityGossips.entries.mergeInt(type, value, (left, right) -> {
 diff --git a/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java b/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
-index 318ea6ebf4c13a984b3815f00bf6cb3856ff6fe0..28dfba8abd4f663c4604edb9e3c4e2eda6d7cd44 100644
+index ef07967b64180c54338b8fb2ba1780adec87f333..4a62ee40a46a5e682e1adc76fe52b0bab7a16c46 100644
 --- a/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
 @@ -127,11 +127,7 @@ public class FallingBlockEntity extends Entity {
@@ -156,9 +121,9 @@ index 318ea6ebf4c13a984b3815f00bf6cb3856ff6fe0..28dfba8abd4f663c4604edb9e3c4e2ed
 -            // Paper end - fix sand duping
  
              // Paper start - Configurable EntityFallingBlock height nerf
-             if (this.level.paperConfig.fallingBlockHeightNerf != 0 && this.getY() > this.level.paperConfig.fallingBlockHeightNerf) {
+             if (this.level.paperConfig().fixes.fallingBlockHeightNerf != 0 && this.getY() > this.level.paperConfig().fixes.fallingBlockHeightNerf) {
 diff --git a/src/main/java/net/minecraft/world/entity/npc/Villager.java b/src/main/java/net/minecraft/world/entity/npc/Villager.java
-index 268524e256a034520438d5c825e5e419d72d29ce..701f958457791c387cdc93f429527454a40aeb09 100644
+index 10b45ec24a5a0867106d1694312385ad1e267f43..c42e69c98a9a793045d3cabda87e2b7fb0297458 100644
 --- a/src/main/java/net/minecraft/world/entity/npc/Villager.java
 +++ b/src/main/java/net/minecraft/world/entity/npc/Villager.java
 @@ -482,7 +482,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
@@ -178,7 +143,7 @@ index 268524e256a034520438d5c825e5e419d72d29ce..701f958457791c387cdc93f429527454
          return this.gossips.getReputation(player.getUUID(), (reputationtype) -> {
              return true;
          });
-@@ -1075,14 +1076,14 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+@@ -985,14 +986,14 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
                  }
              }
              // Paper end
@@ -212,7 +177,7 @@ index 23f77dfc6df93ef6a70e14a7e410263d39fae2cb..4c079f4e7de6abd61126ca78395fe819
              super.tick();
          }
 diff --git a/src/main/java/net/minecraft/world/level/block/EndPortalBlock.java b/src/main/java/net/minecraft/world/level/block/EndPortalBlock.java
-index 19892cb3cb290add4f094dc87bb22106e4f07a24..0a7b4872f0df34829bd5e5220cda00efa9aa2145 100644
+index 15c5cccfe02c924c02f605eb47dd0b420b189891..6893413f0b36b1894486edcc48b1d7a9c274071c 100644
 --- a/src/main/java/net/minecraft/world/level/block/EndPortalBlock.java
 +++ b/src/main/java/net/minecraft/world/level/block/EndPortalBlock.java
 @@ -53,10 +53,16 @@ public class EndPortalBlock extends BaseEntityBlock {

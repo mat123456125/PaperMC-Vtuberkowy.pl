@@ -5,10 +5,10 @@ Subject: [PATCH] Blacklist torch merging
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/item/ItemEntity.java b/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
-index 9ca37cbf829ff4240ae79fc283bcf9e7f2c728d2..2ee502293f5e0d491d83e330a56c831ebf23277c 100644
+index 08f15739dd7e2ab80718ab8d983b483a46309deb..488cdba333d908fad2d8239370bdcbf5cae20049 100644
 --- a/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
-@@ -262,7 +262,8 @@ public class ItemEntity extends Entity {
+@@ -268,7 +268,8 @@ public class ItemEntity extends Entity {
      private boolean isMergable() {
          ItemStack itemstack = this.getItem();
  
