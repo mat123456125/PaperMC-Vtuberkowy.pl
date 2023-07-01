@@ -7,12 +7,12 @@ Avoids a hashmap lookup by cacheing a reference to the CraftBlockData
 and cloning it when one is needed.
 
 diff --git a/src/main/java/net/minecraft/world/level/block/state/BlockBehaviour.java b/src/main/java/net/minecraft/world/level/block/state/BlockBehaviour.java
-index 06525d7687fec5b37cd6020ad1bac998b194e89f..942dae5116840a2e8a992f0830574ab2a315bdf1 100644
+index 803f3ebaa9fe43c88f461168ee43fc6ba920a764..2451bb61e304fbe5cdfd6bbb248575e9e1135075 100644
 --- a/src/main/java/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/src/main/java/net/minecraft/world/level/block/state/BlockBehaviour.java
-@@ -694,6 +694,14 @@ public abstract class BlockBehaviour {
-             this.emissiveRendering = blockbase_info.emissiveRendering;
-             this.offsetType = (BlockBehaviour.OffsetType) blockbase_info.offsetType.apply(this.asState());
+@@ -809,6 +809,14 @@ public abstract class BlockBehaviour implements FeatureElement {
+             this.replaceable = blockbase_info.replaceable;
+             this.conditionallyFullOpaque = this.isOpaque() & this.isTransparentOnSomeFaces(); // Paper
          }
 +        // Paper start - impl cached craft block data, lazy load to fix issue with loading at the wrong time
 +        private org.bukkit.craftbukkit.block.data.CraftBlockData cachedCraftBlockData;
@@ -23,26 +23,26 @@ index 06525d7687fec5b37cd6020ad1bac998b194e89f..942dae5116840a2e8a992f0830574ab2
 +        }
 +        // Paper end
  
-         // Paper start
-         protected boolean shapeExceedsCube = true;
+         private boolean calculateSolid() {
+             if (((Block) this.owner).properties.forceSolidOn) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java b/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
-index 15aff39d8d68430cc35ab134c0ab55cf50575cce..8ec78b26d6bfbcdad443c9649e35f79dd336b095 100644
+index 745d2c589df8c59db327d7482024096473318812..c80aaa37b7d63acfb283641a4804dc2a32156eda 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
-@@ -533,7 +533,17 @@ public class CraftBlockData implements BlockData {
+@@ -560,7 +560,17 @@ public class CraftBlockData implements BlockData {
          return craft;
      }
  
 +    // Paper start - optimize creating BlockData to not need a map lookup
 +    static {
 +        // Initialize cached data for all IBlockData instances after registration
-+        Block.BLOCK_STATE_REGISTRY.iterator().forEachRemaining(BlockState::createCraftBlockData);
++        Block.BLOCK_STATE_REGISTRY.iterator().forEachRemaining(net.minecraft.world.level.block.state.BlockState::createCraftBlockData);
 +    }
-     public static CraftBlockData fromData(BlockState data) {
+     public static CraftBlockData fromData(net.minecraft.world.level.block.state.BlockState data) {
 +        return data.createCraftBlockData();
 +    }
 +
-+    public static CraftBlockData createData(BlockState data) {
++    public static CraftBlockData createData(net.minecraft.world.level.block.state.BlockState data) {
 +        // Paper end
          return CraftBlockData.MAP.getOrDefault(data.getBlock().getClass(), CraftBlockData::new).apply(data);
      }

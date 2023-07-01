@@ -6,10 +6,10 @@ Subject: [PATCH] Use a Queue for Queueing Commands
 Lists are bad as Queues mmmkay.
 
 diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-index 02ea5304a3f99d69005ab1a7ea85e6a13009fa89..0537678f802158ec182d48df94794b59820ffc7b 100644
+index 29eadf85e11c2261218fa406b29455da50400a7a..c2f5d3153591d48c6c2afdec049a7b390066bfdb 100644
 --- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-@@ -74,7 +74,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+@@ -69,7 +69,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
      static final Logger LOGGER = LogUtils.getLogger();
      private static final int CONVERSION_RETRY_DELAY_MS = 5000;
      private static final int CONVERSION_RETRIES = 2;
@@ -18,12 +18,12 @@ index 02ea5304a3f99d69005ab1a7ea85e6a13009fa89..0537678f802158ec182d48df94794b59
      @Nullable
      private QueryThreadGs4 queryThreadGs4;
      public final RconConsoleSource rconConsoleSource;
-@@ -419,13 +419,15 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
-     }
- 
-     public void handleConsoleInput(String command, CommandSourceStack commandSource) {
+@@ -440,13 +440,15 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+             return;
+         }
+         // Paper end - rewrite chunk system
 -        this.consoleInput.add(new ConsoleInput(command, commandSource));
-+        this.serverCommandQueue.add(new ConsoleInput(command, commandSource));
++        this.serverCommandQueue.add(new ConsoleInput(command, commandSource)); // Paper - use proper queue
      }
  
      public void handleConsoleInputs() {

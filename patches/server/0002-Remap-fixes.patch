@@ -5,10 +5,10 @@ Subject: [PATCH] Remap fixes
 
 
 diff --git a/src/main/java/net/minecraft/core/BlockPos.java b/src/main/java/net/minecraft/core/BlockPos.java
-index 700fd7f0ef6ba5798389b41a52f887e76917893d..eabf34265470e68b56c0d8787a7acffcf9b49e83 100644
+index ad3035da44c6af2fa7cc53926f33526a43740313..e89fa618fa20e3e843d8de81629e6dc551777823 100644
 --- a/src/main/java/net/minecraft/core/BlockPos.java
 +++ b/src/main/java/net/minecraft/core/BlockPos.java
-@@ -270,9 +270,11 @@ public class BlockPos extends Vec3i {
+@@ -278,9 +278,11 @@ public class BlockPos extends Vec3i {
  
      public static Iterable<BlockPos> withinManhattan(BlockPos center, int rangeX, int rangeY, int rangeZ) {
          int i = rangeX + rangeY + rangeZ;
@@ -23,7 +23,7 @@ index 700fd7f0ef6ba5798389b41a52f887e76917893d..eabf34265470e68b56c0d8787a7acffc
          return () -> {
              return new AbstractIterator<BlockPos>() {
                  private final BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
-@@ -287,7 +289,7 @@ public class BlockPos extends Vec3i {
+@@ -295,7 +297,7 @@ public class BlockPos extends Vec3i {
                  protected BlockPos computeNext() {
                      if (this.zMirror) {
                          this.zMirror = false;
@@ -32,7 +32,7 @@ index 700fd7f0ef6ba5798389b41a52f887e76917893d..eabf34265470e68b56c0d8787a7acffc
                          return this.cursor;
                      } else {
                          BlockPos blockPos;
-@@ -313,7 +315,7 @@ public class BlockPos extends Vec3i {
+@@ -321,7 +323,7 @@ public class BlockPos extends Vec3i {
                              int k = this.currentDepth - Math.abs(i) - Math.abs(j);
                              if (k <= rangeZ) {
                                  this.zMirror = k != 0;
@@ -41,31 +41,14 @@ index 700fd7f0ef6ba5798389b41a52f887e76917893d..eabf34265470e68b56c0d8787a7acffc
                              }
                          }
  
-diff --git a/src/main/java/net/minecraft/server/commands/SummonCommand.java b/src/main/java/net/minecraft/server/commands/SummonCommand.java
-index da83a40a74b291879d236ffccf36ee7a626a811e..556c4fe8d0d044c2995533f4f20cbde7283a2711 100644
---- a/src/main/java/net/minecraft/server/commands/SummonCommand.java
-+++ b/src/main/java/net/minecraft/server/commands/SummonCommand.java
-@@ -53,9 +53,9 @@ public class SummonCommand {
- 
-             nbttagcompound1.putString("id", entity.toString());
-             ServerLevel worldserver = source.getLevel();
--            Entity entity1 = EntityType.loadEntityRecursive(nbttagcompound1, worldserver, (entity1) -> {
--                entity1.moveTo(pos.x, pos.y, pos.z, entity1.getYRot(), entity1.getXRot());
--                return entity1;
-+            Entity entity1 = EntityType.loadEntityRecursive(nbttagcompound1, worldserver, (loadedEntity) -> { // Paper - remap fix
-+                loadedEntity.moveTo(pos.x, pos.y, pos.z, loadedEntity.getYRot(), loadedEntity.getXRot()); // Paper - remap fix
-+                return loadedEntity; // Paper - remap fix
-             });
- 
-             if (entity1 == null) {
 diff --git a/src/main/java/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java b/src/main/java/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java
-index b2e9418aaf2b2c87f396304287595e519e72e3ad..098253e92bd95159de93fbbdf95daee341fc5752 100644
+index 3ba785845a63e46a44fc48264d08c96bfc34ab8b..92bd58010e8c89e361e28aec59447349edbbc028 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java
 +++ b/src/main/java/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java
-@@ -174,11 +174,11 @@ public class BehaviorUtils {
+@@ -173,11 +173,11 @@ public class BehaviorUtils {
  
          return optional.map((uuid) -> {
-             return ((ServerLevel) entity.level).getEntity(uuid);
+             return ((ServerLevel) entity.level()).getEntity(uuid);
 -        }).map((entity) -> {
 +        }).map((entity1) -> { // Paper - remap fix
              LivingEntity entityliving1;
@@ -78,7 +61,7 @@ index b2e9418aaf2b2c87f396304287595e519e72e3ad..098253e92bd95159de93fbbdf95daee3
                  entityliving1 = entityliving2;
              } else {
 diff --git a/src/main/java/net/minecraft/world/item/crafting/RecipeManager.java b/src/main/java/net/minecraft/world/item/crafting/RecipeManager.java
-index 228e402a4efb6289fba58df3c0eac4cc608d4596..17c72a767e7b749ed78a9b54af19bae5381b296c 100644
+index b402543da876e6d14b263443b2d692f33eb08863..4d2d23ff118e9307d50ca2a5194b83450c91a752 100644
 --- a/src/main/java/net/minecraft/world/item/crafting/RecipeManager.java
 +++ b/src/main/java/net/minecraft/world/item/crafting/RecipeManager.java
 @@ -192,7 +192,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
@@ -120,13 +103,38 @@ index ad52c3fc6210939a39ef77a382c640a24ee44838..6b7dd01778f0a5d3a96d2d04af4b525d
          assertThat(color, is(Color.fromRGB(nmsColor)));
      }
  }
+diff --git a/src/test/java/org/bukkit/RegistryConstantsTest.java b/src/test/java/org/bukkit/RegistryConstantsTest.java
+index 34e6b84c63e50972c650c0e4bc17bc0749e1b7c3..cd96cbba4d495c18f984dec6f861f75baf4300cc 100644
+--- a/src/test/java/org/bukkit/RegistryConstantsTest.java
++++ b/src/test/java/org/bukkit/RegistryConstantsTest.java
+@@ -19,17 +19,17 @@ public class RegistryConstantsTest extends AbstractTestingBase {
+ 
+     @Test
+     public void testTrimMaterial() {
+-        this.testExcessConstants(TrimMaterial.class, Registry.TRIM_MATERIAL);
++        this.testExcessConstants(TrimMaterial.class, org.bukkit.Registry.TRIM_MATERIAL); // Paper - remap fix
+         this.testMissingConstants(TrimMaterial.class, Registries.TRIM_MATERIAL);
+     }
+ 
+     @Test
+     public void testTrimPattern() {
+-        this.testExcessConstants(TrimPattern.class, Registry.TRIM_PATTERN);
++        this.testExcessConstants(TrimPattern.class, org.bukkit.Registry.TRIM_PATTERN); // Paper - remap fix
+         this.testMissingConstants(TrimPattern.class, Registries.TRIM_PATTERN);
+     }
+ 
+-    private <T extends Keyed> void testExcessConstants(Class<T> clazz, Registry<T> registry) {
++    private <T extends Keyed> void testExcessConstants(Class<T> clazz, org.bukkit.Registry<T> registry) { // Paper - remap fix
+         List<NamespacedKey> excessKeys = new ArrayList<>();
+ 
+         for (Field field : clazz.getFields()) {
 diff --git a/src/test/java/org/bukkit/entity/EntityTypesTest.java b/src/test/java/org/bukkit/entity/EntityTypesTest.java
-index 8c4ad718e113f24a30fd11b345d34d6ca1ef73b0..1e84f541683ddb619c2a8dfcd2a141fba2bd851d 100644
+index b1de312e902c83a2f95d80040abb9255e64431a9..aafa6f472c82f851fe7f5ae3111488bb732d0bcc 100644
 --- a/src/test/java/org/bukkit/entity/EntityTypesTest.java
 +++ b/src/test/java/org/bukkit/entity/EntityTypesTest.java
 @@ -5,7 +5,6 @@ import java.util.Set;
  import java.util.stream.Collectors;
- import net.minecraft.core.Registry;
+ import net.minecraft.core.registries.BuiltInRegistries;
  import net.minecraft.resources.ResourceLocation;
 -import net.minecraft.world.entity.EntityType;
  import org.bukkit.support.AbstractTestingBase;
@@ -136,9 +144,9 @@ index 8c4ad718e113f24a30fd11b345d34d6ca1ef73b0..1e84f541683ddb619c2a8dfcd2a141fb
      public void testMaps() {
          Set<EntityType> allBukkit = Arrays.stream(EntityType.values()).filter((b) -> b.getName() != null).collect(Collectors.toSet());
  
--        for (EntityType<?> nms : Registry.ENTITY_TYPE) {
+-        for (EntityType<?> nms : BuiltInRegistries.ENTITY_TYPE) {
 -            ResourceLocation key = EntityType.getKey(nms);
-+        for (net.minecraft.world.entity.EntityType<?> nms : Registry.ENTITY_TYPE) { // Paper - remap fix
++        for (net.minecraft.world.entity.EntityType<?> nms : BuiltInRegistries.ENTITY_TYPE) { // Paper - remap fix
 +            ResourceLocation key = net.minecraft.world.entity.EntityType.getKey(nms); // Paper - remap fix
  
              org.bukkit.entity.EntityType bukkit = org.bukkit.entity.EntityType.fromName(key.getPath());

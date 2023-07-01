@@ -4,8 +4,8 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 plugins {
     java
     `maven-publish`
-    id("com.github.johnrengelman.shadow") version "7.1.2" apply false
-    id("io.papermc.paperweight.core") version "1.3.8"
+    id("com.github.johnrengelman.shadow") version "8.1.1" apply false
+    id("io.papermc.paperweight.core") version "1.5.5"
 }
 
 allprojects {
@@ -61,11 +61,11 @@ repositories {
 }
 
 dependencies {
-    paramMappings("net.fabricmc:yarn:1.19+build.1:mergedv2")
-    remapper("net.fabricmc:tiny-remapper:0.8.2:fat")
-    decompiler("net.minecraftforge:forgeflower:1.5.605.7")
+    paramMappings("net.fabricmc:yarn:1.20.1+build.1:mergedv2")
+    remapper("net.fabricmc:tiny-remapper:0.8.6:fat")
+    decompiler("net.minecraftforge:forgeflower:2.0.627.2")
     spigotDecompiler("io.papermc:patched-spigot-fernflower:0.1+build.6")
-    paperclip("io.papermc:paperclip:3.0.2")
+    paperclip("io.papermc:paperclip:3.0.3")
 }
 
 paperweight {
@@ -130,6 +130,16 @@ allprojects {
         }
     }
 }
+
+tasks.collectAtsFromPatches {
+    // Uncomment while updating for a new Minecraft version
+    // extraPatchDir.set(layout.projectDirectory.dir("patches/unapplied/server"))
+}
+
+// Uncomment while updating for a new Minecraft version
+// tasks.withType<io.papermc.paperweight.tasks.RebuildGitPatches> {
+//     filterPatches.set(false)
+// }
 
 tasks.register("printMinecraftVersion") {
     doLast {

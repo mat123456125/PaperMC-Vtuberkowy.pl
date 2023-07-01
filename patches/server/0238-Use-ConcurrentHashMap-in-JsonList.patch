@@ -23,10 +23,10 @@ Modified isEmpty to use the isEmpty() method instead of the slightly confusing s
 The point of this is readability, but does have a side-benefit of a small microptimization
 
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 4c9d595234a849d87157678383d220051c556962..5285cd8f395871c8bb55e0dc143216ae3acc0310 100644
+index 233e79c71e2c46f4220dd7423ac421be9742f53e..a9930382c39e20f30a3d613eb3c27144637c033b 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -622,7 +622,7 @@ public abstract class PlayerList {
+@@ -649,7 +649,7 @@ public abstract class PlayerList {
          } else if (!this.isWhiteListed(gameprofile, event)) { // Paper
              //ichatmutablecomponent = Component.translatable("multiplayer.disconnect.not_whitelisted"); // Paper
              //event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(org.spigotmc.SpigotConfig.whitelistMessage)); // Spigot // Paper - Adventure - moved to isWhitelisted

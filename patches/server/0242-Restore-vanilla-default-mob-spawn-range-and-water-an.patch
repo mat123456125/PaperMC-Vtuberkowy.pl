@@ -6,10 +6,10 @@ Subject: [PATCH] Restore vanilla default mob-spawn-range and water animals
 
 
 diff --git a/src/main/java/org/spigotmc/SpigotWorldConfig.java b/src/main/java/org/spigotmc/SpigotWorldConfig.java
-index feef74e3a6d50344245c4a61ece5b2194af1072f..c55321ec37b500199eda375cabca21e666612b9c 100644
+index afe68aa28f8b39fd490f650a335c90818e1c9a8d..e873a311e2918e1cb72f190e14d088a3ed540aa8 100644
 --- a/src/main/java/org/spigotmc/SpigotWorldConfig.java
 +++ b/src/main/java/org/spigotmc/SpigotWorldConfig.java
-@@ -184,7 +184,7 @@ public class SpigotWorldConfig
+@@ -190,7 +190,7 @@ public class SpigotWorldConfig
      public byte mobSpawnRange;
      private void mobSpawnRange()
      {

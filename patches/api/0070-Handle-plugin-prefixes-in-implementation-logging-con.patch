@@ -17,10 +17,10 @@ The implementation should handle plugin prefixes by displaying
 logger names when appropriate.
 
 diff --git a/src/main/java/org/bukkit/plugin/java/JavaPlugin.java b/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
-index 669a70faa95d0d6525a731d73499ed6fb0b48320..1ff0e0ef1aebec5bbb0a8a09af11d07b2a3220e8 100644
+index f594913e6b94f77b26a4a758c447a42d8a25b6ff..7cd9f98c042dc2bb80876af35c755f81bef34651 100644
 --- a/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
 +++ b/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
-@@ -43,7 +43,7 @@ public abstract class JavaPlugin extends PluginBase {
+@@ -46,7 +46,7 @@ public abstract class JavaPlugin extends PluginBase {
      private boolean naggable = true;
      private FileConfiguration newConfig = null;
      private File configFile = null;
@@ -28,14 +28,14 @@ index 669a70faa95d0d6525a731d73499ed6fb0b48320..1ff0e0ef1aebec5bbb0a8a09af11d07b
 +    private Logger logger = null; // Paper - PluginLogger -> Logger
  
      public JavaPlugin() {
-         final ClassLoader classLoader = this.getClass().getClassLoader();
-@@ -277,7 +277,8 @@ public abstract class JavaPlugin extends PluginBase {
+         // Paper start
+@@ -303,8 +303,8 @@ public abstract class JavaPlugin extends PluginBase {
          this.dataFolder = dataFolder;
          this.classLoader = classLoader;
          this.configFile = new File(dataFolder, "config.yml");
 -        this.logger = new PluginLogger(this);
-+        // Paper - Handle plugin prefix in implementation
-+        this.logger = Logger.getLogger(description.getPrefix() != null ? description.getPrefix() : description.getName());
+         this.pluginMeta = configuration; // Paper
++        this.logger = Logger.getLogger(description.getPrefix() != null ? description.getPrefix() : description.getName()); // Paper - Handle plugin prefix in implementation
      }
  
      /**

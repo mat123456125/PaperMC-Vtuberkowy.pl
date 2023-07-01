@@ -16,7 +16,7 @@ See: https://github.com/PaperMC/Paper/issues/917
 
 diff --git a/src/main/java/com/destroystokyo/paper/event/entity/PreCreatureSpawnEvent.java b/src/main/java/com/destroystokyo/paper/event/entity/PreCreatureSpawnEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..3ad231aa3206c8cfd5ec995249584cebab5d11f3
+index 0000000000000000000000000000000000000000..8b48759bf6f4fcef0847d9a2461993e3f2fdc9aa
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/event/entity/PreCreatureSpawnEvent.java
 @@ -0,0 +1,105 @@
@@ -48,7 +48,7 @@ index 0000000000000000000000000000000000000000..3ad231aa3206c8cfd5ec995249584ceb
 +    private boolean shouldAbortSpawn;
 +
 +    public PreCreatureSpawnEvent(@NotNull Location location, @NotNull EntityType type, @NotNull CreatureSpawnEvent.SpawnReason reason) {
-+        this.location = Preconditions.checkNotNull(location, "Location may not be null").clone();
++        this.location = Preconditions.checkNotNull(location, "Location may not be null");
 +        this.type = Preconditions.checkNotNull(type, "Type may not be null");
 +        this.reason = Preconditions.checkNotNull(reason, "Reason may not be null");
 +    }
@@ -117,7 +117,7 @@ index 0000000000000000000000000000000000000000..3ad231aa3206c8cfd5ec995249584ceb
 +    }
 +
 +    /**
-+     * Cancelling this event is more effecient than cancelling CreatureSpawnEvent
++     * Cancelling this event is more efficient than cancelling CreatureSpawnEvent
 +     * @param cancel true if you wish to cancel this event, and abort the spawn of this creature
 +     */
 +    @Override

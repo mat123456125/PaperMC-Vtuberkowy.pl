@@ -54,6 +54,9 @@ work/ForgeFlower
 .idea/
 out/
 
+# JetBrains Fleet
+.fleet/
+
 # Linux temp files
 *~
 

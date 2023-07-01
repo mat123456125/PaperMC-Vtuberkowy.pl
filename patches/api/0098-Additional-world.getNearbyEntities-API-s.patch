@@ -6,7 +6,7 @@ Subject: [PATCH] Additional world.getNearbyEntities API's
 Provides more methods to get nearby entities, and filter by types and predicates
 
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index 9adbc26b78e64188fc5b3f00980d310f817b43bc..1e171fe09eab0487f039a51c36021fb9df0302c9 100644
+index 7f23527168a33b92d823f76765edfe00abe0e4f6..0f76496471c50d5f18cedc735e667265e6c27422 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
 @@ -1,6 +1,9 @@
@@ -19,7 +19,7 @@ index 9adbc26b78e64188fc5b3f00980d310f817b43bc..1e171fe09eab0487f039a51c36021fb9
  import java.util.Collection;
  import java.util.HashMap;
  import java.util.List;
-@@ -654,6 +657,256 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
+@@ -624,6 +627,256 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
      @NotNull
      public Collection<Entity> getEntitiesByClasses(@NotNull Class<?>... classes);
  
@@ -276,17 +276,3 @@ index 9adbc26b78e64188fc5b3f00980d310f817b43bc..1e171fe09eab0487f039a51c36021fb9
      /**
       * Get a list of all players in this World
       *
-diff --git a/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java b/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
-index c30b44ff26f8f253902754452a0816f07c7fd035..9acf1fb404ccf9b3bc06a448c3099ca2e838facf 100644
---- a/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
-+++ b/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
-@@ -42,8 +42,7 @@ public class AsyncPlayerPreLoginEvent extends Event {
-         return profile;
-     }
- 
--    /**
--     * Changes the PlayerProfile the player will login as
-+    /*    * Changes the PlayerProfile the player will login as
-      * @param profile The profile to use
-      */
-     public void setPlayerProfile(@NotNull PlayerProfile profile) {

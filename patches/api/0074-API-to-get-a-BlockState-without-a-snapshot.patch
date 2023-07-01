@@ -9,10 +9,10 @@ on the real tile entity.
 This is useful for where performance is needed
 
 diff --git a/src/main/java/org/bukkit/block/Block.java b/src/main/java/org/bukkit/block/Block.java
-index b4094e042c1619cfcdd68c27f82979a7562ddf55..d29bdc125dba0128d93d57e8d9393b970e6c00a9 100644
+index 870ad6cd930653e6248abcc0fce94ffafbe9ebde..9f4d383ea3d6b26d16b8b77ca4c29d2d839ad6dd 100644
 --- a/src/main/java/org/bukkit/block/Block.java
 +++ b/src/main/java/org/bukkit/block/Block.java
-@@ -271,6 +271,16 @@ public interface Block extends Metadatable {
+@@ -272,6 +272,16 @@ public interface Block extends Metadatable, Translatable {
      @NotNull
      BlockState getState();
  

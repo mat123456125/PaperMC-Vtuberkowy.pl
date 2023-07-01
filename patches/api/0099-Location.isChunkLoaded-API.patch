@@ -5,10 +5,10 @@ Subject: [PATCH] Location.isChunkLoaded() API
 
 
 diff --git a/src/main/java/org/bukkit/Location.java b/src/main/java/org/bukkit/Location.java
-index 7c4db051472fb6a6c6d24092dc6f75487356690a..3be91f6c9b355c9e8562796d719f5a6ce566d85a 100644
+index 3b99f359f556e6f2c341d55fa69b7462e69b6546..e71beb48f2e35d97b9d5bf8dbf5ddbc0673565fe 100644
 --- a/src/main/java/org/bukkit/Location.java
 +++ b/src/main/java/org/bukkit/Location.java
-@@ -533,6 +533,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+@@ -533,6 +533,7 @@ public class Location implements Cloneable, ConfigurationSerializable, io.paperm
          return this;
      }
  

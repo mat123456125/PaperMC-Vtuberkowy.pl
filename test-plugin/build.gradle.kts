@@ -10,10 +10,10 @@ tasks.processResources {
         .split(".", "-").take(2).joinToString(".")
     val props = mapOf(
         "version" to project.version,
-        "apiversion" to apiVersion,
+        "apiversion" to "\"$apiVersion\"",
     )
     inputs.properties(props)
-    filesMatching("plugin.yml") {
+    filesMatching("paper-plugin.yml") {
         expand(props)
     }
 }

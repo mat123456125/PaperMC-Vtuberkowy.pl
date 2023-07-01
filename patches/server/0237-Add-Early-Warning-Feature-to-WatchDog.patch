@@ -9,11 +9,11 @@ thread dumps at an interval until the point of crash.
 This will help diagnose what was going on in that time before the crash.
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index f532aba1f180f0c86b4360bb85993732207b2345..e3f43c2b6ff47f6a8c158d176dfc2c5a3fa66a62 100644
+index 010318abbb6fadbadade8926793786eced6775d3..9cd0e389deda8d0bc7a551ff9e8b6bcd51184476 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -1057,6 +1057,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
-             this.updateStatusIcon(this.status);
+@@ -1048,6 +1048,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+             this.status = this.buildServerStatus();
  
              // Spigot start
 +            org.spigotmc.WatchdogThread.hasStarted = true; // Paper
@@ -21,10 +21,10 @@ index f532aba1f180f0c86b4360bb85993732207b2345..e3f43c2b6ff47f6a8c158d176dfc2c5a
              long start = System.nanoTime(), curTime, tickSection = start; // Paper - Further improve server tick loop
              lastTick = start - TICK_TIME; // Paper
 diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-index b248c0f481436b1b101dc1f75eaaf8023f4ba0ea..02ea5304a3f99d69005ab1a7ea85e6a13009fa89 100644
+index 24f62f9c4d288297d7a324e806745cc1449d7b4c..29eadf85e11c2261218fa406b29455da50400a7a 100644
 --- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-@@ -202,6 +202,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+@@ -197,6 +197,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
          // Paper start
          paperConfigurations.initializeGlobalConfiguration();
          paperConfigurations.initializeWorldDefaultsConfiguration();
@@ -33,10 +33,10 @@ index b248c0f481436b1b101dc1f75eaaf8023f4ba0ea..02ea5304a3f99d69005ab1a7ea85e6a1
          com.destroystokyo.paper.Metrics.PaperMetrics.startMetrics();
          com.destroystokyo.paper.VersionHistoryManager.INSTANCE.getClass(); // load version history now
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 53834d226cf577413d1514c54f5a4b0294a432e7..3ffb9cb08dc3b71662364bd5553b895ddc0f9ab7 100644
+index 23407ccc0482f67db46947cbcc56c5488c42cf93..537a5e19c9566dfbefa913a66183ec4ef31844c1 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-@@ -907,6 +907,7 @@ public final class CraftServer implements Server {
+@@ -931,6 +931,7 @@ public final class CraftServer implements Server {
  
      @Override
      public void reload() {
@@ -44,7 +44,7 @@ index 53834d226cf577413d1514c54f5a4b0294a432e7..3ffb9cb08dc3b71662364bd5553b895d
          this.reloadCount++;
          this.configuration = YamlConfiguration.loadConfiguration(this.getConfigFile());
          this.commandsConfiguration = YamlConfiguration.loadConfiguration(this.getCommandsConfigFile());
-@@ -995,6 +996,7 @@ public final class CraftServer implements Server {
+@@ -1020,6 +1021,7 @@ public final class CraftServer implements Server {
          this.enablePlugins(PluginLoadOrder.STARTUP);
          this.enablePlugins(PluginLoadOrder.POSTWORLD);
          this.getPluginManager().callEvent(new ServerLoadEvent(ServerLoadEvent.LoadType.RELOAD));
@@ -53,7 +53,7 @@ index 53834d226cf577413d1514c54f5a4b0294a432e7..3ffb9cb08dc3b71662364bd5553b895d
  
      @Override
 diff --git a/src/main/java/org/spigotmc/SpigotConfig.java b/src/main/java/org/spigotmc/SpigotConfig.java
-index 645643d102118ad4916a152abfb9ab0d02751e11..edc5f195cc3de8885b839469656650ba465346be 100644
+index ddc5f2d9aa7dda6aff132392927e3d7e3674dbff..3ac48dafe2300ff4cf4591569fec9ce4916503cd 100644
 --- a/src/main/java/org/spigotmc/SpigotConfig.java
 +++ b/src/main/java/org/spigotmc/SpigotConfig.java
 @@ -229,7 +229,7 @@ public class SpigotConfig
@@ -66,10 +66,10 @@ index 645643d102118ad4916a152abfb9ab0d02751e11..edc5f195cc3de8885b839469656650ba
  
      public static boolean bungee;
 diff --git a/src/main/java/org/spigotmc/WatchdogThread.java b/src/main/java/org/spigotmc/WatchdogThread.java
-index 6e1fa4f0616ccfd258acd1b4f5b08fc0ad4c9529..06efdd7aa6d35a670e81c4f303618a7ba301396a 100644
+index a9897c494b3dc56d900356d74030359832febbaa..b47d043144c499b1499f6b4be5a16a3f75c9fcb8 100644
 --- a/src/main/java/org/spigotmc/WatchdogThread.java
 +++ b/src/main/java/org/spigotmc/WatchdogThread.java
-@@ -14,6 +14,10 @@ public class WatchdogThread extends Thread
+@@ -14,6 +14,10 @@ public final class WatchdogThread extends io.papermc.paper.util.TickThread // Pa
      private static WatchdogThread instance;
      private long timeoutTime;
      private boolean restart;
@@ -80,7 +80,7 @@ index 6e1fa4f0616ccfd258acd1b4f5b08fc0ad4c9529..06efdd7aa6d35a670e81c4f303618a7b
      private volatile long lastTick;
      private volatile boolean stopping;
  
-@@ -22,6 +26,8 @@ public class WatchdogThread extends Thread
+@@ -22,6 +26,8 @@ public final class WatchdogThread extends io.papermc.paper.util.TickThread // Pa
          super( "Paper Watchdog Thread" );
          this.timeoutTime = timeoutTime;
          this.restart = restart;
@@ -89,7 +89,7 @@ index 6e1fa4f0616ccfd258acd1b4f5b08fc0ad4c9529..06efdd7aa6d35a670e81c4f303618a7b
      }
  
      private static long monotonicMillis()
-@@ -61,9 +67,18 @@ public class WatchdogThread extends Thread
+@@ -61,9 +67,18 @@ public final class WatchdogThread extends io.papermc.paper.util.TickThread // Pa
          while ( !this.stopping )
          {
              //
@@ -110,7 +110,7 @@ index 6e1fa4f0616ccfd258acd1b4f5b08fc0ad4c9529..06efdd7aa6d35a670e81c4f303618a7b
                  log.log( Level.SEVERE, "------------------------------" );
                  log.log( Level.SEVERE, "The server has stopped responding! This is (probably) not a Paper bug." ); // Paper
                  log.log( Level.SEVERE, "If you see a plugin in the Server thread dump below, then please report it to that author" );
-@@ -93,29 +108,45 @@ public class WatchdogThread extends Thread
+@@ -93,30 +108,46 @@ public final class WatchdogThread extends io.papermc.paper.util.TickThread // Pa
                      }
                  }
                  // Paper end
@@ -122,6 +122,7 @@ index 6e1fa4f0616ccfd258acd1b4f5b08fc0ad4c9529..06efdd7aa6d35a670e81c4f303618a7b
 +                // Paper end - Different message for short timeout
                  log.log( Level.SEVERE, "------------------------------" );
                  log.log( Level.SEVERE, "Server thread dump (Look for plugins here before reporting to Paper!):" ); // Paper
+                 io.papermc.paper.chunk.system.scheduling.ChunkTaskScheduler.dumpAllChunkLoadInfo(isLongTimeout); // Paper // Paper - rewrite chunk system
                  WatchdogThread.dumpThread( ManagementFactory.getThreadMXBean().getThreadInfo( MinecraftServer.getServer().serverThread.getId(), Integer.MAX_VALUE ), log );
                  log.log( Level.SEVERE, "------------------------------" );
                  //

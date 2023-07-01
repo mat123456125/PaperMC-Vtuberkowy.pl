@@ -5,7 +5,7 @@ Subject: [PATCH] Slime Pathfinder Events
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/monster/Slime.java b/src/main/java/net/minecraft/world/entity/monster/Slime.java
-index 7b95d18fb5edbd1575f6be92bfcbb3e0d7f691c8..48feda682284321d18c846e4812909f0e7e649e3 100644
+index 476a9b2db5deac803f1cb3c2cbe88b69cc3da8e5..30779b817db6f8e392036b4ec66e1c5cf50cd0f5 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/Slime.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/Slime.java
 @@ -41,6 +41,12 @@ import net.minecraft.world.level.ServerLevelAccessor;
@@ -21,7 +21,7 @@ index 7b95d18fb5edbd1575f6be92bfcbb3e0d7f691c8..48feda682284321d18c846e4812909f0
  // CraftBukkit start
  import java.util.ArrayList;
  import java.util.List;
-@@ -106,6 +112,7 @@ public class Slime extends Mob implements Enemy {
+@@ -107,6 +113,7 @@ public class Slime extends Mob implements Enemy {
      @Override
      public void addAdditionalSaveData(CompoundTag nbt) {
          super.addAdditionalSaveData(nbt);
@@ -29,7 +29,7 @@ index 7b95d18fb5edbd1575f6be92bfcbb3e0d7f691c8..48feda682284321d18c846e4812909f0
          nbt.putInt("Size", this.getSize() - 1);
          nbt.putBoolean("wasOnGround", this.wasOnGround);
      }
-@@ -114,6 +121,11 @@ public class Slime extends Mob implements Enemy {
+@@ -115,6 +122,11 @@ public class Slime extends Mob implements Enemy {
      public void readAdditionalSaveData(CompoundTag nbt) {
          this.setSize(nbt.getInt("Size") + 1, false);
          super.readAdditionalSaveData(nbt);
@@ -41,7 +41,7 @@ index 7b95d18fb5edbd1575f6be92bfcbb3e0d7f691c8..48feda682284321d18c846e4812909f0
          this.wasOnGround = nbt.getBoolean("wasOnGround");
      }
  
-@@ -448,7 +460,7 @@ public class Slime extends Mob implements Enemy {
+@@ -450,7 +462,7 @@ public class Slime extends Mob implements Enemy {
  
          @Override
          public boolean canUse() {
@@ -50,7 +50,7 @@ index 7b95d18fb5edbd1575f6be92bfcbb3e0d7f691c8..48feda682284321d18c846e4812909f0
          }
  
          @Override
-@@ -480,7 +492,15 @@ public class Slime extends Mob implements Enemy {
+@@ -489,7 +501,15 @@ public class Slime extends Mob implements Enemy {
          public boolean canUse() {
              LivingEntity entityliving = this.slime.getTarget();
  
@@ -67,7 +67,7 @@ index 7b95d18fb5edbd1575f6be92bfcbb3e0d7f691c8..48feda682284321d18c846e4812909f0
          }
  
          @Override
-@@ -493,7 +513,15 @@ public class Slime extends Mob implements Enemy {
+@@ -502,7 +522,15 @@ public class Slime extends Mob implements Enemy {
          public boolean canContinueToUse() {
              LivingEntity entityliving = this.slime.getTarget();
  
@@ -84,9 +84,9 @@ index 7b95d18fb5edbd1575f6be92bfcbb3e0d7f691c8..48feda682284321d18c846e4812909f0
          }
  
          @Override
-@@ -511,6 +539,13 @@ public class Slime extends Mob implements Enemy {
+@@ -527,6 +555,13 @@ public class Slime extends Mob implements Enemy {
+             }
  
-             ((Slime.SlimeMoveControl) this.slime.getMoveControl()).setDirection(this.slime.getYRot(), this.slime.isDealsDamage());
          }
 +
 +        // Paper start - clear timer and target when goal resets
@@ -98,16 +98,16 @@ index 7b95d18fb5edbd1575f6be92bfcbb3e0d7f691c8..48feda682284321d18c846e4812909f0
      }
  
      private static class SlimeRandomDirectionGoal extends Goal {
-@@ -526,7 +561,7 @@ public class Slime extends Mob implements Enemy {
+@@ -542,7 +577,7 @@ public class Slime extends Mob implements Enemy {
  
          @Override
          public boolean canUse() {
--            return this.slime.getTarget() == null && (this.slime.onGround || this.slime.isInWater() || this.slime.isInLava() || this.slime.hasEffect(MobEffects.LEVITATION)) && this.slime.getMoveControl() instanceof Slime.SlimeMoveControl;
-+            return this.slime.getTarget() == null && (this.slime.onGround || this.slime.isInWater() || this.slime.isInLava() || this.slime.hasEffect(MobEffects.LEVITATION)) && this.slime.getMoveControl() instanceof Slime.SlimeMoveControl && this.slime.canWander; // Paper - add canWander
+-            return this.slime.getTarget() == null && (this.slime.onGround() || this.slime.isInWater() || this.slime.isInLava() || this.slime.hasEffect(MobEffects.LEVITATION)) && this.slime.getMoveControl() instanceof Slime.SlimeMoveControl;
++            return this.slime.getTarget() == null && (this.slime.onGround() || this.slime.isInWater() || this.slime.isInLava() || this.slime.hasEffect(MobEffects.LEVITATION)) && this.slime.getMoveControl() instanceof Slime.SlimeMoveControl && this.slime.canWander; // Paper - add canWander
          }
  
          @Override
-@@ -534,6 +569,11 @@ public class Slime extends Mob implements Enemy {
+@@ -550,6 +585,11 @@ public class Slime extends Mob implements Enemy {
              if (--this.nextRandomizeTime <= 0) {
                  this.nextRandomizeTime = this.adjustedTickDelay(40 + this.slime.getRandom().nextInt(60));
                  this.chosenDegrees = (float) this.slime.getRandom().nextInt(360);
@@ -118,8 +118,8 @@ index 7b95d18fb5edbd1575f6be92bfcbb3e0d7f691c8..48feda682284321d18c846e4812909f0
 +                // Paper end
              }
  
-             ((Slime.SlimeMoveControl) this.slime.getMoveControl()).setDirection(this.chosenDegrees, false);
-@@ -551,7 +591,7 @@ public class Slime extends Mob implements Enemy {
+             MoveControl controllermove = this.slime.getMoveControl();
+@@ -574,7 +614,7 @@ public class Slime extends Mob implements Enemy {
  
          @Override
          public boolean canUse() {
@@ -128,8 +128,8 @@ index 7b95d18fb5edbd1575f6be92bfcbb3e0d7f691c8..48feda682284321d18c846e4812909f0
          }
  
          @Override
-@@ -559,4 +599,15 @@ public class Slime extends Mob implements Enemy {
-             ((Slime.SlimeMoveControl) this.slime.getMoveControl()).setWantedMovement(1.0D);
+@@ -589,4 +629,15 @@ public class Slime extends Mob implements Enemy {
+ 
          }
      }
 +
@@ -145,10 +145,10 @@ index 7b95d18fb5edbd1575f6be92bfcbb3e0d7f691c8..48feda682284321d18c846e4812909f0
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftSlime.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftSlime.java
-index 67fc37f909639e1effe6034526990f10d575d14d..4d401403de2399919043651345eed91c11ac986f 100644
+index a5b3b08bbac2149e5de8e2933efaad65c4f13b12..743af3b71f2d007290fa4e4da85973b491d95135 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftSlime.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftSlime.java
-@@ -34,4 +34,16 @@ public class CraftSlime extends CraftMob implements Slime {
+@@ -34,4 +34,16 @@ public class CraftSlime extends CraftMob implements Slime, CraftEnemy {
      public EntityType getType() {
          return EntityType.SLIME;
      }

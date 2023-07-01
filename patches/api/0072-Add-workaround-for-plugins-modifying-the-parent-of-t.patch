@@ -14,12 +14,13 @@ parent of the plugin logger to avoid this.
 
 diff --git a/src/main/java/com/destroystokyo/paper/utils/PaperPluginLogger.java b/src/main/java/com/destroystokyo/paper/utils/PaperPluginLogger.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..76f2cb9cd99cad2a9484eab2becd8c36f1dd91b3
+index 0000000000000000000000000000000000000000..087ee57fe5485bc760fadd45a176d4d90a18f9f8
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/utils/PaperPluginLogger.java
-@@ -0,0 +1,41 @@
+@@ -0,0 +1,48 @@
 +package com.destroystokyo.paper.utils;
 +
++import io.papermc.paper.plugin.configuration.PluginMeta;
 +import org.bukkit.plugin.PluginDescriptionFile;
 +
 +import java.util.logging.Level;
@@ -32,20 +33,26 @@ index 0000000000000000000000000000000000000000..76f2cb9cd99cad2a9484eab2becd8c36
 + */
 +public class PaperPluginLogger extends Logger {
 +
++    @Deprecated(forRemoval = true)
 +    @NotNull
 +    public static Logger getLogger(@NotNull PluginDescriptionFile description) {
-+        Logger logger = new PaperPluginLogger(description);
++        return getLogger((PluginMeta) description);
++    }
++
++    @NotNull
++    public static Logger getLogger(@NotNull PluginMeta meta) {
++        Logger logger = new PaperPluginLogger(meta);
 +        if (!LogManager.getLogManager().addLogger(logger)) {
 +            // Disable this if it's going to happen across reloads anyways...
 +            //logger.log(Level.WARNING, "Could not insert plugin logger - one was already found: {}", LogManager.getLogManager().getLogger(this.getName()));
-+            logger = LogManager.getLogManager().getLogger(description.getPrefix() != null ? description.getPrefix() : description.getName());
++            logger = LogManager.getLogManager().getLogger(meta.getLoggerPrefix() != null ? meta.getLoggerPrefix() : meta.getName());
 +        }
 +
 +        return logger;
 +    }
 +
-+    private PaperPluginLogger(@NotNull PluginDescriptionFile description) {
-+        super(description.getPrefix() != null ? description.getPrefix() : description.getName(), null);
++    private PaperPluginLogger(@NotNull PluginMeta meta) {
++        super(meta.getLoggerPrefix() != null ? meta.getLoggerPrefix() : meta.getName(), null);
 +    }
 +
 +    @Override
@@ -60,58 +67,50 @@ index 0000000000000000000000000000000000000000..76f2cb9cd99cad2a9484eab2becd8c36
 +
 +}
 diff --git a/src/main/java/org/bukkit/plugin/java/JavaPlugin.java b/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
-index 1ff0e0ef1aebec5bbb0a8a09af11d07b2a3220e8..3bea5dd67ad0393160ccede4ac99a3c7baa1803b 100644
+index 7cd9f98c042dc2bb80876af35c755f81bef34651..5cd236965de12392d8c7aa81307c0ff1cc8673b1 100644
 --- a/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
 +++ b/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
-@@ -43,7 +43,7 @@ public abstract class JavaPlugin extends PluginBase {
-     private boolean naggable = true;
-     private FileConfiguration newConfig = null;
-     private File configFile = null;
--    private Logger logger = null; // Paper - PluginLogger -> Logger
-+    Logger logger = null; // Paper - PluginLogger -> Logger, package-private
- 
-     public JavaPlugin() {
-         final ClassLoader classLoader = this.getClass().getClassLoader();
-@@ -277,8 +277,11 @@ public abstract class JavaPlugin extends PluginBase {
-         this.dataFolder = dataFolder;
+@@ -291,10 +291,10 @@ public abstract class JavaPlugin extends PluginBase {
+             .orElseThrow();
+     }
+     public final void init(@NotNull PluginLoader loader, @NotNull Server server, @NotNull PluginDescriptionFile description, @NotNull File dataFolder, @NotNull File file, @NotNull ClassLoader classLoader) {
+-        init(server, description, dataFolder, file, classLoader, description);
++        init(server, description, dataFolder, file, classLoader, description, com.destroystokyo.paper.utils.PaperPluginLogger.getLogger(description));
+         this.pluginMeta = description;
+     }
+-    public final void init(@NotNull Server server, @NotNull PluginDescriptionFile description, @NotNull File dataFolder, @NotNull File file, @NotNull ClassLoader classLoader, @Nullable io.papermc.paper.plugin.configuration.PluginMeta configuration) {
++    public final void init(@NotNull Server server, @NotNull PluginDescriptionFile description, @NotNull File dataFolder, @NotNull File file, @NotNull ClassLoader classLoader, @Nullable io.papermc.paper.plugin.configuration.PluginMeta configuration, @NotNull Logger logger) {
+     // Paper end
+         this.loader = DummyPluginLoaderImplHolder.INSTANCE; // Paper
+         this.server = server;
+@@ -304,7 +304,7 @@ public abstract class JavaPlugin extends PluginBase {
          this.classLoader = classLoader;
          this.configFile = new File(dataFolder, "config.yml");
--        // Paper - Handle plugin prefix in implementation
--        this.logger = Logger.getLogger(description.getPrefix() != null ? description.getPrefix() : description.getName());
-+        // Paper start
-+        if (this.logger == null) {
-+            this.logger = com.destroystokyo.paper.utils.PaperPluginLogger.getLogger(this.description);
-+        }
-+        // Paper end
+         this.pluginMeta = configuration; // Paper
+-        this.logger = Logger.getLogger(description.getPrefix() != null ? description.getPrefix() : description.getName()); // Paper - Handle plugin prefix in implementation
++        this.logger = logger; // Paper
      }
  
      /**
 diff --git a/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java b/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
-index 6148b69af39344f758b05a28c7c572befa9b8f3f..0db641f5d5e1293b236ad0d2e3a156802ffed839 100644
+index 302319acbc257a075adfb78d9f5c49fdadf45bdc..a8ac1fb22a6fba50d69bf726b49c49ba190ab79a 100644
 --- a/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
 +++ b/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
-@@ -44,6 +44,7 @@ public final class PluginClassLoader extends URLClassLoader { // Spigot
-     private JavaPlugin pluginInit;
-     private IllegalStateException pluginState;
-     private final Set<String> seenIllegalAccess = Collections.newSetFromMap(new ConcurrentHashMap<>());
-+    private java.util.logging.Logger logger; // Paper - add field
- 
-     static {
-         ClassLoader.registerAsParallelCapable();
-@@ -62,6 +63,8 @@ public final class PluginClassLoader extends URLClassLoader { // Spigot
+@@ -65,7 +65,7 @@ public final class PluginClassLoader extends URLClassLoader implements io.paperm
          this.url = file.toURI().toURL();
          this.libraryLoader = libraryLoader;
  
+-
 +        this.logger = com.destroystokyo.paper.utils.PaperPluginLogger.getLogger(description); // Paper - Register logger early
-+
-         try {
-             Class<?> jarClass;
-             try {
-@@ -229,6 +232,7 @@ public final class PluginClassLoader extends URLClassLoader { // Spigot
+         // Paper start
+         this.dependencyContext = dependencyContext;
+         this.classLoaderGroup = io.papermc.paper.plugin.provider.classloader.PaperClassLoaderStorage.instance().registerSpigotGroup(this);
+@@ -249,7 +249,7 @@ public final class PluginClassLoader extends URLClassLoader implements io.paperm
          pluginState = new IllegalStateException("Initial initialization");
          this.pluginInit = javaPlugin;
  
-+        javaPlugin.logger = this.logger; // Paper - set logger
-         javaPlugin.init(loader, loader.server, description, dataFolder, file, this);
+-        javaPlugin.init(null, org.bukkit.Bukkit.getServer(), description, dataFolder, file, this); // Paper
++        javaPlugin.init(org.bukkit.Bukkit.getServer(), description, dataFolder, file, this, description, this.logger); // Paper
      }
- }
+ 
+     // Paper start
