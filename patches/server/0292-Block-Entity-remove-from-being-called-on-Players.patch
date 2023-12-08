@@ -12,10 +12,10 @@ Player we will look at limiting the scope of this change. It appears to
 be unintentional in the few cases we've seen so far.
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 7f595b559afc1fe0bc1159d2555050bd87b81983..4bfd0c4f7c898d6333e7e33cecd22b928b4de152 100644
+index 43fb53bfef71912695266eda459d7fa2d972cd1c..8341d66dd5cad3cebdd95cfbc995cc3e8d43d934 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -2795,6 +2795,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -2894,6 +2894,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
      public void resetCooldown() {
          getHandle().resetAttackStrengthTicker();
      }

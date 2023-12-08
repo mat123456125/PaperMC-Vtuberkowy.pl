@@ -5,7 +5,7 @@ Subject: [PATCH] Inventory#removeItemAnySlot
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java
-index 41a15ecba33c40c01f0ffdcfae687b96c03731da..287b17ba34f1261a708b9fbf41f6422d92d9c37b 100644
+index 89706da0940ac6bbb3c34f0a8815783edd6cd772..e97c7809fa6572695377e5ca63bf86e5515ef531 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java
 @@ -223,10 +223,16 @@ public class CraftInventory implements Inventory {

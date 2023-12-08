@@ -5,7 +5,7 @@ Subject: [PATCH] Dont send unnecessary sign update
 
 
 diff --git a/src/main/java/net/minecraft/world/level/block/entity/SignBlockEntity.java b/src/main/java/net/minecraft/world/level/block/entity/SignBlockEntity.java
-index 41861cb1e303213b2963e90fac6b4cbbfbbe36f7..4fe156701cf0664d0ab9472f5599fd87ee4ddeb2 100644
+index 148ea4089c4f67894b28e21e961a661a2d291925..7e4fbf3cd57c74b61cec75c02eb35756a243de17 100644
 --- a/src/main/java/net/minecraft/world/level/block/entity/SignBlockEntity.java
 +++ b/src/main/java/net/minecraft/world/level/block/entity/SignBlockEntity.java
 @@ -186,6 +186,7 @@ public class SignBlockEntity extends BlockEntity implements CommandSource { // C

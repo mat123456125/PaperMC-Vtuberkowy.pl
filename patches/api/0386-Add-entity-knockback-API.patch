@@ -5,10 +5,10 @@ Subject: [PATCH] Add entity knockback API
 
 
 diff --git a/src/main/java/org/bukkit/entity/LivingEntity.java b/src/main/java/org/bukkit/entity/LivingEntity.java
-index 68248bf3d6c84cb6debd9ddd3c0623353bed71f0..84b78742f2bac07322e8a758ca9abc6b763ccc28 100644
+index ac87b7a28553425dc45af11ac6f5089f5197ce20..eced9bfd35aa822b1ba141ea60e603bca5a137f8 100644
 --- a/src/main/java/org/bukkit/entity/LivingEntity.java
 +++ b/src/main/java/org/bukkit/entity/LivingEntity.java
-@@ -1074,5 +1074,17 @@ public interface LivingEntity extends Attributable, Damageable, ProjectileSource
+@@ -1158,5 +1158,17 @@ public interface LivingEntity extends Attributable, Damageable, ProjectileSource
              this.swingOffHand();
          }
      }

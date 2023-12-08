@@ -12,7 +12,7 @@ public net.minecraft.world.level.pathfinder.Path nodes
 
 diff --git a/src/main/java/com/destroystokyo/paper/entity/PaperPathfinder.java b/src/main/java/com/destroystokyo/paper/entity/PaperPathfinder.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7ba7add6475ff8d238897398c26de24de52c4cfd
+index 0000000000000000000000000000000000000000..064712e7b27a200b29c72076a82f4f5611fa507f
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/entity/PaperPathfinder.java
 @@ -0,0 +1,143 @@
@@ -54,14 +54,14 @@ index 0000000000000000000000000000000000000000..7ba7add6475ff8d238897398c26de24d
 +
 +    @Override
 +    public boolean hasPath() {
-+        return entity.getNavigation().getPath() != null;
++        return entity.getNavigation().getPath() != null && !entity.getNavigation().getPath().isDone();
 +    }
 +
 +    @Nullable
 +    @Override
 +    public PathResult getCurrentPath() {
 +        Path path = entity.getNavigation().getPath();
-+        return path != null ? new PaperPathResult(path) : null;
++        return path != null && !path.isDone() ? new PaperPathResult(path) : null;
 +    }
 +
 +    @Nullable
@@ -160,10 +160,10 @@ index 0000000000000000000000000000000000000000..7ba7add6475ff8d238897398c26de24d
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/world/level/pathfinder/Path.java b/src/main/java/net/minecraft/world/level/pathfinder/Path.java
-index 4ad2ac8d1e9111933fa58c47442fa1f5e8173fd3..2a335f277bd0e4b8ad0f60d8226eb8aaa80a871f 100644
+index 539dc45c3c7ffc60cf3fb47ae4df65e604e8627b..eea4c932d909145e7af848cf76e3f49dbb2deff2 100644
 --- a/src/main/java/net/minecraft/world/level/pathfinder/Path.java
 +++ b/src/main/java/net/minecraft/world/level/pathfinder/Path.java
-@@ -21,6 +21,7 @@ public class Path {
+@@ -18,6 +18,7 @@ public class Path {
      private final BlockPos target;
      private final float distToTarget;
      private final boolean reached;
@@ -172,7 +172,7 @@ index 4ad2ac8d1e9111933fa58c47442fa1f5e8173fd3..2a335f277bd0e4b8ad0f60d8226eb8aa
      public Path(List<Node> nodes, BlockPos target, boolean reachesTarget) {
          this.nodes = nodes;
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java
-index 659ccb6532506b2a8c9feb55dc5aee962f6da795..f36713771598ac5afdae5d94db10a5790949611d 100644
+index a75623fd1b2d36530c55c7a380e68b8dc7e58021..c2acbf533b5f3aebe4837512f694fe25abee65d6 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java
 @@ -15,8 +15,11 @@ import org.bukkit.loot.LootTable;
@@ -188,7 +188,7 @@ index 659ccb6532506b2a8c9feb55dc5aee962f6da795..f36713771598ac5afdae5d94db10a579
      public void setTarget(LivingEntity target) {
          Preconditions.checkState(!this.getHandle().generation, "Cannot set target during world generation");
 @@ -57,6 +60,14 @@ public abstract class CraftMob extends CraftLivingEntity implements Mob {
-         return (net.minecraft.world.entity.Mob) entity;
+         return (net.minecraft.world.entity.Mob) this.entity;
      }
  
 +    // Paper start

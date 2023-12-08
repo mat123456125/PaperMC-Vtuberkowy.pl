@@ -22,26 +22,26 @@ to take the burden of this into their own hand without having to rely on
 plugins doing unsafe things.
 
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 8a2f8b48b23ddfc86746696021e62b96016afa2f..c1558f261e80d1fbb5dc66e6db741c140c5e99b8 100644
+index 6de25b8230da167afb363f443597df383d3b8ca6..3e6430d5769afbe308703e61f7fb7474811fdf38 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -265,6 +265,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
-     private long keepAliveChallenge;
+@@ -253,6 +253,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
+     private int ackBlockChangesUpTo = -1;
      // CraftBukkit start - multithreaded fields
      private final AtomicInteger chatSpamTickCount = new AtomicInteger();
 +    private final java.util.concurrent.atomic.AtomicInteger tabSpamLimiter = new java.util.concurrent.atomic.AtomicInteger(); // Paper - configurable tab spam limits
      // CraftBukkit end
      private int dropSpamTickCount;
      private double firstGoodX;
-@@ -413,6 +414,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
-         this.server.getProfiler().pop();
+@@ -372,6 +373,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
+         this.keepConnectionAlive();
          // CraftBukkit start
          for (int spam; (spam = this.chatSpamTickCount.get()) > 0 && !this.chatSpamTickCount.compareAndSet(spam, spam - 1); ) ;
 +        if (tabSpamLimiter.get() > 0) tabSpamLimiter.getAndDecrement(); // Paper - split to seperate variable
          /* Use thread-safe field access instead
          if (this.chatSpamTickCount > 0) {
              --this.chatSpamTickCount;
-@@ -797,7 +799,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
+@@ -697,7 +699,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
      public void handleCustomCommandSuggestions(ServerboundCommandSuggestionPacket packet) {
          // PacketUtils.ensureRunningOnSameThread(packet, this, this.player.serverLevel()); // Paper - run this async
          // CraftBukkit start

@@ -8,7 +8,7 @@ pluginManagement {
 }
 
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.4.0"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.7.0"
 }
 
 if (!file(".git").exists()) {
@@ -34,14 +34,24 @@ if (!file(".git").exists()) {
 rootProject.name = "paper"
 
 for (name in listOf("Paper-API", "Paper-Server", "Paper-MojangAPI")) {
-    val projName = name.toLowerCase(Locale.ENGLISH)
+    val projName = name.lowercase(Locale.ENGLISH)
     include(projName)
     findProject(":$projName")!!.projectDir = file(name)
 }
 
-val testPlugin = file("test-plugin.settings.gradle.kts")
-if (testPlugin.exists()) {
-    apply(from = testPlugin)
-} else {
-    testPlugin.writeText("// Uncomment to enable the test plugin module\n//include(\":test-plugin\")\n")
+mapOf("test-plugin.settings.gradle.kts" to """
+        // Uncomment to enable the test plugin module
+        // include(":test-plugin")
+    """.trimIndent(),
+    "paper-api-generator.settings.gradle.kts" to """
+        // Uncomment to enable the api generator module
+        // include(":paper-api-generator")
+    """.trimIndent()
+).forEach { (fileName, text) ->
+    val settingsFile = file(fileName)
+    if (settingsFile.exists()) {
+        apply(from = settingsFile)
+    } else {
+        settingsFile.writeText(text + "\n")
+    }
 }

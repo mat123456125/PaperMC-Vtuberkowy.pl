@@ -5,10 +5,10 @@ Subject: [PATCH] Prevent bees loading chunks checking hive position
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/animal/Bee.java b/src/main/java/net/minecraft/world/entity/animal/Bee.java
-index 17d8332356c9611d6a4b1ea2c8e160b46fa704ba..b4d5a33bfc5616d69a3570c99ea0af52397f8ffb 100644
+index 010d7b910a55875f4059bbf014535653b027b0a5..98b0b91a8033ae297fee3fe655ee641e9ab08154 100644
 --- a/src/main/java/net/minecraft/world/entity/animal/Bee.java
 +++ b/src/main/java/net/minecraft/world/entity/animal/Bee.java
-@@ -497,6 +497,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
+@@ -502,6 +502,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
          } else if (this.isTooFarAway(this.hivePos)) {
              return false;
          } else {

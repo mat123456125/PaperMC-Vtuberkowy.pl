@@ -10,7 +10,7 @@ hoping that at least then we don't swap chunks, and maybe recover
 them all.
 
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkSerializer.java b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkSerializer.java
-index fce679e2b72d2ce1c8e75710041937c2c0566044..9c6a2884c34a9f6e775103da42480cd6b8c693b3 100644
+index 19b35d1c07c75b27cef9a53258a68ec5d9f721d5..e1ad2152bbd55435495bdad57a0984842e55fcb8 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkSerializer.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkSerializer.java
 @@ -70,6 +70,18 @@ import net.minecraft.world.ticks.ProtoChunkTicks;
@@ -42,7 +42,7 @@ index fce679e2b72d2ce1c8e75710041937c2c0566044..9c6a2884c34a9f6e775103da42480cd6
          nbttagcompound.putString("Status", BuiltInRegistries.CHUNK_STATUS.getKey(chunk.getStatus()).toString());
          BlendingData blendingdata = chunk.getBlendingData();
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkStorage.java b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkStorage.java
-index e4b3a70ff9f906a10f2ba3c07642193ca3269db7..a5da3333e87bcc9def785a8e742a30d38c0ecc27 100644
+index dfeda27add86be0d56ad023f7391fa21e36c5062..8ebecb588058da174b0e0e19e54fcddfeeca1422 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkStorage.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkStorage.java
 @@ -41,7 +41,7 @@ public class ChunkStorage implements AutoCloseable {
@@ -87,11 +87,11 @@ index c8298a597818227de33a4afce4698ec0666cf758..6baceb6ce9021c489be6e79d338a9704
          this.used.set(start, start + size);
      }
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
-index cda87a66fe80bf910f629c64e36c1fecbad81d77..9bae47f99336c377beb72c4b50b7f01cb4db15da 100644
+index 647ce340c81606ab86d33e1f9dec1fb0afc262d8..98c8b676fc5b2add44d6ddf5d32f85bc07ea22cb 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
-@@ -51,6 +51,355 @@ public class RegionFile implements AutoCloseable {
-     public final java.util.concurrent.locks.ReentrantLock fileLock = new java.util.concurrent.locks.ReentrantLock(true); // Paper
+@@ -50,6 +50,355 @@ public class RegionFile implements AutoCloseable {
+     public final java.util.concurrent.locks.ReentrantLock fileLock = new java.util.concurrent.locks.ReentrantLock(); // Paper
      public final Path regionFile; // Paper
  
 +    // Paper start - try to recover from RegionFile header corruption
@@ -446,7 +446,7 @@ index cda87a66fe80bf910f629c64e36c1fecbad81d77..9bae47f99336c377beb72c4b50b7f01c
      // Paper start - Cache chunk status
      private final net.minecraft.world.level.chunk.ChunkStatus[] statuses = new net.minecraft.world.level.chunk.ChunkStatus[32 * 32];
  
-@@ -78,8 +427,19 @@ public class RegionFile implements AutoCloseable {
+@@ -77,8 +426,19 @@ public class RegionFile implements AutoCloseable {
      public RegionFile(Path file, Path directory, boolean dsync) throws IOException {
          this(file, directory, RegionFileVersion.VERSION_DEFLATE, dsync);
      }
@@ -466,7 +466,7 @@ index cda87a66fe80bf910f629c64e36c1fecbad81d77..9bae47f99336c377beb72c4b50b7f01c
          this.header = ByteBuffer.allocateDirect(8192);
          this.regionFile = file; // Paper
          initOversizedState(); // Paper
-@@ -108,14 +468,16 @@ public class RegionFile implements AutoCloseable {
+@@ -107,14 +467,16 @@ public class RegionFile implements AutoCloseable {
                      RegionFile.LOGGER.warn("Region file {} has truncated header: {}", file, i);
                  }
  
@@ -488,7 +488,7 @@ index cda87a66fe80bf910f629c64e36c1fecbad81d77..9bae47f99336c377beb72c4b50b7f01c
                          // Spigot start
                          if (j1 == 255) {
                              // We're maxed out, so we need to read the proper length from the section
-@@ -124,32 +486,102 @@ public class RegionFile implements AutoCloseable {
+@@ -123,32 +485,102 @@ public class RegionFile implements AutoCloseable {
                              j1 = (realLen.getInt(0) + 4) / 4096 + 1;
                          }
                          // Spigot end
@@ -596,7 +596,7 @@ index cda87a66fe80bf910f629c64e36c1fecbad81d77..9bae47f99336c377beb72c4b50b7f01c
      @Nullable
      public synchronized DataInputStream getChunkDataInputStream(ChunkPos pos) throws IOException {
          int i = this.getOffset(pos);
-@@ -173,6 +605,11 @@ public class RegionFile implements AutoCloseable {
+@@ -172,6 +604,11 @@ public class RegionFile implements AutoCloseable {
              ((java.nio.Buffer) bytebuffer).flip(); // CraftBukkit - decompile error
              if (bytebuffer.remaining() < 5) {
                  RegionFile.LOGGER.error("Chunk {} header is truncated: expected {} but read {}", new Object[]{pos, l, bytebuffer.remaining()});
@@ -608,7 +608,7 @@ index cda87a66fe80bf910f629c64e36c1fecbad81d77..9bae47f99336c377beb72c4b50b7f01c
                  return null;
              } else {
                  int i1 = bytebuffer.getInt();
-@@ -180,6 +617,11 @@ public class RegionFile implements AutoCloseable {
+@@ -179,6 +616,11 @@ public class RegionFile implements AutoCloseable {
  
                  if (i1 == 0) {
                      RegionFile.LOGGER.warn("Chunk {} is allocated, but stream is missing", pos);
@@ -620,7 +620,7 @@ index cda87a66fe80bf910f629c64e36c1fecbad81d77..9bae47f99336c377beb72c4b50b7f01c
                      return null;
                  } else {
                      int j1 = i1 - 1;
-@@ -187,17 +629,44 @@ public class RegionFile implements AutoCloseable {
+@@ -186,17 +628,44 @@ public class RegionFile implements AutoCloseable {
                      if (RegionFile.isExternalStreamChunk(b0)) {
                          if (j1 != 0) {
                              RegionFile.LOGGER.warn("Chunk has both internal and external streams");
@@ -667,7 +667,7 @@ index cda87a66fe80bf910f629c64e36c1fecbad81d77..9bae47f99336c377beb72c4b50b7f01c
                      }
                  }
              }
-@@ -372,10 +841,15 @@ public class RegionFile implements AutoCloseable {
+@@ -371,10 +840,15 @@ public class RegionFile implements AutoCloseable {
      }
  
      private ByteBuffer createExternalStub() {
@@ -685,10 +685,10 @@ index cda87a66fe80bf910f629c64e36c1fecbad81d77..9bae47f99336c377beb72c4b50b7f01c
          return bytebuffer;
      }
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
-index d3d4d10a77af51cff4da201201bac325427fc20c..c2643f61fe5efb62d15f0798db691c76c7674a6e 100644
+index 7dee0f7d49f3492c92fceff7750e696239f840ed..134a5cf10073c27dfbc19709e81ffa75bcc73743 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
-@@ -25,6 +25,7 @@ public class RegionFileStorage implements AutoCloseable {
+@@ -24,6 +24,7 @@ public class RegionFileStorage implements AutoCloseable {
      public final Long2ObjectLinkedOpenHashMap<RegionFile> regionCache = new Long2ObjectLinkedOpenHashMap();
      private final Path folder;
      private final boolean sync;
@@ -696,7 +696,7 @@ index d3d4d10a77af51cff4da201201bac325427fc20c..c2643f61fe5efb62d15f0798db691c76
  
      // Paper start - cache regionfile does not exist state
      static final int MAX_NON_EXISTING_CACHE = 1024 * 64;
-@@ -56,6 +57,12 @@ public class RegionFileStorage implements AutoCloseable {
+@@ -55,6 +56,12 @@ public class RegionFileStorage implements AutoCloseable {
      // Paper end - cache regionfile does not exist state
  
      protected RegionFileStorage(Path directory, boolean dsync) { // Paper - protected constructor
@@ -709,7 +709,7 @@ index d3d4d10a77af51cff4da201201bac325427fc20c..c2643f61fe5efb62d15f0798db691c76
          this.folder = directory;
          this.sync = dsync;
      }
-@@ -125,7 +132,7 @@ public class RegionFileStorage implements AutoCloseable {
+@@ -122,7 +129,7 @@ public class RegionFileStorage implements AutoCloseable {
              // Paper - only create directory if not existing only - moved down
              Path path = this.folder;
              int j = chunkcoordintpair.getRegionX();
@@ -718,7 +718,7 @@ index d3d4d10a77af51cff4da201201bac325427fc20c..c2643f61fe5efb62d15f0798db691c76
              if (existingOnly && !java.nio.file.Files.exists(path1)) { // Paper start - cache regionfile does not exist state
                  this.markNonExisting(regionPos);
                  return null; // CraftBukkit
-@@ -134,7 +141,7 @@ public class RegionFileStorage implements AutoCloseable {
+@@ -131,7 +138,7 @@ public class RegionFileStorage implements AutoCloseable {
              }
              // Paper end - cache regionfile does not exist state
              FileUtil.createDirectoriesSafe(this.folder); // Paper - only create directory if not existing only - moved from above
@@ -727,7 +727,7 @@ index d3d4d10a77af51cff4da201201bac325427fc20c..c2643f61fe5efb62d15f0798db691c76
  
              this.regionCache.putAndMoveToFirst(i, regionfile1);
              // Paper start
-@@ -219,6 +226,13 @@ public class RegionFileStorage implements AutoCloseable {
+@@ -216,6 +223,13 @@ public class RegionFileStorage implements AutoCloseable {
          if (regionfile == null) {
              return null;
          }
@@ -741,7 +741,7 @@ index d3d4d10a77af51cff4da201201bac325427fc20c..c2643f61fe5efb62d15f0798db691c76
          // CraftBukkit end
          try { // Paper
          DataInputStream datainputstream = regionfile.getChunkDataInputStream(pos);
-@@ -235,6 +249,20 @@ public class RegionFileStorage implements AutoCloseable {
+@@ -232,6 +246,20 @@ public class RegionFileStorage implements AutoCloseable {
              try {
                  if (datainputstream != null) {
                      nbttagcompound = NbtIo.read((DataInput) datainputstream);

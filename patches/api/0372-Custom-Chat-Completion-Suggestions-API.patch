@@ -5,14 +5,14 @@ Subject: [PATCH] Custom Chat Completion Suggestions API
 
 
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index d2f3114d2fe708553b638010394022d09bde39cf..a175ec2744f6ae3e4823c3eaea52e7991b659851 100644
+index 9794b8f812375ad52b4caceef0bf659d8fbf9d65..f56bb863affa963615efefc35fe1f8d4b12d1253 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
-@@ -2809,6 +2809,29 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
-      * @throws IllegalArgumentException If the level is negative or greater than {@code 4} (i.e. not within {@code [0, 4]}).
-      */
+@@ -3002,6 +3002,31 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
      void sendOpLevel(byte level);
-+
+     // Paper end - sendOpLevel API
+ 
++    // Paper start - custom chat completions API
 +    /**
 +     * Adds custom chat completion suggestions that the client will
 +     * suggest when typing in chat.
@@ -35,6 +35,8 @@ index d2f3114d2fe708553b638010394022d09bde39cf..a175ec2744f6ae3e4823c3eaea52e799
 +     */
 +    @Deprecated(since = "1.20.1")
 +    void removeAdditionalChatCompletions(@NotNull java.util.Collection<String> completions);
-     // Paper end
- 
++    // Paper end - custom chat completions API
++
      // Spigot start
+     public class Spigot extends Entity.Spigot {
+ 

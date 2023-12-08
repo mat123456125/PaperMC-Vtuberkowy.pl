@@ -5,7 +5,7 @@ Subject: [PATCH] Entity#fromMobSpawner()
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 875516b17452968e53efda9d777676ec4bee0f79..16658764ddced4c8e5af6b9f86ad6e99a2b1adee 100644
+index 4e71fb3fcbd89c21e5132cfb76dcbf8cec7785dd..1d21c5d5ea84f76d4cafe9d2d22226cf50232ee1 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -388,6 +388,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
@@ -16,7 +16,7 @@ index 875516b17452968e53efda9d777676ec4bee0f79..16658764ddced4c8e5af6b9f86ad6e99
      @javax.annotation.Nullable
      private org.bukkit.util.Vector origin;
      @javax.annotation.Nullable
-@@ -2169,6 +2170,10 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
+@@ -2177,6 +2178,10 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
                  }
                  nbt.put("Paper.Origin", this.newDoubleList(origin.getX(), origin.getY(), origin.getZ()));
              }
@@ -27,7 +27,7 @@ index 875516b17452968e53efda9d777676ec4bee0f79..16658764ddced4c8e5af6b9f86ad6e99
              // Paper end
              return nbt;
          } catch (Throwable throwable) {
-@@ -2309,6 +2314,8 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
+@@ -2317,6 +2322,8 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
                  this.originWorld = originWorld;
                  origin = new org.bukkit.util.Vector(originTag.getDouble(0), originTag.getDouble(1), originTag.getDouble(2));
              }
@@ -49,10 +49,10 @@ index 7ae0465091db8e8061737bf93884afa3db49feeb..5d6403fa27521860a69a707dc4358b01
                          if (org.bukkit.craftbukkit.event.CraftEventFactory.callSpawnerSpawnEvent(entity, pos).isCancelled()) {
                              continue;
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index fa2a6f44a1c25fb6c9a19e83e7eddb2c8d28a320..83bde3f87e0861fdfd01f843ccae285b1748619a 100644
+index b4780e2a244b4cd8ab827bd844a01c3360f46b03..714a8fb1715751038c411ea7f2f0cf37ee41abd8 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -1290,5 +1290,10 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+@@ -1317,5 +1317,10 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
          //noinspection ConstantConditions
          return originVector.toLocation(world);
      }

@@ -8,10 +8,10 @@ the updates per world, so that we can re-use the same packet
 object for every player unless they have per-player time enabled.
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index ed66f20b38fb6cea0dab020d8ffdde894da86113..41181620a9fb8f9e5a8d5211d88fcb0c3063f42c 100644
+index 08f1a442137da542d23957b86db8ad4c62e771b4..950265d4ba677432b224bd8f2e5cb5076a9103fa 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -1387,12 +1387,24 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1373,12 +1373,24 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
  
          MinecraftTimings.timeUpdateTimer.startTiming(); // Spigot // Paper
          // Send time updates to everyone, it will get the right time from the world the player is in.

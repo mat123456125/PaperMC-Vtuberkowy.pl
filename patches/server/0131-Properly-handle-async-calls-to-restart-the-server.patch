@@ -30,10 +30,10 @@ will have plugins and worlds saving to the disk has a high potential to result
 in corruption/dataloss.
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 006289473c03c8484b26264c61eaf6a5e73658c0..72161fef4ff8a469e028d136f71dda86e6220d0a 100644
+index b46cffe141921e499a47dac08318f167f21a5509..092f76d1d248e04c3fa5fa346373ec1f2600ee5c 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -237,6 +237,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -233,6 +233,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      private Map<ResourceKey<Level>, ServerLevel> levels;
      private PlayerList playerList;
      private volatile boolean running;
@@ -41,7 +41,7 @@ index 006289473c03c8484b26264c61eaf6a5e73658c0..72161fef4ff8a469e028d136f71dda86
      private boolean stopped;
      private int tickCount;
      protected final Proxy proxy;
-@@ -901,7 +902,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -882,7 +883,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          if (this.playerList != null) {
              MinecraftServer.LOGGER.info("Saving players");
              this.playerList.saveAll();
@@ -50,7 +50,7 @@ index 006289473c03c8484b26264c61eaf6a5e73658c0..72161fef4ff8a469e028d136f71dda86
              try { Thread.sleep(100); } catch (InterruptedException ex) {} // CraftBukkit - SPIGOT-625 - give server at least a chance to send packets
          }
  
-@@ -952,6 +953,12 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -933,6 +934,12 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      }
  
      public void halt(boolean waitForShutdown) {
@@ -64,10 +64,10 @@ index 006289473c03c8484b26264c61eaf6a5e73658c0..72161fef4ff8a469e028d136f71dda86
          if (waitForShutdown) {
              try {
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index cf110171ba47051eab94c0195eb155b685a25dca..bc96f426d488d2a206b763dccdc4034fe24f269d 100644
+index bba11f3ad244bf9f3b7e6006128ce5e4228ab531..845a90426545b554aaf5c278723c107ba9791270 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -1181,8 +1181,15 @@ public abstract class PlayerList {
+@@ -1175,8 +1175,15 @@ public abstract class PlayerList {
      }
  
      public void removeAll() {
@@ -84,11 +84,11 @@ index cf110171ba47051eab94c0195eb155b685a25dca..bc96f426d488d2a206b763dccdc4034f
          }
          // CraftBukkit end
 diff --git a/src/main/java/org/spigotmc/RestartCommand.java b/src/main/java/org/spigotmc/RestartCommand.java
-index 94d8ba376cd1f024b244654cac9bb62bb19e3060..a142a56a920e153ed84c08cece993f10d76f7793 100644
+index 882e93ad4471e3688f2fcfb1e6f16926786ee5e7..14eadb0f81dfad072d82d7793cce1a4dd3f2c5f0 100644
 --- a/src/main/java/org/spigotmc/RestartCommand.java
 +++ b/src/main/java/org/spigotmc/RestartCommand.java
-@@ -46,86 +46,134 @@ public class RestartCommand extends Command
-         org.spigotmc.AsyncCatcher.shuttingDown = true; // Paper
+@@ -45,86 +45,134 @@ public class RestartCommand extends Command
+         AsyncCatcher.enabled = false; // Disable async catcher incase it interferes with us
          try
          {
 -            String[] split = restartScript.split( " " );

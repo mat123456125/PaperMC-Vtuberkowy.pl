@@ -7,10 +7,10 @@ Subject: [PATCH] Add more Witch API
 public net.minecraft.world.entity.monster.Witch usingTime
 
 diff --git a/src/main/java/net/minecraft/world/entity/monster/Witch.java b/src/main/java/net/minecraft/world/entity/monster/Witch.java
-index df024c3108df807772fc487f5c59004a59938bf2..701f6bf1d558cf0ec4bc1abb9e1f66d96ea5a6c9 100644
+index ca24b592273208e61e0e0ba59b7e5a3c11ebf952..580dff41d746d9591f718081d9dfe4ac77e7eeaa 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/Witch.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/Witch.java
-@@ -157,21 +157,11 @@ public class Witch extends Raider implements RangedAttackMob {
+@@ -160,21 +160,10 @@ public class Witch extends Raider implements RangedAttackMob {
                  }
  
                  if (potionregistry != null) {
@@ -28,13 +28,13 @@ index df024c3108df807772fc487f5c59004a59938bf2..701f6bf1d558cf0ec4bc1abb9e1f66d9
 -                    }
 -
 -                    AttributeInstance attributemodifiable = this.getAttribute(Attributes.MOVEMENT_SPEED);
- 
--                    attributemodifiable.removeModifier(Witch.SPEED_MODIFIER_DRINKING);
+-
+-                    attributemodifiable.removeModifier(Witch.SPEED_MODIFIER_DRINKING.getId());
 -                    attributemodifiable.addTransientModifier(Witch.SPEED_MODIFIER_DRINKING);
                  }
              }
  
-@@ -183,6 +173,24 @@ public class Witch extends Raider implements RangedAttackMob {
+@@ -186,6 +175,24 @@ public class Witch extends Raider implements RangedAttackMob {
          super.aiStep();
      }
  
@@ -51,7 +51,7 @@ index df024c3108df807772fc487f5c59004a59938bf2..701f6bf1d558cf0ec4bc1abb9e1f66d9
 +
 +        AttributeInstance attributemodifiable = this.getAttribute(Attributes.MOVEMENT_SPEED);
 +
-+        attributemodifiable.removeModifier(Witch.SPEED_MODIFIER_DRINKING);
++        attributemodifiable.removeModifier(Witch.SPEED_MODIFIER_DRINKING.getId());
 +        attributemodifiable.addTransientModifier(Witch.SPEED_MODIFIER_DRINKING);
 +    }
 +    // Paper end
@@ -60,12 +60,12 @@ index df024c3108df807772fc487f5c59004a59938bf2..701f6bf1d558cf0ec4bc1abb9e1f66d9
      public SoundEvent getCelebrateSound() {
          return SoundEvents.WITCH_CELEBRATE;
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftWitch.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftWitch.java
-index eada1f0ff10d4c00f82a6f4411fe18b7184e9901..9039db1a72009342063d4db08e18e6aee18836e8 100644
+index 5024a102fe71d7013bc809bb4140763bd4c466e7..0acb96ae2102ab6af4b5610254ab3a1408ed9822 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftWitch.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftWitch.java
-@@ -3,6 +3,13 @@ package org.bukkit.craftbukkit.entity;
+@@ -2,6 +2,13 @@ package org.bukkit.craftbukkit.entity;
+ 
  import org.bukkit.craftbukkit.CraftServer;
- import org.bukkit.entity.EntityType;
  import org.bukkit.entity.Witch;
 +// Paper start
 +import com.destroystokyo.paper.entity.CraftRangedEntity;
@@ -77,7 +77,7 @@ index eada1f0ff10d4c00f82a6f4411fe18b7184e9901..9039db1a72009342063d4db08e18e6ae
  
  public class CraftWitch extends CraftRaider implements Witch, com.destroystokyo.paper.entity.CraftRangedEntity<net.minecraft.world.entity.monster.Witch> { // Paper
      public CraftWitch(CraftServer server, net.minecraft.world.entity.monster.Witch entity) {
-@@ -28,4 +35,23 @@ public class CraftWitch extends CraftRaider implements Witch, com.destroystokyo.
+@@ -22,4 +29,23 @@ public class CraftWitch extends CraftRaider implements Witch, com.destroystokyo.
      public boolean isDrinkingPotion() {
          return this.getHandle().isDrinkingPotion();
      }

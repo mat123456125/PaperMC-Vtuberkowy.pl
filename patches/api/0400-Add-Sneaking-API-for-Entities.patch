@@ -5,10 +5,10 @@ Subject: [PATCH] Add Sneaking API for Entities
 
 
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index 3f3ea5bb6b3ea6f55b5cd699f1c01ac159619add..a2a423d4e4c2702ba5967223cab0432dd7d04732 100644
+index 368d8da056e41103ad10dde177cc244148c0130e..d601145b41f7e8d0441c0db7ac98a03361866739 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
-@@ -765,6 +765,25 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+@@ -777,6 +777,25 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
      @NotNull
      Pose getPose();
  
@@ -35,10 +35,10 @@ index 3f3ea5bb6b3ea6f55b5cd699f1c01ac159619add..a2a423d4e4c2702ba5967223cab0432d
       * Get the category of spawn to which this entity belongs.
       *
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index b11d6e190407b0ab0d9ff25c2c13f04ae907f612..14a8831aabe7c7f1803151b382e27c606e7a049f 100644
+index e356a0927517d2e5a836e9e39514129f2ac5f54d..b6ddd0035c5e85fcae8e6c317503aabf93e78409 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
-@@ -310,6 +310,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -414,6 +414,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       *
       * @return true if player is in sneak mode
       */
@@ -46,7 +46,7 @@ index b11d6e190407b0ab0d9ff25c2c13f04ae907f612..14a8831aabe7c7f1803151b382e27c60
      public boolean isSneaking();
  
      /**
-@@ -317,6 +318,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -421,6 +422,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       *
       * @param sneak true if player should appear sneaking
       */

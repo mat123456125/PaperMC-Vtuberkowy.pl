@@ -5,10 +5,10 @@ Subject: [PATCH] Make shield blocking delay configurable
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-index c3ad63e1882d53f4207f4f08b55088d175360e8d..f894ffb7c9575d7337353ab8aaaf0b9607a92146 100644
+index 1371e57840727fee82186c44618064e8e147d260..91de8c2ca2bd681c8289ce0c59f3ddb1d56be83e 100644
 --- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-@@ -3760,12 +3760,24 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -3806,12 +3806,24 @@ public abstract class LivingEntity extends Entity implements Attackable {
          if (this.isUsingItem() && !this.useItem.isEmpty()) {
              Item item = this.useItem.getItem();
  
@@ -35,10 +35,10 @@ index c3ad63e1882d53f4207f4f08b55088d175360e8d..f894ffb7c9575d7337353ab8aaaf0b96
          return this.isShiftKeyDown();
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
-index 0fb61f37da9ef3e33803b41bd72e0bda5425eceb..b02d668243478c2cdc3d0212cec6f2e12a80414f 100644
+index 0dd733873606ae47deb5956ed1170d4b9ad3b890..d38f1661c1d5bfc4a0c5601bfac959b7527022ed 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
-@@ -788,5 +788,15 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+@@ -810,5 +810,15 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
      public void setArrowsStuck(final int arrows) {
          this.getHandle().setArrowCount(arrows);
      }

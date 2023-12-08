@@ -7,10 +7,10 @@ Subject: [PATCH] Add sun related API
 public net.minecraft.world.entity.Mob isSunBurnTick()Z
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index e7aa0e6d78765836a31965ef9c518bfef17e2b03..b005c956311612bc16b57e0ec9a4f832d9243dce 100644
+index e8229f2004b3a729417e99897b641e5bde0fa781..c92b931e2a54122e7a7aeafc5f88faee59c5e0fb 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-@@ -692,6 +692,13 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+@@ -695,6 +695,13 @@ public class CraftWorld extends CraftRegionAccessor implements World {
          }
      }
  
@@ -23,9 +23,9 @@ index e7aa0e6d78765836a31965ef9c518bfef17e2b03..b005c956311612bc16b57e0ec9a4f832
 +
      @Override
      public long getGameTime() {
-         return world.levelData.getGameTime();
+         return this.world.levelData.getGameTime();
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java
-index f36713771598ac5afdae5d94db10a5790949611d..c92f7f31c3bf96f22fb1d2e783b14b80512448a0 100644
+index c2acbf533b5f3aebe4837512f694fe25abee65d6..74843d1fa344497d35f05d0b04f650edd1e0f3a1 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java
 @@ -93,4 +93,11 @@ public abstract class CraftMob extends CraftLivingEntity implements Mob {

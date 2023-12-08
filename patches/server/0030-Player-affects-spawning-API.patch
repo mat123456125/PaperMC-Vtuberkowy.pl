@@ -21,10 +21,10 @@ index 984a13267cc1bb960507bc9231359bb4bb837205..668a7c3f36cdbe48e472cb810b27ae4a
      public static Predicate<Entity> withinDistance(double x, double y, double z, double max) {
          double d4 = max * max;
 diff --git a/src/main/java/net/minecraft/world/entity/Mob.java b/src/main/java/net/minecraft/world/entity/Mob.java
-index 9e17033b801676f9db7739bd2ed710744f42defd..3500fd0045ad670de818dc170d9c68da643592e0 100644
+index 6e4980b0e6505f8da90d1d63584ef69f899896ea..2aa3df6ef2da77fa51c11d64124ac55a3769f567 100644
 --- a/src/main/java/net/minecraft/world/entity/Mob.java
 +++ b/src/main/java/net/minecraft/world/entity/Mob.java
-@@ -840,7 +840,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
+@@ -848,7 +848,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
          if (this.level().getDifficulty() == Difficulty.PEACEFUL && this.shouldDespawnInPeaceful()) {
              this.discard();
          } else if (!this.isPersistenceRequired() && !this.requiresCustomPersistence()) {
@@ -47,7 +47,7 @@ index c7ab59aa0e2fd0f3e7252647ddb25b82ac604830..8f20239f3ef7ebe41fac8ee6e024c36d
  
      @Override
 diff --git a/src/main/java/net/minecraft/world/entity/monster/Silverfish.java b/src/main/java/net/minecraft/world/entity/monster/Silverfish.java
-index 1d1bd8c8088e9dfbcbd7e9d2971b6241614fc5d6..d99923c355e50bfa4682dd147d83dd1cf58553f1 100644
+index 96181e8925aef7f3d0a2010305caf1f6d9bcfcc9..6f452605e9dc9ebd9980eae9fdeea34417a37a88 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/Silverfish.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/Silverfish.java
 @@ -127,7 +127,7 @@ public class Silverfish extends Monster {
@@ -60,10 +60,10 @@ index 1d1bd8c8088e9dfbcbd7e9d2971b6241614fc5d6..d99923c355e50bfa4682dd147d83dd1c
              return false;
          }
 diff --git a/src/main/java/net/minecraft/world/entity/monster/Zombie.java b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
-index b32e55685d2a3f571828ed3cf69cb985ccaaa931..86dc8bdfdc4eabef2266f3409366b373fb0ae13d 100644
+index 37824f2470c7ddb77216ffbf4da02cc10a95a171..0c9a91990376482bc16f74a8b183ebf049ee1949 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/Zombie.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
-@@ -325,7 +325,7 @@ public class Zombie extends Monster {
+@@ -326,7 +326,7 @@ public class Zombie extends Monster {
  
                      if (NaturalSpawner.isSpawnPositionOk(entitypositiontypes_surface, this.level(), blockposition, entitytypes) && SpawnPlacements.checkSpawnRules(entitytypes, worldserver, MobSpawnType.REINFORCEMENT, blockposition, this.level().random)) {
                          entityzombie.setPos((double) i1, (double) j1, (double) k1);
@@ -73,10 +73,10 @@ index b32e55685d2a3f571828ed3cf69cb985ccaaa931..86dc8bdfdc4eabef2266f3409366b373
                              entityzombie.finalizeSpawn(worldserver, this.level().getCurrentDifficultyAt(entityzombie.blockPosition()), MobSpawnType.REINFORCEMENT, (SpawnGroupData) null, (CompoundTag) null);
                              worldserver.addFreshEntityWithPassengers(entityzombie, CreatureSpawnEvent.SpawnReason.REINFORCEMENTS); // CraftBukkit
 diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
-index a76f1ed7b8dc1aacda987931772cb3bf8f29be42..c20753645585143421eb544a03884f0765eafb8b 100644
+index 37629bf1193e220bcf872c714c55e0708d9fd7e0..45a5baf2f6e868fd5b41be1204bee46fb2e631b5 100644
 --- a/src/main/java/net/minecraft/world/entity/player/Player.java
 +++ b/src/main/java/net/minecraft/world/entity/player/Player.java
-@@ -183,6 +183,9 @@ public abstract class Player extends LivingEntity {
+@@ -184,6 +184,9 @@ public abstract class Player extends LivingEntity {
      @Nullable
      public FishingHook fishing;
      protected float hurtDir;
@@ -100,7 +100,7 @@ index ad5d8db9fb44f8e47edc82f9ba62872802bfa380..124703a7c043b6c3b651fa1a81c5ba3e
  
      public void clientTick(Level world, BlockPos pos) {
 diff --git a/src/main/java/net/minecraft/world/level/EntityGetter.java b/src/main/java/net/minecraft/world/level/EntityGetter.java
-index be6e3e21ad62da01e5e2dd78e300cbc8efdbeb42..ea98625fe7c00743b8df74a24e6d4b75df4189a5 100644
+index 2ec2b1d9d987c7f31c685aec3d3c87f42758c94b..36d793b492d9776ee36f8285b5bab09e6463cdce 100644
 --- a/src/main/java/net/minecraft/world/level/EntityGetter.java
 +++ b/src/main/java/net/minecraft/world/level/EntityGetter.java
 @@ -82,6 +82,11 @@ public interface EntityGetter {
@@ -137,21 +137,18 @@ index be6e3e21ad62da01e5e2dd78e300cbc8efdbeb42..ea98625fe7c00743b8df74a24e6d4b75
          for(Player player : this.players()) {
              if (EntitySelector.NO_SPECTATORS.test(player) && EntitySelector.LIVING_ENTITY_STILL_ALIVE.test(player)) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 07934c6b9fc1412a404c8c1fdb704cf8adccfb08..824d78bacadecdf485cf5f07793e5e8a84af0ddb 100644
+index 5e495f89139689ca37982c7b0b79eaf50d444435..ed70dc4b4dfd57af877c42ff579296ce5cebadbd 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -2165,8 +2165,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
-     @Override
-     public String getLocale() {
-         return this.getHandle().locale;
-+
-+    }
-+
+@@ -2251,6 +2251,17 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         return this.getHandle().language;
+     }
+ 
 +    // Paper start
 +    public void setAffectsSpawning(boolean affects) {
 +        this.getHandle().affectsSpawning = affects;
-     }
- 
++    }
++
 +    @Override
 +    public boolean getAffectsSpawning() {
 +        return this.getHandle().affectsSpawning;

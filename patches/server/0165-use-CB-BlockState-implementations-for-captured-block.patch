@@ -18,7 +18,7 @@ the blockstate that will be valid for restoration, as opposed to dropping
 information on restoration when the event is cancelled.
 
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index 79e23503b7082633de654f04575b8323ea887e44..b282f32c95b23b69156970d76171772218b87bc7 100644
+index 22dab285bbcea77d04a8625b025f054c625cadd4..ce24a52b2b9fb0ae7cfb085a204de8780bc8f5d6 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
 @@ -154,7 +154,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
@@ -30,7 +30,7 @@ index 79e23503b7082633de654f04575b8323ea887e44..b282f32c95b23b69156970d761717722
      public Map<BlockPos, BlockEntity> capturedTileEntities = new HashMap<>();
      public List<ItemEntity> captureDrops;
      public final it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap<SpawnCategory> ticksPerSpawnCategory = new it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap<>();
-@@ -385,7 +385,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+@@ -469,7 +469,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
      public boolean setBlock(BlockPos pos, BlockState state, int flags, int maxUpdateDepth) {
          // CraftBukkit start - tree generation
          if (this.captureTreeGeneration) {
@@ -39,7 +39,7 @@ index 79e23503b7082633de654f04575b8323ea887e44..b282f32c95b23b69156970d761717722
              if (blockstate == null) {
                  blockstate = CapturedBlockState.getTreeBlockState(this, pos, flags);
                  this.capturedBlockStates.put(pos.immutable(), blockstate);
-@@ -405,7 +405,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+@@ -489,7 +489,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
              // CraftBukkit start - capture blockstates
              boolean captured = false;
              if (this.captureBlockStates && !this.capturedBlockStates.containsKey(pos)) {
@@ -49,7 +49,7 @@ index 79e23503b7082633de654f04575b8323ea887e44..b282f32c95b23b69156970d761717722
                  this.capturedBlockStates.put(pos.immutable(), blockstate);
                  captured = true;
              }
-@@ -611,7 +612,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+@@ -695,7 +696,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
      public BlockState getBlockState(BlockPos pos) {
          // CraftBukkit start - tree generation
          if (this.captureTreeGeneration) {

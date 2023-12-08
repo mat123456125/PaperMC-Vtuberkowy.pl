@@ -6,10 +6,10 @@ Subject: [PATCH] Book Size Limits
 Puts some limits on the size of books.
 
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 024b5fe3eb90c447522141454d3f733e5381bb24..ee150e432cb8ca69749dc20c8d2140c2b49bcdc2 100644
+index 52b386b608fab59fe930885c0951f9674a257d69..78b902277521e2e6b33c971f61d27193ab2fc4f8 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -1124,6 +1124,45 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
+@@ -1024,6 +1024,45 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
  
      @Override
      public void handleEditBook(ServerboundEditBookPacket packet) {

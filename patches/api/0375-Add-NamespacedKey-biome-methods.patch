@@ -6,10 +6,10 @@ Subject: [PATCH] Add NamespacedKey biome methods
 Co-authored-by: Thonk <30448663+ExcessiveAmountsOfZombies@users.noreply.github.com>
 
 diff --git a/src/main/java/org/bukkit/UnsafeValues.java b/src/main/java/org/bukkit/UnsafeValues.java
-index fed8f959f87f82a7f8fb8afe770f5cb73fcf27b2..c661eab343ae76488de701630424e2d589f44fc0 100644
+index fc0356b0600946af0a46312cee16b080a7769ae2..815b16338ed5f90daf24edc5be14a6f49e978832 100644
 --- a/src/main/java/org/bukkit/UnsafeValues.java
 +++ b/src/main/java/org/bukkit/UnsafeValues.java
-@@ -222,5 +222,32 @@ public interface UnsafeValues {
+@@ -230,5 +230,32 @@ public interface UnsafeValues {
       * @throws IllegalArgumentException if {@link Material#isBlock()} is false
       */
      boolean isCollidable(@org.jetbrains.annotations.NotNull Material material);

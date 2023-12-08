@@ -4,36 +4,11 @@ Date: Wed, 2 Mar 2016 14:48:03 -0600
 Subject: [PATCH] Disable explosion knockback
 
 
-diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-index 3fa9f639a598294b4956c6525fc8a630ae10da2d..fcc82ba0c632362285903bcdcc6c65069419f295 100644
---- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
-+++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-@@ -1454,10 +1454,12 @@ public abstract class LivingEntity extends Entity implements Attackable {
-                 }
-             }
- 
-+            boolean knockbackCancelled = this.level().paperConfig().environment.disableExplosionKnockback && source.is(DamageTypeTags.IS_EXPLOSION) && this instanceof net.minecraft.world.entity.player.Player; // Paper - Disable explosion knockback
-             if (flag1) {
-                 if (flag) {
-                     this.level().broadcastEntityEvent(this, (byte) 29);
-                 } else {
-+                    if (!knockbackCancelled) // Paper - Disable explosion knockback
-                     this.level().broadcastDamageEvent(this, source);
-                 }
- 
-@@ -1481,6 +1483,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
-                 }
-             }
- 
-+            if (knockbackCancelled) this.level().broadcastEntityEvent(this, (byte) 2); // Paper - Disable explosion knockback
-             if (this.isDeadOrDying()) {
-                 if (!this.checkTotemDeathProtection(source)) {
-                     SoundEvent soundeffect = this.getDeathSound();
 diff --git a/src/main/java/net/minecraft/world/level/Explosion.java b/src/main/java/net/minecraft/world/level/Explosion.java
-index 925d37ca684e7e6a3ad88e6e040f3599225f0b1d..401076c5350429052994d98c414a83a21f908010 100644
+index 03151b8042912882ebb969dda16cc378562a0005..aea135503da20b7c4e2c6cd2dba81998f101b0c4 100644
 --- a/src/main/java/net/minecraft/world/level/Explosion.java
 +++ b/src/main/java/net/minecraft/world/level/Explosion.java
-@@ -262,7 +262,7 @@ public class Explosion {
+@@ -264,7 +264,7 @@ public class Explosion {
                          if (entity instanceof LivingEntity) {
                              LivingEntity entityliving = (LivingEntity) entity;
  
@@ -42,7 +17,7 @@ index 925d37ca684e7e6a3ad88e6e040f3599225f0b1d..401076c5350429052994d98c414a83a2
                          } else {
                              d14 = d13;
                          }
-@@ -276,7 +276,7 @@ public class Explosion {
+@@ -278,7 +278,7 @@ public class Explosion {
                          if (entity instanceof Player) {
                              Player entityhuman = (Player) entity;
  

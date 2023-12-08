@@ -5,10 +5,10 @@ Subject: [PATCH] Collision API
 
 
 diff --git a/src/main/java/org/bukkit/RegionAccessor.java b/src/main/java/org/bukkit/RegionAccessor.java
-index 8f50eb9b902236f5e039f5d26f3ca9a044b01a75..0d9184abd7090a5123a990f76847ee9b8971f735 100644
+index 87489972dff661c7c9ec4d128e25e2f7666b598e..14edb1b4caeda0c8aecf3528bd0005fafa6197ff 100644
 --- a/src/main/java/org/bukkit/RegionAccessor.java
 +++ b/src/main/java/org/bukkit/RegionAccessor.java
-@@ -469,5 +469,15 @@ public interface RegionAccessor extends Keyed { // Paper
+@@ -464,5 +464,15 @@ public interface RegionAccessor extends Keyed { // Paper
       * @return whether a line of sight exists between {@code from} and {@code to}
       */
      public boolean lineOfSightExists(@NotNull Location from, @NotNull Location to);
@@ -25,10 +25,10 @@ index 8f50eb9b902236f5e039f5d26f3ca9a044b01a75..0d9184abd7090a5123a990f76847ee9b
      // Paper end
  }
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index 97f0bc6573c8ba09de77061b6312b91cd713221d..3f3ea5bb6b3ea6f55b5cd699f1c01ac159619add 100644
+index a7e0454344b145242a19eb8020c9c67b18368bdd..368d8da056e41103ad10dde177cc244148c0130e 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
-@@ -913,4 +913,26 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+@@ -927,4 +927,26 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
       */
      boolean isInPowderedSnow();
      // Paper end

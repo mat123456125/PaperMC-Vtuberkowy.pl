@@ -4,11 +4,59 @@ Date: Thu, 2 Feb 2023 16:40:11 +0100
 Subject: [PATCH] Add Entity Body Yaw API
 
 
+diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
+index d601145b41f7e8d0441c0db7ac98a03361866739..07f111b944209dbd395620bae603c42752d1cf25 100644
+--- a/src/main/java/org/bukkit/entity/Entity.java
++++ b/src/main/java/org/bukkit/entity/Entity.java
+@@ -945,6 +945,43 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+      * @return true if in powdered snow.
+      */
+     boolean isInPowderedSnow();
++
++    /**
++     * Gets the x-coordinate of this entity
++     *
++     * @return x-coordinate
++     */
++    double getX();
++
++    /**
++     * Gets the y-coordinate of this entity
++     *
++     * @return y-coordinate
++     */
++    double getY();
++
++    /**
++     * Gets the z-coordinate of this entity
++     *
++     * @return z-coordinate
++     */
++    double getZ();
++
++    /**
++     * Gets this entity's pitch
++     *
++     * @see Location#getPitch()
++     * @return the entity's pitch
++     */
++    float getPitch();
++
++    /**
++     * Gets this entity's yaw
++     *
++     * @see Location#getYaw()
++     * @return the entity's yaw
++     */
++    float getYaw();
+     // Paper end
+ 
+     // Paper Start - Collision API
 diff --git a/src/main/java/org/bukkit/entity/LivingEntity.java b/src/main/java/org/bukkit/entity/LivingEntity.java
-index ec5fe22b8092c8fc837e5c36e4f17053e48a77a8..ffca32ae2464ea5a669029079a50585ca259a4f8 100644
+index 4682df5d422c24c2d145bd28bc3d0fa8b1cd6ce8..bd5e53372ce860924f5403dca6b0c45878a9e4d2 100644
 --- a/src/main/java/org/bukkit/entity/LivingEntity.java
 +++ b/src/main/java/org/bukkit/entity/LivingEntity.java
-@@ -1133,5 +1133,21 @@ public interface LivingEntity extends Attributable, Damageable, ProjectileSource
+@@ -1217,5 +1217,21 @@ public interface LivingEntity extends Attributable, Damageable, ProjectileSource
       * @param amount the amount of damage to do
       */
      void damageItemStack(org.bukkit.inventory.@NotNull EquipmentSlot slot, int amount);

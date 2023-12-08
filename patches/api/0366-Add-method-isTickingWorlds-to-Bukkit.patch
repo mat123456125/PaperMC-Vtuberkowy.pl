@@ -5,10 +5,10 @@ Subject: [PATCH] Add method isTickingWorlds() to Bukkit.
 
 
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index ac6a49e39790aa9f12c7d98990f4cac297200cb0..ef36d793ab77c7b7208f8f5994815599cff470d1 100644
+index 3722fdcff8f0154d5580bc7c4b0badbf71d3c2c2..65db3a8b736dc3c9080616517813119ebc722292 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
-@@ -774,12 +774,26 @@ public final class Bukkit {
+@@ -776,12 +776,26 @@ public final class Bukkit {
          return server.getWorlds();
      }
  
@@ -35,7 +35,7 @@ index ac6a49e39790aa9f12c7d98990f4cac297200cb0..ef36d793ab77c7b7208f8f5994815599
       *
       * @param creator the options to use when creating the world
       * @return newly created or loaded world
-@@ -791,6 +805,9 @@ public final class Bukkit {
+@@ -793,6 +807,9 @@ public final class Bukkit {
  
      /**
       * Unloads a world with the given name.
@@ -45,7 +45,7 @@ index ac6a49e39790aa9f12c7d98990f4cac297200cb0..ef36d793ab77c7b7208f8f5994815599
       *
       * @param name Name of the world to unload
       * @param save whether to save the chunks before unloading
-@@ -802,6 +819,9 @@ public final class Bukkit {
+@@ -804,6 +821,9 @@ public final class Bukkit {
  
      /**
       * Unloads the given world.
@@ -56,10 +56,10 @@ index ac6a49e39790aa9f12c7d98990f4cac297200cb0..ef36d793ab77c7b7208f8f5994815599
       * @param world the world to unload
       * @param save whether to save the chunks before unloading
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 18f4ae463f0e1406842c451b91f333a1bfabae69..5b225bbb128893d67251a96ab318035802a0cf76 100644
+index 759e62bbcccc01513c0781ee989bfdc1ab38698e..af2bbeff54f0044f51bf0df17727b2f8bec33fe4 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -647,34 +647,55 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+@@ -649,34 +649,55 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      @NotNull
      public List<World> getWorlds();
  

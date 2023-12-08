@@ -5,7 +5,7 @@ Subject: [PATCH] Allow disabling armour stand ticking
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java b/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java
-index a59381646031a1a99c98c8c6ad9de7efc96b774a..719f68f96e58ddcdd3592131c691d21263c81915 100644
+index 4859a4c78e59745ef75155bc8d6915fce5a217d8..5176e17e39719def9a97473b87cebf1719653e60 100644
 --- a/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java
 +++ b/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java
 @@ -93,9 +93,16 @@ public class ArmorStand extends LivingEntity {
@@ -54,7 +54,7 @@ index a59381646031a1a99c98c8c6ad9de7efc96b774a..719f68f96e58ddcdd3592131c691d212
          CompoundTag nbttagcompound1 = nbt.getCompound("Pose");
  
          this.readPose(nbttagcompound1);
-@@ -663,7 +678,29 @@ public class ArmorStand extends LivingEntity {
+@@ -671,7 +686,29 @@ public class ArmorStand extends LivingEntity {
  
      @Override
      public void tick() {
@@ -67,7 +67,7 @@ index a59381646031a1a99c98c8c6ad9de7efc96b774a..719f68f96e58ddcdd3592131c691d212
 +
 +            if (this.noTickEquipmentDirty) {
 +                this.noTickEquipmentDirty = false;
-+                this.detectEquipmentUpdates();
++                this.detectEquipmentUpdatesPublic();
 +            }
 +
 +            return;
@@ -84,7 +84,7 @@ index a59381646031a1a99c98c8c6ad9de7efc96b774a..719f68f96e58ddcdd3592131c691d212
          Rotations vector3f = (Rotations) this.entityData.get(ArmorStand.DATA_HEAD_POSE);
  
          if (!this.headPose.equals(vector3f)) {
-@@ -792,31 +829,37 @@ public class ArmorStand extends LivingEntity {
+@@ -800,31 +837,37 @@ public class ArmorStand extends LivingEntity {
      public void setHeadPose(Rotations angle) {
          this.headPose = angle;
          this.entityData.set(ArmorStand.DATA_HEAD_POSE, angle);
@@ -123,10 +123,10 @@ index a59381646031a1a99c98c8c6ad9de7efc96b774a..719f68f96e58ddcdd3592131c691d212
  
      public Rotations getHeadPose() {
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftArmorStand.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftArmorStand.java
-index 06cedeea447f53d100e32a6eba6f83b4719cb231..82b9ee993b0d2e7e0685231f7bad2b85756ec959 100644
+index fc3b98746a558b3ad6c89543170225bdae1e63ba..f4d46cd34fb97ebbf2e95d905d315b93add958b8 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftArmorStand.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftArmorStand.java
-@@ -238,5 +238,16 @@ public class CraftArmorStand extends CraftLivingEntity implements ArmorStand {
+@@ -232,5 +232,16 @@ public class CraftArmorStand extends CraftLivingEntity implements ArmorStand {
      public void setCanMove(boolean move) {
          getHandle().canMove = move;
      }

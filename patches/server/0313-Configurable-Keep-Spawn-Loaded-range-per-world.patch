@@ -6,10 +6,10 @@ Subject: [PATCH] Configurable Keep Spawn Loaded range per world
 This lets you disable it for some worlds and lower it for others.
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 95c2be1ee4bca53c9ea78e3a32aaf3a6395381a7..cd57953e31c1f0f51553be113d84760f24b061b0 100644
+index fb2851e94c178f49ee8046176b196c63254907e7..ef6d98d503fdca4322000278de4cf325df56f99d 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -738,30 +738,33 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -722,30 +722,33 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
  
      // CraftBukkit start
      public void prepareLevels(ChunkProgressListener worldloadlistener, ServerLevel worldserver) {
@@ -53,7 +53,7 @@ index 95c2be1ee4bca53c9ea78e3a32aaf3a6395381a7..cd57953e31c1f0f51553be113d84760f
  
          if (true) {
              ServerLevel worldserver1 = worldserver;
-@@ -784,7 +787,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -768,7 +771,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          // this.nextTickTime = SystemUtils.getMillis() + 10L;
          this.executeModerately();
          // CraftBukkit end
@@ -63,11 +63,11 @@ index 95c2be1ee4bca53c9ea78e3a32aaf3a6395381a7..cd57953e31c1f0f51553be113d84760f
          // this.updateMobSpawningFlags();
          worldserver.setSpawnSettings(this.isSpawningMonsters(), this.isSpawningAnimals());
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index 986a509998d217228eb1dc2b5815787599e02d6b..773fea9c2c4bef931439b5663471c010d9a1297c 100644
+index 47a1fb476e3825f489fc217ef83fd273b52676a1..dc0a02f08d1c211443f35a10270110791b6fbbcc 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
-@@ -1866,12 +1866,84 @@ public class ServerLevel extends Level implements WorldGenLevel {
-         return ((MapIndex) this.getServer().overworld().getDataStorage().computeIfAbsent(MapIndex::load, MapIndex::new, "idcounts")).getFreeAuxValueForMap();
+@@ -1859,12 +1859,84 @@ public class ServerLevel extends Level implements WorldGenLevel {
+         return ((MapIndex) this.getServer().overworld().getDataStorage().computeIfAbsent(MapIndex.factory(), "idcounts")).getFreeAuxValueForMap();
      }
  
 +    // Paper start - helper function for configurable spawn radius
@@ -191,20 +191,19 @@ index 4d2348df25410a0b5364eec066880326d6667dad..286aad3205ef8a9e21a47ef07893844f
          this.maxCount = i * i;
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 944f673c4537a44afbdf43e7540835a25b4dece7..66eabbe916994e96f67e2039e6b291447753900f 100644
+index e24c43463b3997549e9a7560a464bdeb8823831e..e790c0c348ad8e2448969516d97a036aeee12fa3 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-@@ -1350,15 +1350,21 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+@@ -1353,15 +1353,21 @@ public class CraftWorld extends CraftRegionAccessor implements World {
  
      @Override
      public void setKeepSpawnInMemory(boolean keepLoaded) {
--        world.keepSpawnInMemory = keepLoaded;
 +        // Paper start - Configurable spawn radius
-+        if (keepLoaded == world.keepSpawnInMemory) {
++        if (keepLoaded == this.world.keepSpawnInMemory) {
 +            // do nothing, nothing has changed
 +            return;
 +        }
-+        this.world.keepSpawnInMemory = keepLoaded;
+         this.world.keepSpawnInMemory = keepLoaded;
          // Grab the worlds spawn chunk
          BlockPos chunkcoordinates = this.world.getSharedSpawnPos();
          if (keepLoaded) {

@@ -5,10 +5,10 @@ Subject: [PATCH] Win Screen API
 
 
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index 6cebd564b4262ae2145996612bc21e0de5356b84..06f00d016f1e46edb8f4fe0c14eb8b364900c3ef 100644
+index b9c8ca96b36050b2420c9f168bc15767f751ec23..5e1a706fb68658061ab5c29cba82d411716e5692 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
-@@ -946,6 +946,47 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -1135,6 +1135,47 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       */
      public void sendMap(@NotNull MapView map);
  
@@ -26,7 +26,7 @@ index 6cebd564b4262ae2145996612bc21e0de5356b84..06f00d016f1e46edb8f4fe0c14eb8b36
 +     *
 +     * @see #hasSeenWinScreen() 
 +     * @see #setHasSeenWinScreen(boolean) 
-+     * @see <a href="https://minecraft.fandom.com/wiki/End_Poem#Technical_details">https://minecraft.fandom.com/wiki/End_Poem#Technical_details</a>
++     * @see <a href="https://minecraft.wiki/wiki/End_Poem#Technical_details">https://minecraft.wiki/wiki/End_Poem#Technical_details</a>
 +     */
 +    public void showWinScreen();
 +
@@ -37,7 +37,7 @@ index 6cebd564b4262ae2145996612bc21e0de5356b84..06f00d016f1e46edb8f4fe0c14eb8b36
 +     * @return Whether this player has seen the win screen before
 +     * @see #setHasSeenWinScreen(boolean)
 +     * @see #showWinScreen()
-+     * @see <a href="https://minecraft.fandom.com/wiki/End_Poem">https://minecraft.fandom.com/wiki/End_Poem</a>
++     * @see <a href="https://minecraft.wiki/wiki/End_Poem">https://minecraft.wiki/wiki/End_Poem</a>
 +     */
 +    public boolean hasSeenWinScreen();
 +
@@ -48,7 +48,7 @@ index 6cebd564b4262ae2145996612bc21e0de5356b84..06f00d016f1e46edb8f4fe0c14eb8b36
 +     * @param hasSeenWinScreen Whether this player has seen the win screen before
 +     * @see #hasSeenWinScreen()
 +     * @see #showWinScreen()
-+     * @see <a href="https://minecraft.fandom.com/wiki/End_Poem">https://minecraft.fandom.com/wiki/End_Poem</a>
++     * @see <a href="https://minecraft.wiki/wiki/End_Poem">https://minecraft.wiki/wiki/End_Poem</a>
 +     */
 +    public void setHasSeenWinScreen(boolean hasSeenWinScreen);
 +    // Paper end
