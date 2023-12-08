@@ -5,13 +5,13 @@ Subject: [PATCH] Fixes for ender pearl, villiger and sand
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 6abaf7ef99800a238b29dbbb85de8c970c0806a7..7a6c1fff450577c7dde08d8cbc4915c02df74691 100644
+index fece91254b10b59474056aa730fd420f90cd7bec..2b359f2e9a91885be7fa17b7d6a54444de373600 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
-@@ -530,36 +530,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
-         return chunkMap.playerEntityTrackerTrackMaps[type.ordinal()].getObjectsInRange(MCUtil.getCoordinateKey(this));
-     }
-     // Paper end - optimise entity tracking
+@@ -501,36 +501,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
+     // Paper end
+     // Paper start - optimise entity tracking
+     final org.spigotmc.TrackingRange.TrackingRangeType trackingRangeType = org.spigotmc.TrackingRange.getTrackingRangeType(this);
 -    // Paper start - make end portalling safe
 -    public BlockPos portalBlock;
 -    public ServerLevel portalWorld;
@@ -28,7 +28,7 @@ index 6abaf7ef99800a238b29dbbb85de8c970c0806a7..7a6c1fff450577c7dde08d8cbc4915c0
 -        if (this.isPassenger() || this.isVehicle() || !this.canChangeDimensions() || this.isRemoved() || !this.valid || !this.isAlive()) {
 -            return;
 -        }
- 
+-
 -        ResourceKey<Level> resourcekey = world.getTypeKey() == LevelStem.END ? Level.OVERWORLD : Level.END; // CraftBukkit - SPIGOT-6152: send back to main overworld in custom ends
 -        ServerLevel worldserver = world.getServer().getLevel(resourcekey);
 -
@@ -43,9 +43,9 @@ index 6abaf7ef99800a238b29dbbb85de8c970c0806a7..7a6c1fff450577c7dde08d8cbc4915c0
 -    }
 -    // Paper end - make end portalling safe
  
-     public Entity(EntityType<?> type, Level world) {
-         this.id = Entity.ENTITY_COUNTER.incrementAndGet();
-@@ -3079,7 +3050,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
+     public boolean isLegacyTrackingEntity = false;
+ 
+@@ -3147,7 +3117,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
              }
  
              this.processPortalCooldown();
@@ -94,10 +94,10 @@ index 097007c1c25ba55d9916fc820dd1d1149d81f6f4..8d4526f804e1b85d951a34a80c29820a
          GossipContainer.EntityGossips entityGossips = this.getOrCreate(target);
          entityGossips.entries.mergeInt(type, value, (left, right) -> {
 diff --git a/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java b/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
-index eff81e846f696349b3bd3d26c02442f157b169f0..acfc786d1d0d932dd98530782f6765b1a825f681 100644
+index e6f75a9cac46c8e3ddba664a9d5b27b665a94cb4..f540aaa70694eb6d7a8d25f3fd05ce644c1a63b3 100644
 --- a/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
-@@ -130,11 +130,7 @@ public class FallingBlockEntity extends Entity {
+@@ -132,11 +132,7 @@ public class FallingBlockEntity extends Entity {
  
      @Override
      public void tick() {
@@ -110,7 +110,7 @@ index eff81e846f696349b3bd3d26c02442f157b169f0..acfc786d1d0d932dd98530782f6765b1
          if (this.blockState.isAir()) {
              this.discard();
          } else {
-@@ -147,11 +143,6 @@ public class FallingBlockEntity extends Entity {
+@@ -149,11 +145,6 @@ public class FallingBlockEntity extends Entity {
  
              this.move(MoverType.SELF, this.getDeltaMovement());
  
@@ -123,10 +123,10 @@ index eff81e846f696349b3bd3d26c02442f157b169f0..acfc786d1d0d932dd98530782f6765b1
              // Paper start - Configurable EntityFallingBlock height nerf
              if (this.level().paperConfig().fixes.fallingBlockHeightNerf.test(v -> this.getY() > v)) {
 diff --git a/src/main/java/net/minecraft/world/entity/npc/Villager.java b/src/main/java/net/minecraft/world/entity/npc/Villager.java
-index e30d5ae3e2900f43d7cafde71b8196f26e872841..2da2ec1fb3869d4284091bda8bb1bf0bda06fca4 100644
+index cbe2a37f74f4fb2abd0b3297699e54335aaed64f..b63752944c6bf0e46e9f6a3c7ed0001ca7a0e21d 100644
 --- a/src/main/java/net/minecraft/world/entity/npc/Villager.java
 +++ b/src/main/java/net/minecraft/world/entity/npc/Villager.java
-@@ -500,7 +500,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+@@ -501,7 +501,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
      }
  
      private void updateSpecialPrices(Player player) {
@@ -135,7 +135,7 @@ index e30d5ae3e2900f43d7cafde71b8196f26e872841..2da2ec1fb3869d4284091bda8bb1bf0b
  
          if (i != 0) {
              Iterator iterator = this.getOffers().iterator();
-@@ -777,6 +777,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+@@ -778,6 +778,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
      }
  
      public int getPlayerReputation(Player player) {
@@ -144,9 +144,9 @@ index e30d5ae3e2900f43d7cafde71b8196f26e872841..2da2ec1fb3869d4284091bda8bb1bf0b
              return true;
          });
 @@ -1017,14 +1018,14 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
-                 }
-             }
-             // Paper end
+     @Override
+     public void onReputationEventFrom(ReputationEventType interaction, Entity entity) {
+         if (interaction == ReputationEventType.ZOMBIE_VILLAGER_CURED) {
 -            this.gossips.add(entity.getUUID(), GossipType.MAJOR_POSITIVE, 20);
 -            this.gossips.add(entity.getUUID(), GossipType.MINOR_POSITIVE, 25);
 +            this.gossips.addWithGlobal(entity.getUUID(), GossipType.MAJOR_POSITIVE, 20);
@@ -164,18 +164,25 @@ index e30d5ae3e2900f43d7cafde71b8196f26e872841..2da2ec1fb3869d4284091bda8bb1bf0b
  
      }
 diff --git a/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java b/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
-index e8114d89a3129e56c0329410a49ded63cc77cb4c..783cd2280a919eef5c62b348b17ea3aeb487099f 100644
+index f5db60cbecbe69941873e064315931089fe0e48a..51350ba24a468e3d29efef49d831f451877ca870 100644
 --- a/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
 +++ b/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
-@@ -104,7 +104,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+@@ -102,11 +102,10 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+     public void tick() {
          Entity entity = this.getOwner();
  
-         if (entity instanceof Player && !entity.isAlive()) {
+-        if (entity instanceof ServerPlayer && !entity.isAlive() && this.level().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
 -            this.discard();
-+            //this.discard(); // no remove on death
-         } else {
-             super.tick();
-         }
+-        } else {
+-            super.tick();
+-        }
++        // no remove on death
++        
++        super.tick();
++        
+ 
+     }
+ 
 diff --git a/src/main/java/net/minecraft/world/level/block/EndPortalBlock.java b/src/main/java/net/minecraft/world/level/block/EndPortalBlock.java
 index 41d7cff39fc37955877668337689b4b26cd8c7cf..15befa17ec954a54d4f2cb380a58a879e8f03f8f 100644
 --- a/src/main/java/net/minecraft/world/level/block/EndPortalBlock.java
