@@ -27,12 +27,12 @@ which can be obtained in (most) package managers such as `apt` (Debian / Ubuntu;
 you will most likely use this for WSL), `homebrew` (macOS / Linux), and more:
 
 - `git` (package `git` everywhere);
-- A Java 17 or later JDK (packages vary, use Google/DuckDuckGo/etc.).
+- A Java 21 or later JDK (packages vary, use Google/DuckDuckGo/etc.).
   - [Adoptium](https://adoptium.net/) has builds for most operating systems.
-  - Paper requires JDK 17 to build, however, makes use of Gradle's
+  - Paper requires JDK 21 to build, however, makes use of Gradle's
     [Toolchains](https://docs.gradle.org/current/userguide/toolchains.html)
     feature to allow building with only JRE 11 or later installed. (Gradle will
-    automatically provision JDK 17 for compilation if it cannot find an existing
+    automatically provision JDK 21 for compilation if it cannot find an existing
     install).
 
 If you're on Windows, check
@@ -42,11 +42,11 @@ If you're compiling with Docker, you can use Adoptium's
 [`eclipse-temurin`](https://hub.docker.com/_/eclipse-temurin/) images like so:
 
 ```console
-# docker run -it -v "$(pwd)":/data --rm eclipse-temurin:17.0.1_12-jdk bash
+# docker run -it -v "$(pwd)":/data --rm eclipse-temurin:21.0.3_9-jdk bash
 Pulling image...
 
 root@abcdefg1234:/# javac -version
-javac 17.0.1
+javac 21.0.3
 ```
 
 ## Understanding Patches
@@ -204,29 +204,31 @@ when making and submitting changes.
 
 ## Formatting
 
-All modifications to non-Paper files should be marked.
+All modifications to non-Paper files should be marked. The one exception to this is
+when modifying javadoc comments, which should not have these markers.
 
-- Multi-line changes start with `// Paper start` and end with `// Paper end`;
-- You can put a comment with an explanation if it isn't obvious, like this:
-`// Paper start - reason`.
-   - The comments should generally be about the reason the change was made, what
-  it was before, or what the change is.
-   - Multi-line messages should start with `// Paper start` and use `/* Multi
-  line message here */` for the message itself.
-- One-line changes should have `// Paper` or `// Paper - reason`.
+- You need to add a comment with a short and identifiable description of the patch:
+  `// Paper start - <COMMIT DESCRIPTION>`
+    - The comments should generally be about the reason the change was made, what
+      it was before, or what the change is.
+    - After the general commit description, you can add additional information either
+      after a `;` or in the next line.
+- Multi-line changes start with `// Paper start - <COMMIT DESCRIPTION>` and end
+  with `// Paper end - <COMMIT DESCRIPTION>`.
+- One-line changes should have `// Paper - <COMMIT DESCRIPTION>` at the end of the line.
 
 Here's an example of how to mark changes by Paper:
 
 ```java
-entity.getWorld().dontbeStupid(); // Paper - was beStupid() which is bad
+entity.getWorld().dontBeStupid(); // Paper - Was beStupid(), which is bad
 entity.getFriends().forEach(Entity::explode);
-entity.a();
-entity.b();
-// Paper start - use plugin-set spawn
+entity.updateFriends();
+
+// Paper start - Use plugin-set spawn
 // entity.getWorld().explode(entity.getWorld().getSpawn());
 Location spawnLocation = ((CraftWorld)entity.getWorld()).getSpawnLocation();
 entity.getWorld().explode(new BlockPosition(spawnLocation.getX(), spawnLocation.getY(), spawnLocation.getZ()));
-// Paper end
+// Paper end - Use plugin-set spawn
 ```
 
 We generally follow the usual Java style (aka. Oracle style), or what is programmed
@@ -235,6 +237,10 @@ into most IDEs and formatters by default. There are a few notes, however:
 There are exceptions, especially in Spigot-related files
 - When in doubt or the code around your change is in a clearly different style,
 use the same style as the surrounding code.
+- Usage of the `var` keyword is heavily discouraged, as it makes reading patch files
+a lot harder  and can lead to confusion during updates due to changed return types.
+The only exception to this is if a line would otherwise be way too long/filled with
+hard to parse generics in a case where the base type itself is already obvious
 
 ### Imports
 When adding new imports to a class in a file not created by the current patch, use the fully qualified class name
@@ -317,7 +323,7 @@ Subject: [PATCH] revert serverside behavior of keepalives
 This patch intends to bump up the time that a client has to reply to the
 server back to 30 seconds as per pre 1.12.2, which allowed clients
 more than enough time to reply potentially allowing them to be less
-tempermental due to lag spikes on the network thread, e.g. that caused
+temperamental due to lag spikes on the network thread, e.g. that caused
 by plugins that are interacting with netty.
 
 We also add a system property to allow people to tweak how long the server

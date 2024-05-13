@@ -5,22 +5,22 @@ Subject: [PATCH] PlayerAttemptPickupItemEvent
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/item/ItemEntity.java b/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
-index 4885c8ff438796cf7a90e73e2db32a1877f60fa4..5744d726c4e7a970db5c1c3764d530d839d95597 100644
+index f63d1145be7b6fb76373a4ec1423fd7cedf73b63..d97e12a2dca072ae102b029fb67472dacc2c5b40 100644
 --- a/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
-@@ -36,6 +36,7 @@ import org.bukkit.entity.Player;
- import org.bukkit.event.entity.EntityPickupItemEvent;
+@@ -39,6 +39,7 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
+ import org.bukkit.event.entity.EntityRemoveEvent;
  import org.bukkit.event.player.PlayerPickupItemEvent;
  // CraftBukkit end
 +import org.bukkit.event.player.PlayerAttemptPickupItemEvent; // Paper
  
  public class ItemEntity extends Entity implements TraceableEntity {
  
-@@ -406,6 +407,22 @@ public class ItemEntity extends Entity implements TraceableEntity {
+@@ -437,6 +438,22 @@ public class ItemEntity extends Entity implements TraceableEntity {
              int remaining = i - canHold;
              boolean flyAtPlayer = false; // Paper
  
-+            // Paper start
++            // Paper start - PlayerAttemptPickupItemEvent
 +            if (this.pickupDelay <= 0) {
 +                PlayerAttemptPickupItemEvent attemptEvent = new PlayerAttemptPickupItemEvent((org.bukkit.entity.Player) player.getBukkitEntity(), (org.bukkit.entity.Item) this.getBukkitEntity(), remaining);
 +                this.level().getCraftServer().getPluginManager().callEvent(attemptEvent);
@@ -34,7 +34,7 @@ index 4885c8ff438796cf7a90e73e2db32a1877f60fa4..5744d726c4e7a970db5c1c3764d530d8
 +                    return;
 +                }
 +            }
-+            // Paper end
++            // Paper end - PlayerAttemptPickupItemEvent
 +
              if (this.pickupDelay <= 0 && canHold > 0) {
                  itemstack.setCount(canHold);

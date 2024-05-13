@@ -6,15 +6,15 @@ Subject: [PATCH] provide a configurable option to disable creeper lingering
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/monster/Creeper.java b/src/main/java/net/minecraft/world/entity/monster/Creeper.java
-index 25c4092d8d28b04b7ba5caee592b96530a08227c..6594d501f51d18f5850999cceb9febfe206ec596 100644
+index 3b496eaac4eaadadb3f366f4121ce899aa212532..01938fc75158c13c4b040fa623934ec841cbf719 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/Creeper.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/Creeper.java
-@@ -287,7 +287,7 @@ public class Creeper extends Monster implements PowerableMob {
+@@ -286,7 +286,7 @@ public class Creeper extends Monster implements PowerableMob {
      private void spawnLingeringCloud() {
          Collection<MobEffectInstance> collection = this.getActiveEffects();
  
 -        if (!collection.isEmpty()) {
-+        if (!collection.isEmpty() && !this.level().paperConfig().entities.behavior.disableCreeperLingeringEffect) { // Paper
++        if (!collection.isEmpty() && !this.level().paperConfig().entities.behavior.disableCreeperLingeringEffect) { // Paper - Option to disable creeper lingering effect
              AreaEffectCloud entityareaeffectcloud = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
  
              entityareaeffectcloud.setOwner(this); // CraftBukkit

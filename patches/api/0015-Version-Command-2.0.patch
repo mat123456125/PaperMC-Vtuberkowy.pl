@@ -56,10 +56,10 @@ index 0000000000000000000000000000000000000000..a736d7bcdc5861a01b66ba36158db1c7
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/UnsafeValues.java b/src/main/java/org/bukkit/UnsafeValues.java
-index 659405d84b5a61618576e930805da5cd3a054b4c..4604392831d19a789e4906cf1a5f0197105fd6f2 100644
+index 9082e67324f810857db26bb89ecea7e9f866f80d..da997507b96908027c49dabc6daf7c787dcad95d 100644
 --- a/src/main/java/org/bukkit/UnsafeValues.java
 +++ b/src/main/java/org/bukkit/UnsafeValues.java
-@@ -127,5 +127,12 @@ public interface UnsafeValues {
+@@ -155,5 +155,12 @@ public interface UnsafeValues {
       * @return name
       */
      String getTimingsServerName();

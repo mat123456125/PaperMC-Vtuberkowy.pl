@@ -5,16 +5,17 @@ Subject: [PATCH] Adventure
 
 Co-authored-by: zml <zml@stellardrift.ca>
 Co-authored-by: Jake Potrebic <jake.m.potrebic@gmail.com>
+Co-authored-by: Yannick Lamprecht <yannicklamprecht@live.de>
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index ecba866b84bc5f86a442bf220ab24ed8706aadf9..2377d476aee8c88d26ca715fdb756dc97749aac8 100644
+index 2f266350a787a4cfdfda1b0e760bfb7604cac43c..bae542d05c059d53199b9171bee505de818df349 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
-@@ -11,12 +11,24 @@ java {
+@@ -11,12 +11,28 @@ java {
  
- val annotationsVersion = "24.0.1"
- val bungeeCordChatVersion = "1.20-R0.1"
-+val adventureVersion = "4.14.0"
+ val annotationsVersion = "24.1.0"
+ val bungeeCordChatVersion = "1.20-R0.2"
++val adventureVersion = "4.17.0"
 +val apiAndDocs: Configuration by configurations.creating {
 +    attributes {
 +        attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.DOCUMENTATION))
@@ -32,11 +33,15 @@ index ecba866b84bc5f86a442bf220ab24ed8706aadf9..2377d476aee8c88d26ca715fdb756dc9
      api("com.google.guava:guava:32.1.2-jre")
      api("com.google.code.gson:gson:2.10.1")
 -    api("net.md-5:bungeecord-chat:$bungeeCordChatVersion")
-+    api("net.md-5:bungeecord-chat:$bungeeCordChatVersion-deprecated+build.14") // Paper
++    // Paper start - adventure
++    api("net.md-5:bungeecord-chat:$bungeeCordChatVersion-deprecated+build.18") {
++        exclude("com.google.guava", "guava")
++    }
++    // Paper - adventure
      api("org.yaml:snakeyaml:2.2")
      api("org.joml:joml:1.10.5")
      // Paper start
-@@ -24,6 +36,13 @@ dependencies {
+@@ -24,6 +40,13 @@ dependencies {
          isTransitive = false // includes junit
      }
      api("it.unimi.dsi:fastutil:8.5.6")
@@ -49,8 +54,8 @@ index ecba866b84bc5f86a442bf220ab24ed8706aadf9..2377d476aee8c88d26ca715fdb756dc9
 +    apiAndDocs("net.kyori:adventure-text-logger-slf4j")
      // Paper end
  
-     compileOnly("org.apache.maven:maven-resolver-provider:3.8.5")
-@@ -100,14 +119,30 @@ tasks.withType<Javadoc> {
+     compileOnly("org.apache.maven:maven-resolver-provider:3.9.6")
+@@ -99,14 +122,30 @@ tasks.withType<Javadoc> {
          "https://guava.dev/releases/32.1.2-jre/api/docs/",
          "https://javadoc.io/doc/org.yaml/snakeyaml/2.2/",
          "https://javadoc.io/doc/org.jetbrains/annotations/$annotationsVersion/", // Paper - we don't want Java 5 annotations
@@ -202,10 +207,10 @@ index 0000000000000000000000000000000000000000..2ad76b1751ba707f7ae0d283aa1cbaf6
 +}
 diff --git a/src/main/java/io/papermc/paper/event/player/AbstractChatEvent.java b/src/main/java/io/papermc/paper/event/player/AbstractChatEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..ed8e885f226b02b9875b23ae2294a9056d2e8b29
+index 0000000000000000000000000000000000000000..a0fd845bc9b2540c398fe1dbbf821803a7017a28
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/event/player/AbstractChatEvent.java
-@@ -0,0 +1,125 @@
+@@ -0,0 +1,127 @@
 +package io.papermc.paper.event.player;
 +
 +import io.papermc.paper.chat.ChatRenderer;
@@ -227,12 +232,14 @@ index 0000000000000000000000000000000000000000..ed8e885f226b02b9875b23ae2294a905
 + */
 +@ApiStatus.NonExtendable
 +public abstract class AbstractChatEvent extends PlayerEvent implements Cancellable {
++
 +    private final Set<Audience> viewers;
 +    private final Component originalMessage;
 +    private final SignedMessage signedMessage;
 +    private ChatRenderer renderer;
 +    private Component message;
-+    private boolean cancelled = false;
++
++    private boolean cancelled;
 +
 +    AbstractChatEvent(final boolean async, final @NotNull Player player, final @NotNull Set<Audience> viewers, final @NotNull ChatRenderer renderer, final @NotNull Component message, final @NotNull Component originalMessage, final @NotNull SignedMessage signedMessage) {
 +        super(player, async);
@@ -327,13 +334,13 @@ index 0000000000000000000000000000000000000000..ed8e885f226b02b9875b23ae2294a905
 +    }
 +
 +    @Override
-+    public final void setCancelled(final boolean cancelled) {
-+        this.cancelled = cancelled;
++    public final void setCancelled(final boolean cancel) {
++        this.cancelled = cancel;
 +    }
 +}
 diff --git a/src/main/java/io/papermc/paper/event/player/AsyncChatCommandDecorateEvent.java b/src/main/java/io/papermc/paper/event/player/AsyncChatCommandDecorateEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..feece00981ebf932e64760e7a10a04ad080d0228
+index 0000000000000000000000000000000000000000..01cf89d3558132912c4d0eb48c98cd8c06e46a67
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/event/player/AsyncChatCommandDecorateEvent.java
 @@ -0,0 +1,28 @@
@@ -352,8 +359,8 @@ index 0000000000000000000000000000000000000000..feece00981ebf932e64760e7a10a04ad
 +    private static final HandlerList HANDLER_LIST = new HandlerList();
 +
 +    @ApiStatus.Internal
-+    public AsyncChatCommandDecorateEvent(boolean async, @Nullable Player player, @NotNull Component originalMessage, @NotNull Component result) {
-+        super(async, player, originalMessage, result);
++    public AsyncChatCommandDecorateEvent(@Nullable Player player, @NotNull Component originalMessage) {
++        super(player, originalMessage);
 +    }
 +
 +    @Override
@@ -367,10 +374,10 @@ index 0000000000000000000000000000000000000000..feece00981ebf932e64760e7a10a04ad
 +}
 diff --git a/src/main/java/io/papermc/paper/event/player/AsyncChatDecorateEvent.java b/src/main/java/io/papermc/paper/event/player/AsyncChatDecorateEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..667bfa6afc35f8a8f475431171ee474af4e10afd
+index 0000000000000000000000000000000000000000..d4c01e4d332b46f0b129dd5f9e9737ba19923562
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/event/player/AsyncChatDecorateEvent.java
-@@ -0,0 +1,117 @@
+@@ -0,0 +1,118 @@
 +package io.papermc.paper.event.player;
 +
 +import net.kyori.adventure.text.Component;
@@ -389,7 +396,8 @@ index 0000000000000000000000000000000000000000..667bfa6afc35f8a8f475431171ee474a
 + * message here, and use the chat events for modifying receivers and later the chat type. If you
 + * want to keep the message as "signed" for the clients who get it, be sure to include the entire
 + * original message somewhere in the final message.
-+ * @see AsyncChatCommandDecorateEvent for the decoration of messages sent via commands
++ * <br>
++ * See {@link AsyncChatCommandDecorateEvent} for the decoration of messages sent via commands
 + */
 +@ApiStatus.Experimental
 +public class AsyncChatDecorateEvent extends ServerEvent implements Cancellable {
@@ -399,14 +407,15 @@ index 0000000000000000000000000000000000000000..667bfa6afc35f8a8f475431171ee474a
 +    private final Player player;
 +    private final Component originalMessage;
 +    private Component result;
++
 +    private boolean cancelled;
 +
 +    @ApiStatus.Internal
-+    public AsyncChatDecorateEvent(final boolean async, final @Nullable Player player, final @NotNull Component originalMessage, final @NotNull Component result) {
-+        super(async);
++    public AsyncChatDecorateEvent(final @Nullable Player player, final @NotNull Component originalMessage) {
++        super(true);
 +        this.player = player;
 +        this.originalMessage = originalMessage;
-+        this.result = result;
++        this.result = originalMessage;
 +    }
 +
 +    /**
@@ -415,7 +424,7 @@ index 0000000000000000000000000000000000000000..667bfa6afc35f8a8f475431171ee474a
 +     * Certain commands request decorations without a player context
 +     * which is why this is possibly null.
 +     *
-+     * @return the player or null
++     * @return the player or {@code null}
 +     */
 +    public @Nullable Player player() {
 +        return this.player;
@@ -433,7 +442,6 @@ index 0000000000000000000000000000000000000000..667bfa6afc35f8a8f475431171ee474a
 +    /**
 +     * Gets the decoration result. This may already be different from
 +     * {@link #originalMessage()} if some other listener to this event
-+     * <b>OR</b> the legacy preview event ({@link org.bukkit.event.player.AsyncPlayerChatPreviewEvent}
 +     * changed the result.
 +     *
 +     * @return the result
@@ -454,10 +462,10 @@ index 0000000000000000000000000000000000000000..667bfa6afc35f8a8f475431171ee474a
 +    /**
 +     * If this decorating is part of a preview request/response.
 +     *
-+     * @return true if part of previewing
++     * @return {@code true} if part of previewing
 +     * @deprecated chat preview was removed in 1.19.3
 +     */
-+    @Deprecated(forRemoval = true)
++    @Deprecated(forRemoval = true, since = "1.19.3")
 +    @ApiStatus.ScheduledForRemoval(inVersion = "1.21")
 +    @Contract(value = "-> false", pure = true)
 +    public boolean isPreview() {
@@ -490,10 +498,10 @@ index 0000000000000000000000000000000000000000..667bfa6afc35f8a8f475431171ee474a
 +}
 diff --git a/src/main/java/io/papermc/paper/event/player/AsyncChatEvent.java b/src/main/java/io/papermc/paper/event/player/AsyncChatEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..4eada40b8abb1833ce623ccee0789555e370d024
+index 0000000000000000000000000000000000000000..4adae8b8a8640ffbd6a86b0908ca21fded737b88
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/event/player/AsyncChatEvent.java
-@@ -0,0 +1,37 @@
+@@ -0,0 +1,45 @@
 +package io.papermc.paper.event.player;
 +
 +import java.util.Set;
@@ -508,13 +516,21 @@ index 0000000000000000000000000000000000000000..4eada40b8abb1833ce623ccee0789555
 +
 +/**
 + * An event fired when a {@link Player} sends a chat message to the server.
++ * <p>
++ * This event will sometimes fire synchronously, depending on how it was
++ * triggered.
++ * <p>
++ * If a player is the direct cause of this event by an incoming packet, this
++ * event will be asynchronous. If a plugin triggers this event by compelling a
++ * player to chat, this event will be synchronous.
++ * <p>
++ * Care should be taken to check {@link #isAsynchronous()} and treat the event
++ * appropriately.
 + */
 +public final class AsyncChatEvent extends AbstractChatEvent {
-+    private static final HandlerList HANDLERS = new HandlerList();
 +
-+    /**
-+     * @param viewers A mutable set of viewers
-+     */
++    private static final HandlerList HANDLER_LIST = new HandlerList();
++
 +    @ApiStatus.Internal
 +    public AsyncChatEvent(final boolean async, final @NotNull Player player, final @NotNull Set<Audience> viewers, final @NotNull ChatRenderer renderer, final @NotNull Component message, final @NotNull Component originalMessage, final @NotNull SignedMessage signedMessage) {
 +        super(async, player, viewers, renderer, message, originalMessage, signedMessage);
@@ -523,20 +539,20 @@ index 0000000000000000000000000000000000000000..4eada40b8abb1833ce623ccee0789555
 +    @NotNull
 +    @Override
 +    public HandlerList getHandlers() {
-+        return HANDLERS;
++        return HANDLER_LIST;
 +    }
 +
 +    @NotNull
 +    public static HandlerList getHandlerList() {
-+        return HANDLERS;
++        return HANDLER_LIST;
 +    }
 +}
 diff --git a/src/main/java/io/papermc/paper/event/player/ChatEvent.java b/src/main/java/io/papermc/paper/event/player/ChatEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..af025704e978dc0b11be277ab4646da77eb3a60b
+index 0000000000000000000000000000000000000000..7411f58f9f36beaadcc47c2264a4af313956ee03
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/event/player/ChatEvent.java
-@@ -0,0 +1,42 @@
+@@ -0,0 +1,41 @@
 +package io.papermc.paper.event.player;
 +
 +import java.util.Set;
@@ -553,16 +569,15 @@ index 0000000000000000000000000000000000000000..af025704e978dc0b11be277ab4646da7
 +/**
 + * An event fired when a {@link Player} sends a chat message to the server.
 + *
-+ * @deprecated Listening to this event forces chat to wait for the main thread, delaying chat messages. It is recommended to use {@link AsyncChatEvent} instead, wherever possible.
++ * @deprecated Listening to this event forces chat to wait for the main thread, delaying chat messages.
++ * It is recommended to use {@link AsyncChatEvent} instead, wherever possible.
 + */
 +@Deprecated
 +@Warning(reason = "Listening to this event forces chat to wait for the main thread, delaying chat messages.")
 +public final class ChatEvent extends AbstractChatEvent {
-+    private static final HandlerList HANDLERS = new HandlerList();
 +
-+    /**
-+     * @param viewers A mutable set of viewers
-+     */
++    private static final HandlerList HANDLER_LIST = new HandlerList();
++
 +    @ApiStatus.Internal
 +    public ChatEvent(final @NotNull Player player, final @NotNull Set<Audience> viewers, final @NotNull ChatRenderer renderer, final @NotNull Component message, final @NotNull Component originalMessage, final @NotNull SignedMessage signedMessage) {
 +        super(false, player, viewers, renderer, message, originalMessage, signedMessage);
@@ -571,12 +586,12 @@ index 0000000000000000000000000000000000000000..af025704e978dc0b11be277ab4646da7
 +    @NotNull
 +    @Override
 +    public HandlerList getHandlers() {
-+        return HANDLERS;
++        return HANDLER_LIST;
 +    }
 +
 +    @NotNull
 +    public static HandlerList getHandlerList() {
-+        return HANDLERS;
++        return HANDLER_LIST;
 +    }
 +}
 diff --git a/src/main/java/io/papermc/paper/text/PaperComponents.java b/src/main/java/io/papermc/paper/text/PaperComponents.java
@@ -763,10 +778,10 @@ index 0000000000000000000000000000000000000000..6e94562d79206d88b74b53814f9423f1
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index ea881e5b8fcde8768bd884fde737d38f6ee07a5f..0272b699bd2351511856fe116162a965e928ebc0 100644
+index b101827cb752c38d1f38b1c0efa83cca8062f7f7..6425151b7003a1376977717dca6172efa1864648 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
-@@ -390,7 +390,9 @@ public final class Bukkit {
+@@ -422,7 +422,9 @@ public final class Bukkit {
       *
       * @param message the message
       * @return the number of players
@@ -776,7 +791,7 @@ index ea881e5b8fcde8768bd884fde737d38f6ee07a5f..0272b699bd2351511856fe116162a965
      public static int broadcastMessage(@NotNull String message) {
          return server.broadcastMessage(message);
      }
-@@ -1181,6 +1183,19 @@ public final class Bukkit {
+@@ -1223,6 +1225,19 @@ public final class Bukkit {
          server.shutdown();
      }
  
@@ -796,7 +811,7 @@ index ea881e5b8fcde8768bd884fde737d38f6ee07a5f..0272b699bd2351511856fe116162a965
      /**
       * Broadcasts the specified message to every user with the given
       * permission name.
-@@ -1190,6 +1205,21 @@ public final class Bukkit {
+@@ -1232,6 +1247,21 @@ public final class Bukkit {
       *     permissibles} must have to receive the broadcast
       * @return number of message recipients
       */
@@ -818,7 +833,7 @@ index ea881e5b8fcde8768bd884fde737d38f6ee07a5f..0272b699bd2351511856fe116162a965
      public static int broadcast(@NotNull String message, @NotNull String permission) {
          return server.broadcast(message, permission);
      }
-@@ -1451,6 +1481,7 @@ public final class Bukkit {
+@@ -1493,6 +1523,7 @@ public final class Bukkit {
          return server.createInventory(owner, type);
      }
  
@@ -826,7 +841,7 @@ index ea881e5b8fcde8768bd884fde737d38f6ee07a5f..0272b699bd2351511856fe116162a965
      /**
       * Creates an empty inventory with the specified type and title. If the type
       * is {@link InventoryType#CHEST}, the new inventory has a size of 27;
-@@ -1476,6 +1507,38 @@ public final class Bukkit {
+@@ -1518,6 +1549,38 @@ public final class Bukkit {
       * @see InventoryType#isCreatable()
       */
      @NotNull
@@ -865,7 +880,7 @@ index ea881e5b8fcde8768bd884fde737d38f6ee07a5f..0272b699bd2351511856fe116162a965
      public static Inventory createInventory(@Nullable InventoryHolder owner, @NotNull InventoryType type, @NotNull String title) {
          return server.createInventory(owner, type, title);
      }
-@@ -1494,6 +1557,7 @@ public final class Bukkit {
+@@ -1536,6 +1599,7 @@ public final class Bukkit {
          return server.createInventory(owner, size);
      }
  
@@ -873,7 +888,7 @@ index ea881e5b8fcde8768bd884fde737d38f6ee07a5f..0272b699bd2351511856fe116162a965
      /**
       * Creates an empty inventory of type {@link InventoryType#CHEST} with the
       * specified size and title.
-@@ -1506,10 +1570,30 @@ public final class Bukkit {
+@@ -1548,10 +1612,30 @@ public final class Bukkit {
       * @throws IllegalArgumentException if the size is not a multiple of 9
       */
      @NotNull
@@ -904,7 +919,7 @@ index ea881e5b8fcde8768bd884fde737d38f6ee07a5f..0272b699bd2351511856fe116162a965
      /**
       * Creates an empty merchant.
       *
-@@ -1517,7 +1601,20 @@ public final class Bukkit {
+@@ -1559,7 +1643,20 @@ public final class Bukkit {
       * when the merchant inventory is viewed
       * @return a new merchant
       */
@@ -925,7 +940,7 @@ index ea881e5b8fcde8768bd884fde737d38f6ee07a5f..0272b699bd2351511856fe116162a965
      public static Merchant createMerchant(@Nullable String title) {
          return server.createMerchant(title);
      }
-@@ -1634,12 +1731,43 @@ public final class Bukkit {
+@@ -1676,12 +1773,43 @@ public final class Bukkit {
          return server.isPrimaryThread();
      }
  
@@ -969,7 +984,7 @@ index ea881e5b8fcde8768bd884fde737d38f6ee07a5f..0272b699bd2351511856fe116162a965
      public static String getMotd() {
          return server.getMotd();
      }
-@@ -1648,7 +1776,9 @@ public final class Bukkit {
+@@ -1690,7 +1818,9 @@ public final class Bukkit {
       * Set the message that is displayed on the server list.
       *
       * @param motd The message to be displayed
@@ -979,7 +994,7 @@ index ea881e5b8fcde8768bd884fde737d38f6ee07a5f..0272b699bd2351511856fe116162a965
      public static void setMotd(@NotNull String motd) {
          server.setMotd(motd);
      }
-@@ -1657,8 +1787,10 @@ public final class Bukkit {
+@@ -1699,8 +1829,10 @@ public final class Bukkit {
       * Gets the default message that is displayed when the server is stopped.
       *
       * @return the shutdown message
@@ -1091,7 +1106,7 @@ index b79daa857fc686f00ac06b8851e0ab68d83ae949..45d996878ba8d314a47078589b6da59d
      public void setCustomName(@Nullable String name);
  }
 diff --git a/src/main/java/org/bukkit/NamespacedKey.java b/src/main/java/org/bukkit/NamespacedKey.java
-index ae7b51341fb66c41b8a7c4604fd273d876e311be..4034fcb9abc39b12f0de47c4b679f2ef82353c89 100644
+index 9562fcd522b2e2b24ec57fbf18ddeebba3e50abf..9b61129c3ef83d0bfceba54aba2effa12bc90678 100644
 --- a/src/main/java/org/bukkit/NamespacedKey.java
 +++ b/src/main/java/org/bukkit/NamespacedKey.java
 @@ -19,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
@@ -1135,7 +1150,7 @@ index ae7b51341fb66c41b8a7c4604fd273d876e311be..4034fcb9abc39b12f0de47c4b679f2ef
      }
  
      @Override
-@@ -247,4 +247,24 @@ public final class NamespacedKey {
+@@ -248,4 +248,24 @@ public final class NamespacedKey {
      public static NamespacedKey fromString(@NotNull String key) {
          return fromString(key, null);
      }
@@ -1161,10 +1176,10 @@ index ae7b51341fb66c41b8a7c4604fd273d876e311be..4034fcb9abc39b12f0de47c4b679f2ef
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 0f38cffd9d858eb3b959d30388e82a77af913ecb..be29b60651f0ab9cae4e0a3ff1df4e8b0422a947 100644
+index bfa9846d93317d07e55b6d7b971326fa07cae27d..3bf7db7eac81e3cc6f5c6700637d10d1b4b7a47b 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -62,13 +62,13 @@ import org.jetbrains.annotations.Nullable;
+@@ -65,13 +65,13 @@ import org.jetbrains.annotations.Nullable;
  /**
   * Represents a server implementation.
   */
@@ -1180,7 +1195,7 @@ index 0f38cffd9d858eb3b959d30388e82a77af913ecb..be29b60651f0ab9cae4e0a3ff1df4e8b
       */
      public static final String BROADCAST_CHANNEL_ADMINISTRATIVE = "bukkit.broadcast.admin";
  
-@@ -76,7 +76,7 @@ public interface Server extends PluginMessageRecipient {
+@@ -79,7 +79,7 @@ public interface Server extends PluginMessageRecipient {
       * Used for all announcement messages, such as informing users that a
       * player has joined.
       * <p>
@@ -1189,7 +1204,7 @@ index 0f38cffd9d858eb3b959d30388e82a77af913ecb..be29b60651f0ab9cae4e0a3ff1df4e8b
       */
      public static final String BROADCAST_CHANNEL_USERS = "bukkit.broadcast.user";
  
-@@ -329,7 +329,9 @@ public interface Server extends PluginMessageRecipient {
+@@ -355,7 +355,9 @@ public interface Server extends PluginMessageRecipient {
       *
       * @param message the message
       * @return the number of players
@@ -1199,7 +1214,7 @@ index 0f38cffd9d858eb3b959d30388e82a77af913ecb..be29b60651f0ab9cae4e0a3ff1df4e8b
      public int broadcastMessage(@NotNull String message);
  
      /**
-@@ -1015,8 +1017,33 @@ public interface Server extends PluginMessageRecipient {
+@@ -1049,8 +1051,33 @@ public interface Server extends PluginMessageRecipient {
       * @param permission the required permission {@link Permissible
       *     permissibles} must have to receive the broadcast
       * @return number of message recipients
@@ -1233,7 +1248,7 @@ index 0f38cffd9d858eb3b959d30388e82a77af913ecb..be29b60651f0ab9cae4e0a3ff1df4e8b
  
      /**
       * Gets the player by the given name, regardless if they are offline or
-@@ -1233,6 +1260,35 @@ public interface Server extends PluginMessageRecipient {
+@@ -1267,6 +1294,35 @@ public interface Server extends PluginMessageRecipient {
      @NotNull
      Inventory createInventory(@Nullable InventoryHolder owner, @NotNull InventoryType type);
  
@@ -1269,7 +1284,7 @@ index 0f38cffd9d858eb3b959d30388e82a77af913ecb..be29b60651f0ab9cae4e0a3ff1df4e8b
      /**
       * Creates an empty inventory with the specified type and title. If the type
       * is {@link InventoryType#CHEST}, the new inventory has a size of 27;
-@@ -1254,9 +1310,11 @@ public interface Server extends PluginMessageRecipient {
+@@ -1288,9 +1344,11 @@ public interface Server extends PluginMessageRecipient {
       * @return The new inventory.
       * @throws IllegalArgumentException if the {@link InventoryType} cannot be
       * viewed.
@@ -1281,7 +1296,7 @@ index 0f38cffd9d858eb3b959d30388e82a77af913ecb..be29b60651f0ab9cae4e0a3ff1df4e8b
      @NotNull
      Inventory createInventory(@Nullable InventoryHolder owner, @NotNull InventoryType type, @NotNull String title);
  
-@@ -1272,6 +1330,22 @@ public interface Server extends PluginMessageRecipient {
+@@ -1306,6 +1364,22 @@ public interface Server extends PluginMessageRecipient {
      @NotNull
      Inventory createInventory(@Nullable InventoryHolder owner, int size) throws IllegalArgumentException;
  
@@ -1304,7 +1319,7 @@ index 0f38cffd9d858eb3b959d30388e82a77af913ecb..be29b60651f0ab9cae4e0a3ff1df4e8b
      /**
       * Creates an empty inventory of type {@link InventoryType#CHEST} with the
       * specified size and title.
-@@ -1282,18 +1356,32 @@ public interface Server extends PluginMessageRecipient {
+@@ -1316,18 +1390,32 @@ public interface Server extends PluginMessageRecipient {
       *     viewed
       * @return a new inventory
       * @throws IllegalArgumentException if the size is not a multiple of 9
@@ -1337,7 +1352,7 @@ index 0f38cffd9d858eb3b959d30388e82a77af913ecb..be29b60651f0ab9cae4e0a3ff1df4e8b
      Merchant createMerchant(@Nullable String title);
  
      /**
-@@ -1389,27 +1477,56 @@ public interface Server extends PluginMessageRecipient {
+@@ -1423,27 +1511,56 @@ public interface Server extends PluginMessageRecipient {
       */
      boolean isPrimaryThread();
  
@@ -1394,7 +1409,7 @@ index 0f38cffd9d858eb3b959d30388e82a77af913ecb..be29b60651f0ab9cae4e0a3ff1df4e8b
      String getShutdownMessage();
  
      /**
-@@ -1791,7 +1908,9 @@ public interface Server extends PluginMessageRecipient {
+@@ -1834,7 +1951,9 @@ public interface Server extends PluginMessageRecipient {
           * Sends the component to the player
           *
           * @param component the components to send
@@ -1404,7 +1419,7 @@ index 0f38cffd9d858eb3b959d30388e82a77af913ecb..be29b60651f0ab9cae4e0a3ff1df4e8b
          public void broadcast(@NotNull net.md_5.bungee.api.chat.BaseComponent component) {
              throw new UnsupportedOperationException("Not supported yet.");
          }
-@@ -1800,7 +1919,9 @@ public interface Server extends PluginMessageRecipient {
+@@ -1843,7 +1962,9 @@ public interface Server extends PluginMessageRecipient {
           * Sends an array of components as a single message to the player
           *
           * @param components the components to send
@@ -1415,10 +1430,10 @@ index 0f38cffd9d858eb3b959d30388e82a77af913ecb..be29b60651f0ab9cae4e0a3ff1df4e8b
              throw new UnsupportedOperationException("Not supported yet.");
          }
 diff --git a/src/main/java/org/bukkit/Sound.java b/src/main/java/org/bukkit/Sound.java
-index c5ba0f3ad4df1f52efe9795cfe2ded8783657b40..e30ea44c962f685f216dadd174c91a00d880c5cd 100644
+index 72260e6284e3f5ce1813635aa07518c47dbf0899..375172e05a78611deb3003f780867516cb6cd1a4 100644
 --- a/src/main/java/org/bukkit/Sound.java
 +++ b/src/main/java/org/bukkit/Sound.java
-@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
+@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
   * guarantee values will not be removed from this Enum. As such, you should not
   * depend on the ordinal values of this class.
   */
@@ -1427,7 +1442,7 @@ index c5ba0f3ad4df1f52efe9795cfe2ded8783657b40..e30ea44c962f685f216dadd174c91a00
  
      AMBIENT_BASALT_DELTAS_ADDITIONS("ambient.basalt_deltas.additions"),
      AMBIENT_BASALT_DELTAS_LOOP("ambient.basalt_deltas.loop"),
-@@ -1512,4 +1512,11 @@ public enum Sound implements Keyed {
+@@ -1725,4 +1725,11 @@ public enum Sound implements Keyed {
      public NamespacedKey getKey() {
          return key;
      }
@@ -1476,10 +1491,10 @@ index ac5e263d737973af077e3406a84a84baca4370db..2d91924b7f5ef16a91d40cdc1bfc3d68
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/UnsafeValues.java b/src/main/java/org/bukkit/UnsafeValues.java
-index 4a9a82540e40685d2b837c76c431827a00cf4ba3..a3ee6f2f588bc9c87e49378359f450820b9af1b9 100644
+index ce9bb54a6ef8a7d31804ec63aa1f6cbbd6ae2d54..baf49da3dd46039da2f24a4af8b1b8617bb25501 100644
 --- a/src/main/java/org/bukkit/UnsafeValues.java
 +++ b/src/main/java/org/bukkit/UnsafeValues.java
-@@ -26,6 +26,15 @@ import org.jetbrains.annotations.Nullable;
+@@ -30,6 +30,15 @@ import org.jetbrains.annotations.Nullable;
   */
  @Deprecated
  public interface UnsafeValues {
@@ -1508,10 +1523,10 @@ index efb97712cc9dc7c1e12a59f5b94e4f2ad7c6b7d8..3024468af4c073324e536c1cb26beffb
                  return warning == null || warning.value();
              }
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index cd000a064732ebaa8802f3d7b7ba9bd7ba101f14..30dc2f85b60877930cab68230d3259ce92c08618 100644
+index 3132e6754ab462eca0b7de1e7ad64c955316296d..a9858c2559f0921613b19710135cc6e060488e96 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
-@@ -45,7 +45,7 @@ import org.jetbrains.annotations.Nullable;
+@@ -47,7 +47,7 @@ import org.jetbrains.annotations.Nullable;
  /**
   * Represents a world, which may contain entities, chunks and blocks
   */
@@ -1520,7 +1535,7 @@ index cd000a064732ebaa8802f3d7b7ba9bd7ba101f14..30dc2f85b60877930cab68230d3259ce
  
      /**
       * Gets the {@link Block} at the given coordinates
-@@ -606,6 +606,14 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
+@@ -617,6 +617,14 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
      @NotNull
      public List<Player> getPlayers();
  
@@ -1579,10 +1594,10 @@ index 372c0bd5a4d7800a11c24c95e39fe376a96232bf..9c88be68b4f403d0500cb607394b3a16
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/block/Sign.java b/src/main/java/org/bukkit/block/Sign.java
-index 5fc1c759e6e8f3fd43a5fa5c6e3f777efa16b1ec..2813f96bb13b9be28867d2c045a3003a18456879 100644
+index d9fae47539a382bf87e4265111b7e6c2a1819caf..1fdb1144949adc3a2b5cbc3aca94d2f8e0c6d9ee 100644
 --- a/src/main/java/org/bukkit/block/Sign.java
 +++ b/src/main/java/org/bukkit/block/Sign.java
-@@ -10,12 +10,51 @@ import org.jetbrains.annotations.NotNull;
+@@ -12,12 +12,51 @@ import org.jetbrains.annotations.Nullable;
   * Represents a captured state of either a SignPost or a WallSign.
   */
  public interface Sign extends TileState, Colorable {
@@ -1635,7 +1650,7 @@ index 5fc1c759e6e8f3fd43a5fa5c6e3f777efa16b1ec..2813f96bb13b9be28867d2c045a3003a
       */
      @Deprecated
      @NotNull
-@@ -29,7 +68,7 @@ public interface Sign extends TileState, Colorable {
+@@ -31,7 +70,7 @@ public interface Sign extends TileState, Colorable {
       * @param index Line number to get the text from, starting at 0
       * @return Text on the given line
       * @throws IndexOutOfBoundsException Thrown when the line does not exist
@@ -1644,7 +1659,7 @@ index 5fc1c759e6e8f3fd43a5fa5c6e3f777efa16b1ec..2813f96bb13b9be28867d2c045a3003a
       */
      @Deprecated
      @NotNull
-@@ -44,7 +83,7 @@ public interface Sign extends TileState, Colorable {
+@@ -46,7 +85,7 @@ public interface Sign extends TileState, Colorable {
       * @param index Line number to set the text at, starting from 0
       * @param line New text to set at the specified index
       * @throws IndexOutOfBoundsException If the index is out of the range 0..3
@@ -1728,7 +1743,7 @@ index 0f4ae7bd2ad379b5edb40f49f93de9e18c38f415..575e545a69b5279b90067d7ebee08b7b
  
      /**
 diff --git a/src/main/java/org/bukkit/command/Command.java b/src/main/java/org/bukkit/command/Command.java
-index 80209bb88a0294d4eedc78509533a6257315d856..75759131bd94b672bec4cd8e271ebff1ad391cba 100644
+index ac89f041dc983485174a174e79cd21159fdfba1e..f3cdf13f22aa789ee8cc235b61fda4035b254219 100644
 --- a/src/main/java/org/bukkit/command/Command.java
 +++ b/src/main/java/org/bukkit/command/Command.java
 @@ -32,7 +32,7 @@ public abstract class Command {
@@ -1755,35 +1770,25 @@ index 80209bb88a0294d4eedc78509533a6257315d856..75759131bd94b672bec4cd8e271ebff1
          }
  
          return false;
-@@ -317,10 +317,12 @@ public abstract class Command {
-      * command
-      *
-      * @return Permission check failed message
-+     * @deprecated use {@link #permissionMessage()}
-      */
+@@ -327,7 +327,7 @@ public abstract class Command {
+     @Deprecated
      @Nullable
-+    @Deprecated // Paper
      public String getPermissionMessage() {
 -        return permissionMessage;
 +        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serializeOrNull(permissionMessage); // Paper
      }
  
      /**
-@@ -381,10 +383,12 @@ public abstract class Command {
-      * @param permissionMessage new permission message, null to indicate
-      *     default message, or an empty string to indicate no message
-      * @return this command object, for chaining
-+     * @deprecated use {@link #permissionMessage(net.kyori.adventure.text.Component)}
-      */
+@@ -398,7 +398,7 @@ public abstract class Command {
+     @Deprecated
      @NotNull
-+    @Deprecated // Paper
      public Command setPermissionMessage(@Nullable String permissionMessage) {
 -        this.permissionMessage = permissionMessage;
 +        this.permissionMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserializeOrNull(permissionMessage); // Paper
          return this;
      }
  
-@@ -399,13 +403,47 @@ public abstract class Command {
+@@ -413,13 +413,61 @@ public abstract class Command {
          this.usageMessage = (usage == null) ? "" : usage;
          return this;
      }
@@ -1792,7 +1797,14 @@ index 80209bb88a0294d4eedc78509533a6257315d856..75759131bd94b672bec4cd8e271ebff1
 +     * Gets the permission message.
 +     *
 +     * @return the permission message
++     * @deprecated permission messages have not worked for player-executed
++     * commands since 1.13 as clients without permission to execute a command
++     * are unaware of its existence and therefore will not send an unknown
++     * command execution to the server. This message will only ever be shown to
++     * consoles or when this command is executed with
++     * {@link Bukkit#dispatchCommand(CommandSender, String)}.
 +     */
++    @Deprecated
 +    public net.kyori.adventure.text.@Nullable Component permissionMessage() {
 +        return this.permissionMessage;
 +    }
@@ -1801,7 +1813,14 @@ index 80209bb88a0294d4eedc78509533a6257315d856..75759131bd94b672bec4cd8e271ebff1
 +     * Sets the permission message.
 +     *
 +     * @param permissionMessage the permission message
++     * @deprecated permission messages have not worked for player-executed
++     * commands since 1.13 as clients without permission to execute a command
++     * are unaware of its existence and therefore will not send an unknown
++     * command execution to the server. This message will only ever be shown to
++     * consoles or when this command is executed with
++     * {@link Bukkit#dispatchCommand(CommandSender, String)}.
 +     */
++    @Deprecated
 +    public void permissionMessage(net.kyori.adventure.text.@Nullable Component permissionMessage) {
 +        this.permissionMessage = permissionMessage;
 +    }
@@ -1832,7 +1851,7 @@ index 80209bb88a0294d4eedc78509533a6257315d856..75759131bd94b672bec4cd8e271ebff1
  
          if (source instanceof BlockCommandSender) {
              BlockCommandSender blockCommandSender = (BlockCommandSender) source;
-@@ -424,7 +462,12 @@ public abstract class Command {
+@@ -438,7 +486,12 @@ public abstract class Command {
          }
  
          Set<Permissible> users = Bukkit.getPluginManager().getPermissionSubscriptions(Server.BROADCAST_CHANNEL_ADMINISTRATIVE);
@@ -2038,6 +2057,109 @@ index fcc34b640265f4dccb46b9f09466ab8e1d96043e..5c813ac024f675951159a59d88d8baa0
 +    }
 +    // Paper end
  }
+diff --git a/src/main/java/org/bukkit/configuration/ConfigurationSection.java b/src/main/java/org/bukkit/configuration/ConfigurationSection.java
+index b6b00af08f12f838411845e4f4e29e62826dfc7f..d168b1e58b4b4ad00466fab60232d516551668e0 100644
+--- a/src/main/java/org/bukkit/configuration/ConfigurationSection.java
++++ b/src/main/java/org/bukkit/configuration/ConfigurationSection.java
+@@ -1058,4 +1058,98 @@ public interface ConfigurationSection {
+      * one line.
+      */
+     public void setInlineComments(@NotNull String path, @Nullable List<String> comments);
++
++    // Paper start - add rich message component support to configuration
++    /**
++     * Gets the requested MiniMessage formatted String as Component by path.
++     * <p>
++     * If the Component does not exist but a default value has been specified,
++     * this will return the default value. If the Component does not exist and no
++     * default value was specified, this will return null.
++     *
++     * @param path Path of the Component to get.
++     * @return Requested Component.
++     */
++    default net.kyori.adventure.text.@Nullable Component getRichMessage(final @NotNull String path) {
++        return this.getRichMessage(path, null);
++    }
++
++    /**
++     * Gets the requested MiniMessage formatted String as Component by path.
++     * <p>
++     * If the Component does not exist but a default value has been specified,
++     * this will return the default value. If the Component does not exist and no
++     * default value was specified, this will return null.
++     *
++     * @param path Path of the Component to get.
++     * @param fallback component that will be used as fallback
++     * @return Requested Component.
++     */
++    @Contract("_, !null -> !null")
++    default net.kyori.adventure.text.@Nullable Component getRichMessage(final @NotNull String path, final net.kyori.adventure.text.@Nullable Component fallback) {
++        return this.getComponent(path, net.kyori.adventure.text.minimessage.MiniMessage.miniMessage(), fallback);
++    }
++
++    /**
++     * Sets the specified path to the given value.
++     * <p>
++     * If value is null, the entry will be removed. Any existing entry will be
++     * replaced, regardless of what the new value is.
++     *
++     * @param path Path of the object to set.
++     * @param value New value to set the path to.
++     */
++    default void setRichMessage(final @NotNull String path, final net.kyori.adventure.text.@Nullable Component value) {
++        this.setComponent(path, net.kyori.adventure.text.minimessage.MiniMessage.miniMessage(), value);
++    }
++
++    /**
++     * Gets the requested formatted String as Component by path deserialized by the ComponentDecoder.
++     * <p>
++     * If the Component does not exist but a default value has been specified,
++     * this will return the default value. If the Component does not exist and no
++     * default value was specified, this will return null.
++     *
++     * @param path Path of the Component to get.
++     * @param decoder ComponentDecoder instance used for deserialization
++     * @return Requested Component.
++     */
++    default <C extends net.kyori.adventure.text.Component> @Nullable C getComponent(final @NotNull String path, final net.kyori.adventure.text.serializer.@NotNull ComponentDecoder<? super String, C> decoder) {
++        return this.getComponent(path, decoder, null);
++    }
++
++    /**
++     * Gets the requested formatted String as Component by path deserialized by the ComponentDecoder.
++     * <p>
++     * If the Component does not exist but a default value has been specified,
++     * this will return the default value. If the Component does not exist and no
++     * default value was specified, this will return null.
++     *
++     * @param path Path of the Component to get.
++     * @param decoder ComponentDecoder instance used for deserialization
++     * @param fallback component that will be used as fallback
++     * @return Requested Component.
++     */
++    @Contract("_, _, !null -> !null")
++    default <C extends net.kyori.adventure.text.Component> @Nullable C getComponent(final @NotNull String path, final net.kyori.adventure.text.serializer.@NotNull ComponentDecoder<? super String, C> decoder, final @Nullable C fallback) {
++        java.util.Objects.requireNonNull(decoder, "decoder");
++        final String value = this.getString(path);
++        return decoder.deserializeOr(value, fallback);
++    }
++
++    /**
++     * Sets the specified path to the given value.
++     * <p>
++     * If value is null, the entry will be removed. Any existing entry will be
++     * replaced, regardless of what the new value is.
++     *
++     * @param path Path of the object to set.
++     * @param encoder the encoder used to transform the value
++     * @param value New value to set the path to.
++     */
++    default <C extends net.kyori.adventure.text.Component> void setComponent(final @NotNull String path, final net.kyori.adventure.text.serializer.@NotNull ComponentEncoder<C, String> encoder, final @Nullable C value) {
++        java.util.Objects.requireNonNull(encoder, "encoder");
++        this.set(path, encoder.serializeOrNull(value));
++    }
++    // Paper end - add rich message component support to configuration
+ }
 diff --git a/src/main/java/org/bukkit/conversations/Conversable.java b/src/main/java/org/bukkit/conversations/Conversable.java
 index b7d8dd30360a38dbdc7bbce40c8e6ced7261f833..0817f2395c2b18828565435568ce651f5ba99a99 100644
 --- a/src/main/java/org/bukkit/conversations/Conversable.java
@@ -2060,10 +2182,10 @@ index b7d8dd30360a38dbdc7bbce40c8e6ced7261f833..0817f2395c2b18828565435568ce651f
      public void sendRawMessage(@Nullable UUID sender, @NotNull String message);
  }
 diff --git a/src/main/java/org/bukkit/enchantments/Enchantment.java b/src/main/java/org/bukkit/enchantments/Enchantment.java
-index e2800dc97af5bbb02c555069285a0fa155a9799d..2dc749936df6168073a5bb9f9051d55f8589ac62 100644
+index 18983f405b2f6c4159dba5c99674ae7729905cc4..a82d6f469aca02fb28b1b3ad84dc40415f1f1ade 100644
 --- a/src/main/java/org/bukkit/enchantments/Enchantment.java
 +++ b/src/main/java/org/bukkit/enchantments/Enchantment.java
-@@ -299,6 +299,19 @@ public abstract class Enchantment implements Keyed {
+@@ -318,6 +318,19 @@ public abstract class Enchantment implements Keyed, Translatable {
       * @return True if the enchantment may be applied, otherwise False
       */
      public abstract boolean canEnchantItem(@NotNull ItemStack item);
@@ -2081,15 +2203,15 @@ index e2800dc97af5bbb02c555069285a0fa155a9799d..2dc749936df6168073a5bb9f9051d55f
 +    public abstract net.kyori.adventure.text.@NotNull Component displayName(int level);
 +    // Paper end
  
-     @Override
-     public boolean equals(Object obj) {
+     /**
+      * Gets the Enchantment at the specified key
 diff --git a/src/main/java/org/bukkit/enchantments/EnchantmentWrapper.java b/src/main/java/org/bukkit/enchantments/EnchantmentWrapper.java
-index 9566e4306ada5e82dede0f002aa06da12c44996b..4d5f0837bd0e02a30c943d8969fb6b13452322e0 100644
+index 7ad7bcf9a9333c8d6d1d7cab53a6d457ec20bbf6..c4f86ba1037f3f0e5d697a0962d71d6f8c7c1fbe 100644
 --- a/src/main/java/org/bukkit/enchantments/EnchantmentWrapper.java
 +++ b/src/main/java/org/bukkit/enchantments/EnchantmentWrapper.java
-@@ -63,4 +63,11 @@ public class EnchantmentWrapper extends Enchantment {
-     public boolean conflictsWith(@NotNull Enchantment other) {
-         return getEnchantment().conflictsWith(other);
+@@ -20,4 +20,11 @@ public abstract class EnchantmentWrapper extends Enchantment {
+     public Enchantment getEnchantment() {
+         return this;
      }
 +    // Paper start
 +    @NotNull
@@ -2100,19 +2222,19 @@ index 9566e4306ada5e82dede0f002aa06da12c44996b..4d5f0837bd0e02a30c943d8969fb6b13
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index ead9a9aaad3c7469a9393f3c73aa9a5fdb5b7406..121cd27185269339babae1757a604fbb5aabc869 100644
+index 558fe6e23f562ee873fc84112f930c6ea19a09f4..c78fb359bd28b8dc1ba242642ec612e856525993 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
-@@ -27,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
- /**
-  * Represents a base entity in the world
+@@ -30,7 +30,7 @@ import org.jetbrains.annotations.Nullable;
+  * Not all methods are guaranteed to work/may have side effects when
+  * {@link #isInWorld()} is false.
   */
 -public interface Entity extends Metadatable, CommandSender, Nameable, PersistentDataHolder {
 +public interface Entity extends Metadatable, CommandSender, Nameable, PersistentDataHolder, net.kyori.adventure.text.event.HoverEventSource<net.kyori.adventure.text.event.HoverEvent.ShowEntity>, net.kyori.adventure.sound.Sound.Emitter { // Paper
  
      /**
       * Gets the entity's current position
-@@ -724,4 +724,20 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+@@ -776,4 +776,20 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
      @Override
      Spigot spigot();
      // Spigot end
@@ -2134,10 +2256,10 @@ index ead9a9aaad3c7469a9393f3c73aa9a5fdb5b7406..121cd27185269339babae1757a604fbb
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa8cf3ae37 100644
+index 712c0a8ae919ed9e7cb84cebd4b6a415ddaa63eb..4e9ba039669c7059180f5776ee2f7188f2dd01b5 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
-@@ -51,7 +51,41 @@ import org.jetbrains.annotations.Nullable;
+@@ -56,7 +56,41 @@ import org.jetbrains.annotations.Nullable;
  /**
   * Represents a player, connected or not
   */
@@ -2180,7 +2302,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
  
      /**
       * {@inheritDoc}
-@@ -68,7 +102,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -73,7 +107,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * places defined by plugins.
       *
       * @return the friendly name
@@ -2190,7 +2312,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
      @NotNull
      public String getDisplayName();
  
-@@ -80,15 +116,50 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -85,15 +121,50 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * places defined by plugins.
       *
       * @param name The new display name.
@@ -2241,7 +2363,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
      public String getPlayerListName();
  
      /**
-@@ -97,14 +168,18 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -102,14 +173,18 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * If the value is null, the name will be identical to {@link #getName()}.
       *
       * @param name new player list name
@@ -2260,7 +2382,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
      @Nullable
      public String getPlayerListHeader();
  
-@@ -112,7 +187,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -117,7 +192,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * Gets the currently displayed player list footer for this player.
       *
       * @return player list header or null
@@ -2270,7 +2392,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
      @Nullable
      public String getPlayerListFooter();
  
-@@ -120,14 +197,18 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -125,14 +202,18 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * Sets the currently displayed player list header for this player.
       *
       * @param header player list header, null for empty
@@ -2289,7 +2411,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
      public void setPlayerListFooter(@Nullable String footer);
  
      /**
-@@ -136,7 +217,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -141,7 +222,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       *
       * @param header player list header, null for empty
       * @param footer player list footer, null for empty
@@ -2299,7 +2421,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
      public void setPlayerListHeaderFooter(@Nullable String header, @Nullable String footer);
  
      /**
-@@ -174,9 +257,25 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -221,9 +304,25 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * Kicks player with custom kick message.
       *
       * @param message kick message
@@ -2325,7 +2447,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
      /**
       * Adds this user to the {@link ProfileBanList}. If a previous ban exists, this will
       * update the entry.
-@@ -798,6 +897,106 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -886,6 +985,106 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       */
      public void sendEquipmentChange(@NotNull LivingEntity entity, @NotNull Map<EquipmentSlot, ItemStack> items);
  
@@ -2432,7 +2554,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
      /**
       * Send a sign change. This fakes a sign change packet for a user at
       * a certain location. This will not actually change the world in any way.
-@@ -815,7 +1014,11 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -903,7 +1102,11 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * @param lines the new text on the sign or null to clear it
       * @throws IllegalArgumentException if location is null
       * @throws IllegalArgumentException if lines is non-null and has a length less than 4
@@ -2444,7 +2566,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
      public void sendSignChange(@NotNull Location loc, @Nullable String[] lines) throws IllegalArgumentException;
  
      /**
-@@ -837,7 +1040,11 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -925,7 +1128,11 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * @throws IllegalArgumentException if location is null
       * @throws IllegalArgumentException if dyeColor is null
       * @throws IllegalArgumentException if lines is non-null and has a length less than 4
@@ -2456,7 +2578,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
      public void sendSignChange(@NotNull Location loc, @Nullable String[] lines, @NotNull DyeColor dyeColor) throws IllegalArgumentException;
  
      /**
-@@ -860,7 +1067,11 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -948,7 +1155,11 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * @throws IllegalArgumentException if location is null
       * @throws IllegalArgumentException if dyeColor is null
       * @throws IllegalArgumentException if lines is non-null and has a length less than 4
@@ -2468,62 +2590,73 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
      public void sendSignChange(@NotNull Location loc, @Nullable String[] lines, @NotNull DyeColor dyeColor, boolean hasGlowingText) throws IllegalArgumentException;
  
      /**
-@@ -1376,6 +1587,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -1416,7 +1627,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      * @throws IllegalArgumentException Thrown if the URL is null.
+      * @throws IllegalArgumentException Thrown if the URL is too long.
+      * @deprecated Minecraft no longer uses textures packs. Instead you
+-     *     should use {@link #setResourcePack(String)}.
++     *     should use {@link #setResourcePack(UUID, String, byte[], net.kyori.adventure.text.Component, boolean)}.
+      */
+     @Deprecated
+     public void setTexturePack(@NotNull String url);
+@@ -1452,7 +1663,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      * @throws IllegalArgumentException Thrown if the URL is null.
+      * @throws IllegalArgumentException Thrown if the URL is too long. The
+      *     length restriction is an implementation specific arbitrary value.
++     * @deprecated in favour of {@link #sendResourcePacks(net.kyori.adventure.resource.ResourcePackRequest)}
+      */
++    @Deprecated // Paper - adventure
+     public void setResourcePack(@NotNull String url);
+ 
+     /**
+@@ -1484,6 +1697,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       *     pack correctly.
       * </ul>
       *
-+     * @deprecated in favour of {@link #setResourcePack(String, byte[], net.kyori.adventure.text.Component)}
++     * @deprecated in favour of {@link #sendResourcePacks(net.kyori.adventure.resource.ResourcePackRequest)}
       * @param url The URL from which the client will download the resource
       *     pack. The string must contain only US-ASCII characters and should
       *     be encoded as per RFC 1738.
-@@ -1388,6 +1600,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -1496,6 +1710,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * @throws IllegalArgumentException Thrown if the hash is not 20 bytes
       *     long.
       */
-+    @Deprecated // Paper
++    @Deprecated // Paper - adventure
      public void setResourcePack(@NotNull String url, @Nullable byte[] hash);
  
      /**
-@@ -1419,6 +1632,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -1520,12 +1735,13 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      *     {@link PlayerResourcePackStatusEvent} to figure out whether or not
+      *     the player loaded the pack!
+      * <li>To remove a resource pack you can use
+-     *     {@link #removeResourcePack(UUID)} or {@link #removeResourcePacks()}.
++     *     {@link #removeResourcePacks(UUID, UUID...)} or {@link #clearResourcePacks()}.
+      * <li>The request is sent with empty string as the hash when the hash is
+      *     not provided. This might result in newer versions not loading the
       *     pack correctly.
       * </ul>
       *
-+     * @deprecated in favour of {@link #setResourcePack(String, byte[], net.kyori.adventure.text.Component)}
++     * @deprecated in favour of {@link #sendResourcePacks(net.kyori.adventure.resource.ResourcePackRequest)}
       * @param url The URL from which the client will download the resource
       *     pack. The string must contain only US-ASCII characters and should
       *     be encoded as per RFC 1738.
-@@ -1432,8 +1646,57 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -1539,8 +1755,10 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * @throws IllegalArgumentException Thrown if the hash is not 20 bytes
       *     long.
       */
-+    @Deprecated // Paper
++    @Deprecated // Paper - adventure
      public void setResourcePack(@NotNull String url, @Nullable byte[] hash, @Nullable String prompt);
  
 +    // Paper start
-+    /**
-+     * Request that the player's client download and switch resource packs.
-+     * <p>
-+     * The player's client will download the new resource pack asynchronously
-+     * in the background, and will automatically switch to it once the
-+     * download is complete. If the client has downloaded and cached a
-+     * resource pack with the same hash in the past it will not download but
-+     * directly apply the cached pack. If the hash is null and the client has
-+     * downloaded and cached the same resource pack in the past, it will
-+     * perform a file size check against the response content to determine if
-+     * the resource pack has changed and needs to be downloaded again. When
-+     * this request is sent for the very first time from a given server, the
-+     * client will first display a confirmation GUI to the player before
-+     * proceeding with the download.
-+     * <p>
-+     * Notes:
-+     * <ul>
-+     * <li>Players can disable server resources on their client, in which
-+     *     case this method will have no affect on them. Use the
-+     *     {@link PlayerResourcePackStatusEvent} to figure out whether or not
-+     *     the player loaded the pack!
-+     * <li>There is no concept of resetting resource packs back to default
-+     *     within Minecraft, so players will have to relog to do so or you
-+     *     have to send an empty pack.
+     /**
+      * Request that the player's client download and switch resource packs.
+      * <p>
+@@ -1563,7 +1781,54 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      *     {@link PlayerResourcePackStatusEvent} to figure out whether or not
+      *     the player loaded the pack!
+      * <li>To remove a resource pack you can use
+-     *     {@link #removeResourcePack(UUID)} or {@link #removeResourcePacks()}.
++     *     {@link #removeResourcePacks(UUID, UUID...)} or {@link #clearResourcePacks()}.
 +     * <li>The request is sent with empty string as the hash when the hash is
 +     *     not provided. This might result in newer versions not loading the
 +     *     pack correctly.
@@ -2541,31 +2674,13 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
 +     *     length restriction is an implementation specific arbitrary value.
 +     * @throws IllegalArgumentException Thrown if the hash is not 20 bytes
 +     *     long.
++     * @see #sendResourcePacks(net.kyori.adventure.resource.ResourcePackRequest)
 +     */
-+    default void setResourcePack(@NotNull String url, byte @Nullable [] hash, net.kyori.adventure.text.@Nullable Component prompt) {
++    default void setResourcePack(final @NotNull String url, final byte @Nullable [] hash, final net.kyori.adventure.text.@Nullable Component prompt) {
 +        this.setResourcePack(url, hash, prompt, false);
 +    }
 +    // Paper end
 +
-     /**
-      * Request that the player's client download and switch resource packs.
-      * <p>
-@@ -1463,6 +1726,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
-      *     pack correctly.
-      * </ul>
-      *
-+     * @deprecated in favour of {@link #setResourcePack(String, byte[], net.kyori.adventure.text.Component, boolean)}
-      * @param url The URL from which the client will download the resource
-      *     pack. The string must contain only US-ASCII characters and should
-      *     be encoded as per RFC 1738.
-@@ -1523,8 +1787,57 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
-      * @throws IllegalArgumentException Thrown if the hash is not 20 bytes
-      *     long.
-      */
-+    @Deprecated // Paper
-     public void setResourcePack(@NotNull String url, @Nullable byte[] hash, @Nullable String prompt, boolean force);
- 
-+    // Paper start
 +    /**
 +     * Request that the player's client download and switch resource packs.
 +     * <p>
@@ -2587,9 +2702,63 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
 +     *     case this method will have no affect on them. Use the
 +     *     {@link PlayerResourcePackStatusEvent} to figure out whether or not
 +     *     the player loaded the pack!
-+     * <li>There is no concept of resetting resource packs back to default
-+     *     within Minecraft, so players will have to relog to do so or you
-+     *     have to send an empty pack.
++     * <li>To remove a resource pack you can use
++     *     {@link #removeResourcePacks(UUID, UUID...)} or {@link #clearResourcePacks()}.
+      * <li>The request is sent with empty string as the hash when the hash is
+      *     not provided. This might result in newer versions not loading the
+      *     pack correctly.
+@@ -1582,7 +1847,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      *     length restriction is an implementation specific arbitrary value.
+      * @throws IllegalArgumentException Thrown if the hash is not 20 bytes
+      *     long.
++     * @deprecated in favour of {@link #sendResourcePacks(net.kyori.adventure.resource.ResourcePackRequest)}
+      */
++    @Deprecated // Paper - adventure
+     public void setResourcePack(@NotNull String url, @Nullable byte[] hash, boolean force);
+ 
+     /**
+@@ -1607,7 +1874,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      *     {@link PlayerResourcePackStatusEvent} to figure out whether or not
+      *     the player loaded the pack!
+      * <li>To remove a resource pack you can use
+-     *     {@link #removeResourcePack(UUID)} or {@link #removeResourcePacks()}.
++     *     {@link #removeResourcePacks(UUID, UUID...)} or {@link #clearResourcePacks()}.
+      * <li>The request is sent with empty string as the hash when the hash is
+      *     not provided. This might result in newer versions not loading the
+      *     pack correctly.
+@@ -1627,9 +1894,61 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      *     length restriction is an implementation specific arbitrary value.
+      * @throws IllegalArgumentException Thrown if the hash is not 20 bytes
+      *     long.
++     * @deprecated in favour of {@link #sendResourcePacks(net.kyori.adventure.resource.ResourcePackRequest)}
+      */
++    @Deprecated // Paper
+     public void setResourcePack(@NotNull String url, @Nullable byte[] hash, @Nullable String prompt, boolean force);
+ 
++    // Paper start
++    /**
++     * Request that the player's client download and switch resource packs.
++     * <p>
++     * The player's client will download the new resource pack asynchronously
++     * in the background, and will automatically switch to it once the
++     * download is complete. If the client has downloaded and cached a
++     * resource pack with the same hash in the past it will not download but
++     * directly apply the cached pack. If the hash is null and the client has
++     * downloaded and cached the same resource pack in the past, it will
++     * perform a file size check against the response content to determine if
++     * the resource pack has changed and needs to be downloaded again. When
++     * this request is sent for the very first time from a given server, the
++     * client will first display a confirmation GUI with a custom prompt
++     * to the player before proceeding with the download.
++     * <p>
++     * Notes:
++     * <ul>
++     * <li>Players can disable server resources on their client, in which
++     *     case this method will have no affect on them. Use the
++     *     {@link PlayerResourcePackStatusEvent} to figure out whether or not
++     *     the player loaded the pack!
++     * <li>To remove a resource pack you can use
++     *     {@link #removeResourcePacks(UUID, UUID...)} or {@link #clearResourcePacks()}.
 +     * <li>The request is sent with empty string as the hash when the hash is
 +     *     not provided. This might result in newer versions not loading the
 +     *     pack correctly.
@@ -2609,14 +2778,102 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
 +     *     length restriction is an implementation specific arbitrary value.
 +     * @throws IllegalArgumentException Thrown if the hash is not 20 bytes
 +     *     long.
++     * @see #sendResourcePacks(net.kyori.adventure.resource.ResourcePackRequest)
 +     */
-+    public void setResourcePack(@NotNull String url, byte @Nullable [] hash, net.kyori.adventure.text.@Nullable Component prompt, boolean force);
++    default void setResourcePack(final @NotNull String url, final byte @Nullable [] hash, final net.kyori.adventure.text.@Nullable Component prompt, final boolean force) {
++        this.setResourcePack(UUID.nameUUIDFromBytes(url.getBytes(java.nio.charset.StandardCharsets.UTF_8)), url, hash, prompt, force);
++    }
 +    // Paper end
 +
      /**
-      * Gets the Scoreboard displayed to this player
+      * Request that the player's client download and switch resource packs.
+      * <p>
+@@ -1652,7 +1971,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      *     {@link PlayerResourcePackStatusEvent} to figure out whether or not
+      *     the player loaded the pack!
+      * <li>To remove a resource pack you can use
+-     *     {@link #removeResourcePack(UUID)} or {@link #removeResourcePacks()}.
++     *     {@link #removeResourcePacks(UUID, UUID...)} or {@link #clearResourcePacks()}.
+      * <li>The request is sent with empty string as the hash when the hash is
+      *     not provided. This might result in newer versions not loading the
+      *     pack correctly.
+@@ -1673,9 +1992,60 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      *     length restriction is an implementation specific arbitrary value.
+      * @throws IllegalArgumentException Thrown if the hash is not 20 bytes
+      *     long.
++     * @deprecated in favour of {@link #sendResourcePacks(net.kyori.adventure.resource.ResourcePackRequest)}
+      */
++    @Deprecated // Paper - adventure
+     public void setResourcePack(@NotNull UUID id, @NotNull String url, @Nullable byte[] hash, @Nullable String prompt, boolean force);
+ 
++    // Paper start
++    /**
++     * Request that the player's client download and switch resource packs.
++     * <p>
++     * The player's client will download the new resource pack asynchronously
++     * in the background, and will automatically switch to it once the
++     * download is complete. If the client has downloaded and cached a
++     * resource pack with the same hash in the past it will not download but
++     * directly apply the cached pack. If the hash is null and the client has
++     * downloaded and cached the same resource pack in the past, it will
++     * perform a file size check against the response content to determine if
++     * the resource pack has changed and needs to be downloaded again. When
++     * this request is sent for the very first time from a given server, the
++     * client will first display a confirmation GUI to the player before
++     * proceeding with the download.
++     * <p>
++     * Notes:
++     * <ul>
++     * <li>Players can disable server resources on their client, in which
++     *     case this method will have no affect on them. Use the
++     *     {@link PlayerResourcePackStatusEvent} to figure out whether or not
++     *     the player loaded the pack!
++     * <li>To remove a resource pack you can use
++     *     {@link #removeResourcePacks(UUID, UUID...)} or {@link #clearResourcePacks()}.
++     * <li>The request is sent with empty string as the hash when the hash is
++     *     not provided. This might result in newer versions not loading the
++     *     pack correctly.
++     * </ul>
++     *
++     * @param uuid Unique resource pack ID.
++     * @param url The URL from which the client will download the resource
++     *     pack. The string must contain only US-ASCII characters and should
++     *     be encoded as per RFC 1738.
++     * @param hash The sha1 hash sum of the resource pack file which is used
++     *     to apply a cached version of the pack directly without downloading
++     *     if it is available. Hast to be 20 bytes long!
++     * @param prompt The optional custom prompt message to be shown to client.
++     * @param force If true, the client will be disconnected from the server
++     *     when it declines to use the resource pack.
++     * @throws IllegalArgumentException Thrown if the URL is null.
++     * @throws IllegalArgumentException Thrown if the URL is too long. The
++     *     length restriction is an implementation specific arbitrary value.
++     * @throws IllegalArgumentException Thrown if the hash is not 20 bytes
++     *     long.
++     * @see #sendResourcePacks(net.kyori.adventure.resource.ResourcePackRequest)
++     */
++    void setResourcePack(@NotNull UUID uuid, @NotNull String url, byte @Nullable [] hash, net.kyori.adventure.text.@Nullable Component prompt, boolean force);
++    // Paper end
++
+     /**
+      * Request that the player's client download and include another resource pack.
+      * <p>
+@@ -1728,12 +2098,14 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       *
-@@ -1659,7 +1972,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      * @param id the id of the resource pack.
+      * @throws IllegalArgumentException If the ID is null.
++     * @see #removeResourcePacks(UUID, UUID...)
+      */
+     public void removeResourcePack(@NotNull UUID id);
+ 
+     /**
+      * Request that the player's client remove all loaded resource pack sent by
+      * the server.
++     * @see #clearResourcePacks()
+      */
+     public void removeResourcePacks();
+ 
+@@ -1871,7 +2243,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       *
       * @param title Title text
       * @param subtitle Subtitle text
@@ -2625,7 +2882,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
       */
      @Deprecated
      public void sendTitle(@Nullable String title, @Nullable String subtitle);
-@@ -1678,7 +1991,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -1890,7 +2262,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * @param fadeIn time in ticks for titles to fade in. Defaults to 10.
       * @param stay time in ticks for titles to stay. Defaults to 70.
       * @param fadeOut time in ticks for titles to fade out. Defaults to 20.
@@ -2635,7 +2892,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
      public void sendTitle(@Nullable String title, @Nullable String subtitle, int fadeIn, int stay, int fadeOut);
  
      /**
-@@ -1905,6 +2220,14 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -2117,6 +2491,14 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       */
      public int getClientViewDistance();
  
@@ -2650,7 +2907,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
      /**
       * Gets the player's estimated ping in milliseconds.
       *
-@@ -1930,8 +2253,10 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -2142,8 +2524,10 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * they wish.
       *
       * @return the player's locale
@@ -2661,7 +2918,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
      public String getLocale();
  
      /**
-@@ -1983,6 +2308,14 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -2195,6 +2579,14 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       */
      public boolean isAllowingServerListings();
  
@@ -2676,7 +2933,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
      // Spigot start
      public class Spigot extends Entity.Spigot {
  
-@@ -2014,11 +2347,13 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -2226,11 +2618,13 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
              throw new UnsupportedOperationException("Not supported yet.");
          }
  
@@ -2690,7 +2947,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
          @Override
          public void sendMessage(@NotNull net.md_5.bungee.api.chat.BaseComponent... components) {
              throw new UnsupportedOperationException("Not supported yet.");
-@@ -2029,7 +2364,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -2241,7 +2635,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
           *
           * @param position the screen position
           * @param component the components to send
@@ -2700,7 +2957,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
          public void sendMessage(@NotNull net.md_5.bungee.api.ChatMessageType position, @NotNull net.md_5.bungee.api.chat.BaseComponent component) {
              throw new UnsupportedOperationException("Not supported yet.");
          }
-@@ -2039,7 +2376,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -2251,7 +2647,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
           *
           * @param position the screen position
           * @param components the components to send
@@ -2710,7 +2967,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
          public void sendMessage(@NotNull net.md_5.bungee.api.ChatMessageType position, @NotNull net.md_5.bungee.api.chat.BaseComponent... components) {
              throw new UnsupportedOperationException("Not supported yet.");
          }
-@@ -2050,7 +2389,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -2262,7 +2660,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
           * @param position the screen position
           * @param sender the sender of the message
           * @param component the components to send
@@ -2720,7 +2977,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
          public void sendMessage(@NotNull net.md_5.bungee.api.ChatMessageType position, @Nullable java.util.UUID sender, @NotNull net.md_5.bungee.api.chat.BaseComponent component) {
              throw new UnsupportedOperationException("Not supported yet.");
          }
-@@ -2061,7 +2402,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -2273,7 +2673,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
           * @param position the screen position
           * @param sender the sender of the message
           * @param components the components to send
@@ -2731,7 +2988,7 @@ index fc37e0c604e44dd2df54b51cd2f10dd9004f1d98..3f9ed7dfb4633804fe86857dcc9f57aa
              throw new UnsupportedOperationException("Not supported yet.");
          }
 diff --git a/src/main/java/org/bukkit/entity/TextDisplay.java b/src/main/java/org/bukkit/entity/TextDisplay.java
-index d6d7ada3d3ff9a033ce3f780b104ef3e176f9083..f101ffde9e7b3f6c3ab6f1cffb8d6f4e720634b2 100644
+index bbce00a6d84aaad4a0ec892ec5cb1b995a0a5a05..a8277270e81bc3d9bbc64c029fe11e3d11e1d9ac 100644
 --- a/src/main/java/org/bukkit/entity/TextDisplay.java
 +++ b/src/main/java/org/bukkit/entity/TextDisplay.java
 @@ -13,17 +13,37 @@ public interface TextDisplay extends Display {
@@ -2913,82 +3170,84 @@ index f4ac033ff8794a61c82a49dc6c3f863f3291455d..d944d67f544494355f03c5bc9afd8ea7
  
      /**
 diff --git a/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java b/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java
-index 3c2ea8fec3a748cab7f5ad9100d12bd8213ec6c9..a803bfea5400b3578bb4cf3261874e873b6467d9 100644
+index 133760be6c73436512ba684a3ac77a514b2d8765..9473303bd8ab1f6b63b6999a5f5ff3eca1cc23d6 100644
 --- a/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java
 +++ b/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java
-@@ -12,25 +12,48 @@ import org.jetbrains.annotations.Nullable;
+@@ -12,26 +12,49 @@ import org.jetbrains.annotations.Nullable;
+  */
  public class PlayerDeathEvent extends EntityDeathEvent {
      private int newExp = 0;
-     private String deathMessage = "";
-+    private net.kyori.adventure.text.Component adventure$deathMessage; // Paper
+-    private String deathMessage = "";
++    private net.kyori.adventure.text.Component deathMessage; // Paper - adventure
      private int newLevel = 0;
      private int newTotalExp = 0;
      private boolean keepLevel = false;
      private boolean keepInventory = false;
-+    // Paper start
-+    public PlayerDeathEvent(@NotNull final Player player, @NotNull final List<ItemStack> drops, final int droppedExp, @Nullable final net.kyori.adventure.text.Component adventure$deathMessage) {
-+        this(player, drops, droppedExp, 0, adventure$deathMessage, null);
++    // Paper start - adventure
++    @org.jetbrains.annotations.ApiStatus.Internal
++    public PlayerDeathEvent(final @NotNull Player player, final @NotNull DamageSource damageSource, final @NotNull List<ItemStack> drops, final int droppedExp, final @Nullable net.kyori.adventure.text.Component deathMessage) {
++        this(player, damageSource, drops, droppedExp, 0, deathMessage);
 +    }
 +
-+    public PlayerDeathEvent(@NotNull final Player player, @NotNull final List<ItemStack> drops, final int droppedExp, final int newExp, @Nullable final net.kyori.adventure.text.Component adventure$deathMessage, @Nullable String deathMessage) {
-+        this(player, drops, droppedExp, newExp, 0, 0, adventure$deathMessage, deathMessage);
++    @org.jetbrains.annotations.ApiStatus.Internal
++    public PlayerDeathEvent(final @NotNull Player player, final @NotNull DamageSource damageSource, final @NotNull List<ItemStack> drops, final int droppedExp, final int newExp, final @Nullable net.kyori.adventure.text.Component deathMessage) {
++        this(player, damageSource, drops, droppedExp, newExp, 0, 0, deathMessage);
 +    }
- 
-+    public PlayerDeathEvent(@NotNull final Player player, @NotNull final List<ItemStack> drops, final int droppedExp, final int newExp, final int newTotalExp, final int newLevel, @Nullable final net.kyori.adventure.text.Component adventure$deathMessage, @Nullable String deathMessage) {
-+        super(player, drops, droppedExp);
++
++    @org.jetbrains.annotations.ApiStatus.Internal
++    public PlayerDeathEvent(final @NotNull Player player, final @NotNull DamageSource damageSource, final @NotNull List<ItemStack> drops, final int droppedExp, final int newExp, final int newTotalExp, final int newLevel, final @Nullable net.kyori.adventure.text.Component deathMessage) {
++        super(player, damageSource, drops, droppedExp);
 +        this.newExp = newExp;
 +        this.newTotalExp = newTotalExp;
 +        this.newLevel = newLevel;
 +        this.deathMessage = deathMessage;
-+        this.adventure$deathMessage = adventure$deathMessage;
 +    }
-+    // Paper end
-+
++    // Paper end - adventure
+ 
 +    @Deprecated // Paper
-     public PlayerDeathEvent(@NotNull final Player player, @NotNull final List<ItemStack> drops, final int droppedExp, @Nullable final String deathMessage) {
-         this(player, drops, droppedExp, 0, deathMessage);
+     public PlayerDeathEvent(@NotNull final Player player, @NotNull DamageSource damageSource, @NotNull final List<ItemStack> drops, final int droppedExp, @Nullable final String deathMessage) {
+         this(player, damageSource, drops, droppedExp, 0, deathMessage);
      }
  
 +    @Deprecated // Paper
-     public PlayerDeathEvent(@NotNull final Player player, @NotNull final List<ItemStack> drops, final int droppedExp, final int newExp, @Nullable final String deathMessage) {
-         this(player, drops, droppedExp, newExp, 0, 0, deathMessage);
+     public PlayerDeathEvent(@NotNull final Player player, @NotNull DamageSource damageSource, @NotNull final List<ItemStack> drops, final int droppedExp, final int newExp, @Nullable final String deathMessage) {
+         this(player, damageSource, drops, droppedExp, newExp, 0, 0, deathMessage);
      }
  
 +    @Deprecated // Paper
-     public PlayerDeathEvent(@NotNull final Player player, @NotNull final List<ItemStack> drops, final int droppedExp, final int newExp, final int newTotalExp, final int newLevel, @Nullable final String deathMessage) {
-         super(player, drops, droppedExp);
+     public PlayerDeathEvent(@NotNull final Player player, @NotNull DamageSource damageSource, @NotNull final List<ItemStack> drops, final int droppedExp, final int newExp, final int newTotalExp, final int newLevel, @Nullable final String deathMessage) {
+         super(player, damageSource, drops, droppedExp);
          this.newExp = newExp;
          this.newTotalExp = newTotalExp;
          this.newLevel = newLevel;
-         this.deathMessage = deathMessage;
-+        this.adventure$deathMessage = deathMessage != null ? net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(deathMessage) : null; // Paper
+-        this.deathMessage = deathMessage;
++        this.deathMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserializeOrNull(deathMessage); // Paper
      }
  
      @NotNull
-@@ -39,25 +62,55 @@ public class PlayerDeathEvent extends EntityDeathEvent {
+@@ -40,25 +63,49 @@ public class PlayerDeathEvent extends EntityDeathEvent {
          return (Player) entity;
      }
  
-+    // Paper start
++    // Paper start - adventure
 +    /**
 +     * Set the death message that will appear to everyone on the server.
 +     *
-+     * @param deathMessage Message to appear to other players on the server.
++     * @param deathMessage Component message to appear to other players on the server.
 +     */
-+    public void deathMessage(net.kyori.adventure.text.@Nullable Component deathMessage) {
-+        this.deathMessage = null;
-+        this.adventure$deathMessage = deathMessage;
++    public void deathMessage(final net.kyori.adventure.text.@Nullable Component deathMessage) {
++        this.deathMessage = deathMessage;
 +    }
 +
 +    /**
 +     * Get the death message that will appear to everyone on the server.
 +     *
-+     * @return Message to appear to other players on the server.
++     * @return Component message to appear to other players on the server.
 +     */
 +    public net.kyori.adventure.text.@Nullable Component deathMessage() {
-+        return this.adventure$deathMessage;
++        return this.deathMessage;
 +    }
-+    // Paper end
++    // Paper end - adventure
 +
      /**
       * Set the death message that will appear to everyone on the server.
@@ -2998,8 +3257,8 @@ index 3c2ea8fec3a748cab7f5ad9100d12bd8213ec6c9..a803bfea5400b3578bb4cf3261874e87
       */
 +    @Deprecated // Paper
      public void setDeathMessage(@Nullable String deathMessage) {
-         this.deathMessage = deathMessage;
-+        this.adventure$deathMessage = deathMessage != null ? net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(deathMessage) : null; // Paper
+-        this.deathMessage = deathMessage;
++        this.deathMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserializeOrNull(deathMessage); // Paper
      }
  
      /**
@@ -3012,22 +3271,18 @@ index 3c2ea8fec3a748cab7f5ad9100d12bd8213ec6c9..a803bfea5400b3578bb4cf3261874e87
 +    @Deprecated // Paper
      public String getDeathMessage() {
 -        return deathMessage;
-+        return this.deathMessage != null ? this.deathMessage : (this.adventure$deathMessage != null ? getDeathMessageString(this.adventure$deathMessage) : null); // Paper
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serializeOrNull(this.deathMessage); // Paper
      }
 -
-+    // Paper start //TODO: add translation API to drop String deathMessage in favor of just Adventure
-+    private static String getDeathMessageString(net.kyori.adventure.text.Component component) {
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(component);
-+    }
 +    // Paper end
      /**
       * Gets how much EXP the Player should have at respawn.
       * <p>
 diff --git a/src/main/java/org/bukkit/event/inventory/InventoryType.java b/src/main/java/org/bukkit/event/inventory/InventoryType.java
-index ec9f58ea221bfcde706d2454483888c54d44023a..19ba2d948ad83baab2a14ae6f7b3ce43c3d4971f 100644
+index 45acff6f8b4859b6e111d925ae01d59dd361b8c9..f5bdd6b6df126abfa26ce727c80a5772d2ab1a1b 100644
 --- a/src/main/java/org/bukkit/event/inventory/InventoryType.java
 +++ b/src/main/java/org/bukkit/event/inventory/InventoryType.java
-@@ -155,6 +155,18 @@ public enum InventoryType {
+@@ -164,6 +164,18 @@ public enum InventoryType {
      private final String title;
      private final boolean isCreatable;
  
@@ -3046,7 +3301,7 @@ index ec9f58ea221bfcde706d2454483888c54d44023a..19ba2d948ad83baab2a14ae6f7b3ce43
      private InventoryType(int defaultSize, /*@NotNull*/ String defaultTitle) {
          this(defaultSize, defaultTitle, true);
      }
-@@ -163,6 +175,7 @@ public enum InventoryType {
+@@ -172,6 +184,7 @@ public enum InventoryType {
          size = defaultSize;
          title = defaultTitle;
          this.isCreatable = isCreatable;
@@ -3054,7 +3309,7 @@ index ec9f58ea221bfcde706d2454483888c54d44023a..19ba2d948ad83baab2a14ae6f7b3ce43
      }
  
      public int getDefaultSize() {
-@@ -170,6 +183,7 @@ public enum InventoryType {
+@@ -179,6 +192,7 @@ public enum InventoryType {
      }
  
      @NotNull
@@ -3079,10 +3334,21 @@ index 9c68c3f2d61500479f48b80264f625aaae2f3204..399afcd19fcb6acd24857ed6ab48cf0d
      private static final HandlerList handlers = new HandlerList();
      private boolean cancel = false;
 diff --git a/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java b/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
-index 9866c07c999f46cb585709804aaad710c3031d5a..c7c45e2de8cca1bf8b8e12752e08db62403efa6a 100644
+index 7ca90f318a013786931043c9a10a93cf6aede199..004f1fd55c143e6c21be74d0a6b9ee8b2e12cc59 100644
 --- a/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
 +++ b/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
-@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
+@@ -10,11 +10,18 @@ import org.jetbrains.annotations.NotNull;
+  * Stores details for players attempting to log in.
+  * <p>
+  * This event is asynchronous, and not run using main thread.
++ * <p>
++ * When this event is fired, the player's locale is not
++ * available. Therefore, any translatable component will be
++ * rendered with the default locale, {@link java.util.Locale#US}.
++ * <p>
++ * Consider rendering any translatable yourself with {@link net.kyori.adventure.translation.GlobalTranslator#render}
++ * if the client's language is known.
+  */
  public class AsyncPlayerPreLoginEvent extends Event {
      private static final HandlerList handlers = new HandlerList();
      private Result result;
@@ -3091,8 +3357,8 @@ index 9866c07c999f46cb585709804aaad710c3031d5a..c7c45e2de8cca1bf8b8e12752e08db62
      private final String name;
      private final InetAddress ipAddress;
      private final UUID uniqueId;
-@@ -27,7 +27,7 @@ public class AsyncPlayerPreLoginEvent extends Event {
-     public AsyncPlayerPreLoginEvent(@NotNull final String name, @NotNull final InetAddress ipAddress, @NotNull final UUID uniqueId) {
+@@ -33,7 +40,7 @@ public class AsyncPlayerPreLoginEvent extends Event {
+     public AsyncPlayerPreLoginEvent(@NotNull final String name, @NotNull final InetAddress ipAddress, @NotNull final UUID uniqueId, boolean transferred) {
          super(true);
          this.result = Result.ALLOWED;
 -        this.message = "";
@@ -3100,7 +3366,7 @@ index 9866c07c999f46cb585709804aaad710c3031d5a..c7c45e2de8cca1bf8b8e12752e08db62
          this.name = name;
          this.ipAddress = ipAddress;
          this.uniqueId = uniqueId;
-@@ -79,6 +79,7 @@ public class AsyncPlayerPreLoginEvent extends Event {
+@@ -86,6 +93,7 @@ public class AsyncPlayerPreLoginEvent extends Event {
          this.result = result == null ? null : Result.valueOf(result.name());
      }
  
@@ -3108,7 +3374,7 @@ index 9866c07c999f46cb585709804aaad710c3031d5a..c7c45e2de8cca1bf8b8e12752e08db62
      /**
       * Gets the current kick message that will be used if getResult() !=
       * Result.ALLOWED
-@@ -86,7 +87,7 @@ public class AsyncPlayerPreLoginEvent extends Event {
+@@ -93,7 +101,7 @@ public class AsyncPlayerPreLoginEvent extends Event {
       * @return Current kick message
       */
      @NotNull
@@ -3117,7 +3383,7 @@ index 9866c07c999f46cb585709804aaad710c3031d5a..c7c45e2de8cca1bf8b8e12752e08db62
          return message;
      }
  
-@@ -95,16 +96,66 @@ public class AsyncPlayerPreLoginEvent extends Event {
+@@ -102,16 +110,66 @@ public class AsyncPlayerPreLoginEvent extends Event {
       *
       * @param message New kick message
       */
@@ -3186,7 +3452,7 @@ index 9866c07c999f46cb585709804aaad710c3031d5a..c7c45e2de8cca1bf8b8e12752e08db62
      }
  
      /**
-@@ -112,10 +163,12 @@ public class AsyncPlayerPreLoginEvent extends Event {
+@@ -119,10 +177,12 @@ public class AsyncPlayerPreLoginEvent extends Event {
       *
       * @param result New result for disallowing the player
       * @param message Kick message to display to the user
@@ -3200,7 +3466,7 @@ index 9866c07c999f46cb585709804aaad710c3031d5a..c7c45e2de8cca1bf8b8e12752e08db62
      }
  
      /**
-@@ -130,7 +183,7 @@ public class AsyncPlayerPreLoginEvent extends Event {
+@@ -137,7 +197,7 @@ public class AsyncPlayerPreLoginEvent extends Event {
      @Deprecated
      public void disallow(@NotNull final PlayerPreLoginEvent.Result result, @NotNull final String message) {
          this.result = result == null ? null : Result.valueOf(result.name());
@@ -3427,7 +3693,7 @@ index 2f6ca42330675733b2b4132cbb66e433788d05d5..997b06c19a5277656521e0e298f2958c
  
      @NotNull
 diff --git a/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java b/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java
-index 36b436e145a7215682b692a87ab894df25752c1d..c5e8bffef736365881953161ff812c98adf93a80 100644
+index 36b436e145a7215682b692a87ab894df25752c1d..dc6b41950570c3a8b02415dd9017b2336e6e7f0c 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java
 @@ -12,17 +12,31 @@ public class PlayerLocaleChangeEvent extends PlayerEvent {
@@ -3449,7 +3715,7 @@ index 36b436e145a7215682b692a87ab894df25752c1d..c5e8bffef736365881953161ff812c98
      public PlayerLocaleChangeEvent(@NotNull Player who, @NotNull String locale) {
          super(who);
          this.locale = locale;
-+        this.adventure$locale = net.kyori.adventure.translation.Translator.parseLocale(locale); // Paper
++        this.adventure$locale = java.util.Objects.requireNonNullElse(net.kyori.adventure.translation.Translator.parseLocale(locale), java.util.Locale.US); // Paper start
      }
  
      /**
@@ -3463,27 +3729,27 @@ index 36b436e145a7215682b692a87ab894df25752c1d..c5e8bffef736365881953161ff812c98
          return locale;
      }
 diff --git a/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java b/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
-index 084ca8cfcb7381bfa4fa6280748cf9b81210a9c1..62fb782baad5c80a3daaa557c0faa674c58a98cf 100644
+index 2bc81b0aa73f7f5b0352121f6bf18fa63acf7a83..eaa0548cf430bf5b58ff84e0a4403c451699db28 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
-@@ -17,7 +17,7 @@ public class PlayerLoginEvent extends PlayerEvent {
-     private final InetAddress address;
+@@ -18,7 +18,7 @@ public class PlayerLoginEvent extends PlayerEvent {
+     private final InetAddress realAddress;
      private final String hostname;
      private Result result = Result.ALLOWED;
 -    private String message = "";
 +    private net.kyori.adventure.text.Component message = net.kyori.adventure.text.Component.empty();
-     private final InetAddress realAddress; // Spigot
  
      /**
-@@ -53,12 +53,52 @@ public class PlayerLoginEvent extends PlayerEvent {
+      * This constructor defaults message to an empty string, and result to
+@@ -60,13 +60,53 @@ public class PlayerLoginEvent extends PlayerEvent {
       * @param result The result status for this event
       * @param message The message to be displayed if result denies login
       * @param realAddress the actual, unspoofed connecting address
 +     * @deprecated in favour of {@link #PlayerLoginEvent(Player, String, InetAddress, Result, net.kyori.adventure.text.Component, InetAddress)}
       */
 +    @Deprecated // Paper
-     public PlayerLoginEvent(@NotNull final Player player, @NotNull String hostname, @NotNull final InetAddress address, @NotNull final Result result, @NotNull final String message, @NotNull final InetAddress realAddress) { // Spigot
-         this(player, hostname, address, realAddress); // Spigot
+     public PlayerLoginEvent(@NotNull final Player player, @NotNull String hostname, @NotNull final InetAddress address, @NotNull final Result result, @NotNull final String message, @NotNull final InetAddress realAddress) {
+         this(player, hostname, address, realAddress);
          this.result = result;
 +        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message); // Paper
 +    }
@@ -3500,12 +3766,12 @@ index 084ca8cfcb7381bfa4fa6280748cf9b81210a9c1..62fb782baad5c80a3daaa557c0faa674
 +     * @param message The message to be displayed if result denies login
 +     * @param realAddress the actual, unspoofed connecting address
 +     */
-+    public PlayerLoginEvent(@NotNull final Player player, @NotNull String hostname, @NotNull final InetAddress address, @NotNull final Result result, @NotNull final net.kyori.adventure.text.Component message, @NotNull final InetAddress realAddress) { // Spigot
++    public PlayerLoginEvent(@NotNull final Player player, @NotNull String hostname, @NotNull final InetAddress address, @NotNull final Result result, @NotNull final net.kyori.adventure.text.Component message, @NotNull final InetAddress realAddress) {
 +        this(player, hostname, address, realAddress); // Spigot
 +        this.result = result;
-+        this.message = message;
-+    }
-+
+         this.message = message;
+     }
+ 
 +    /**
 +     * Gets the current kick message that will be used if getResult() !=
 +     * Result.ALLOWED
@@ -3522,13 +3788,14 @@ index 084ca8cfcb7381bfa4fa6280748cf9b81210a9c1..62fb782baad5c80a3daaa557c0faa674
 +     * @param message New kick message
 +     */
 +    public void kickMessage(net.kyori.adventure.text.@NotNull Component message) {
-         this.message = message;
-     }
++        this.message = message;
++    }
 +    // Paper end
- 
-     // Spigot start
++
      /**
-@@ -96,19 +136,23 @@ public class PlayerLoginEvent extends PlayerEvent {
+      * Gets the current result of the login, as an enum
+      *
+@@ -91,19 +131,23 @@ public class PlayerLoginEvent extends PlayerEvent {
       * Result.ALLOWED
       *
       * @return Current kick message
@@ -3554,7 +3821,7 @@ index 084ca8cfcb7381bfa4fa6280748cf9b81210a9c1..62fb782baad5c80a3daaa557c0faa674
      }
  
      /**
-@@ -127,7 +171,7 @@ public class PlayerLoginEvent extends PlayerEvent {
+@@ -122,7 +166,7 @@ public class PlayerLoginEvent extends PlayerEvent {
       */
      public void allow() {
          result = Result.ALLOWED;
@@ -3563,7 +3830,7 @@ index 084ca8cfcb7381bfa4fa6280748cf9b81210a9c1..62fb782baad5c80a3daaa557c0faa674
      }
  
      /**
-@@ -135,8 +179,21 @@ public class PlayerLoginEvent extends PlayerEvent {
+@@ -130,8 +174,21 @@ public class PlayerLoginEvent extends PlayerEvent {
       *
       * @param result New result for disallowing the player
       * @param message Kick message to display to the user
@@ -3586,10 +3853,24 @@ index 084ca8cfcb7381bfa4fa6280748cf9b81210a9c1..62fb782baad5c80a3daaa557c0faa674
          this.message = message;
      }
 diff --git a/src/main/java/org/bukkit/event/player/PlayerPreLoginEvent.java b/src/main/java/org/bukkit/event/player/PlayerPreLoginEvent.java
-index fb066251f793ec3b41bfc075b9478901b15ee549..6800132c6288b4588fd02b08d26f016c38f27129 100644
+index fb066251f793ec3b41bfc075b9478901b15ee549..175ed12dd1698f4d153c9acdac8340c15a427ea5 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerPreLoginEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerPreLoginEvent.java
-@@ -19,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
+@@ -9,6 +9,13 @@ import org.jetbrains.annotations.NotNull;
+ 
+ /**
+  * Stores details for players attempting to log in
++ * <p>
++ * When this event is fired, the player's locale is not
++ * available. Therefore, any translatable component will be
++ * rendered with the default locale, {@link java.util.Locale#US}.
++ * <p>
++ * Consider rendering any translatable yourself with {@link net.kyori.adventure.translation.GlobalTranslator#render}
++ * if the client's language is known.
+  *
+  * @deprecated This event causes synchronization from the login thread; {@link
+  *     AsyncPlayerPreLoginEvent} is preferred to keep the secondary threads
+@@ -19,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
  public class PlayerPreLoginEvent extends Event {
      private static final HandlerList handlers = new HandlerList();
      private Result result;
@@ -3598,7 +3879,7 @@ index fb066251f793ec3b41bfc075b9478901b15ee549..6800132c6288b4588fd02b08d26f016c
      private final String name;
      private final InetAddress ipAddress;
      private final UUID uniqueId;
-@@ -31,7 +31,7 @@ public class PlayerPreLoginEvent extends Event {
+@@ -31,7 +38,7 @@ public class PlayerPreLoginEvent extends Event {
  
      public PlayerPreLoginEvent(@NotNull final String name, @NotNull final InetAddress ipAddress, @NotNull final UUID uniqueId) {
          this.result = Result.ALLOWED;
@@ -3607,7 +3888,7 @@ index fb066251f793ec3b41bfc075b9478901b15ee549..6800132c6288b4588fd02b08d26f016c
          this.name = name;
          this.ipAddress = ipAddress;
          this.uniqueId = uniqueId;
-@@ -56,6 +56,7 @@ public class PlayerPreLoginEvent extends Event {
+@@ -56,6 +63,7 @@ public class PlayerPreLoginEvent extends Event {
          this.result = result;
      }
  
@@ -3615,7 +3896,7 @@ index fb066251f793ec3b41bfc075b9478901b15ee549..6800132c6288b4588fd02b08d26f016c
      /**
       * Gets the current kick message that will be used if getResult() !=
       * Result.ALLOWED
-@@ -63,7 +64,7 @@ public class PlayerPreLoginEvent extends Event {
+@@ -63,7 +71,7 @@ public class PlayerPreLoginEvent extends Event {
       * @return Current kick message
       */
      @NotNull
@@ -3624,7 +3905,7 @@ index fb066251f793ec3b41bfc075b9478901b15ee549..6800132c6288b4588fd02b08d26f016c
          return message;
      }
  
-@@ -72,16 +73,51 @@ public class PlayerPreLoginEvent extends Event {
+@@ -72,16 +80,51 @@ public class PlayerPreLoginEvent extends Event {
       *
       * @param message New kick message
       */
@@ -3678,7 +3959,7 @@ index fb066251f793ec3b41bfc075b9478901b15ee549..6800132c6288b4588fd02b08d26f016c
      }
  
      /**
-@@ -89,10 +125,12 @@ public class PlayerPreLoginEvent extends Event {
+@@ -89,10 +132,12 @@ public class PlayerPreLoginEvent extends Event {
       *
       * @param result New result for disallowing the player
       * @param message Kick message to display to the user
@@ -4013,10 +4294,10 @@ index e12996492c1558fed9fab30de9f8018e0ed7fac3..002acfbdce1db10f7ba1b6a013e678f5
  
      /**
 diff --git a/src/main/java/org/bukkit/inventory/ItemFactory.java b/src/main/java/org/bukkit/inventory/ItemFactory.java
-index e606f63a284db71663aee667597447b875e20627..6b1c55249b39a45c33ac49bacef4e9d80ba8cc3a 100644
+index b8bb11544bdfb5b9272c2c3c33c95a4c1c7fdf12..86fbc3902989a3baca851ab8c3866af445451787 100644
 --- a/src/main/java/org/bukkit/inventory/ItemFactory.java
 +++ b/src/main/java/org/bukkit/inventory/ItemFactory.java
-@@ -217,4 +217,24 @@ public interface ItemFactory {
+@@ -215,4 +215,24 @@ public interface ItemFactory {
       */
      @NotNull
      ItemStack enchantItem(@NotNull final ItemStack item, final int level, final boolean allowTreasures);
@@ -4042,10 +4323,10 @@ index e606f63a284db71663aee667597447b875e20627..6b1c55249b39a45c33ac49bacef4e9d8
 +    // Paper end - Adventure
  }
 diff --git a/src/main/java/org/bukkit/inventory/ItemStack.java b/src/main/java/org/bukkit/inventory/ItemStack.java
-index d80b0a52968920b990a75cff85e436a16d782500..9d327f0832c40d4a8d212346284274f6cf78834f 100644
+index 692f67c4e27cf62451130479510d06c89274ad23..22e883c8d737cf9f799c6160ff63d90f99250020 100644
 --- a/src/main/java/org/bukkit/inventory/ItemStack.java
 +++ b/src/main/java/org/bukkit/inventory/ItemStack.java
-@@ -23,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
+@@ -26,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
   * use this class to encapsulate Materials for which {@link Material#isItem()}
   * returns false.</b>
   */
@@ -4054,7 +4335,7 @@ index d80b0a52968920b990a75cff85e436a16d782500..9d327f0832c40d4a8d212346284274f6
      private Material type = Material.AIR;
      private int amount = 0;
      private MaterialData data = null;
-@@ -602,4 +602,21 @@ public class ItemStack implements Cloneable, ConfigurationSerializable, Translat
+@@ -624,4 +624,21 @@ public class ItemStack implements Cloneable, ConfigurationSerializable, Translat
      public String getTranslationKey() {
          return Bukkit.getUnsafe().getTranslationKey(this);
      }
@@ -4077,23 +4358,76 @@ index d80b0a52968920b990a75cff85e436a16d782500..9d327f0832c40d4a8d212346284274f6
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/inventory/meta/BookMeta.java b/src/main/java/org/bukkit/inventory/meta/BookMeta.java
-index 94852d50e88d0594b84b581cd627174043629995..be7c2cfc757e4dd15927be850739d401958fb227 100644
+index 9bab73c3c2ca759b8e1c7d07d98cc593c961666a..f0c6943da3f783101ca647b75b3230fae3a310da 100644
 --- a/src/main/java/org/bukkit/inventory/meta/BookMeta.java
 +++ b/src/main/java/org/bukkit/inventory/meta/BookMeta.java
-@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
-  * Represents a book ({@link Material#WRITABLE_BOOK} or {@link
-  * Material#WRITTEN_BOOK}) that can have a title, an author, and pages.
+@@ -7,10 +7,15 @@ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
+ 
+ /**
+- * Represents a {@link Material#WRITTEN_BOOK}) that can have a title, an author,
++ * Represents a {@link Material#WRITTEN_BOOK} that can have a title, an author,
+  * and pages.
++ * <p>
++ * Before using this type, make sure to check the itemstack's material with
++ * {@link org.bukkit.inventory.ItemStack#getType()}. {@code instanceof} on
++ * the meta instance is not sufficient due to unusual inheritance
++ * with relation to {@link WritableBookMeta}.
   */
--public interface BookMeta extends ItemMeta {
-+public interface BookMeta extends ItemMeta, net.kyori.adventure.inventory.Book { // Paper
+-public interface BookMeta extends WritableBookMeta {
++public interface BookMeta extends WritableBookMeta, net.kyori.adventure.inventory.Book { // Paper - adventure
  
      /**
       * Represents the generation (or level of copying) of a written book
-@@ -119,6 +119,109 @@ public interface BookMeta extends ItemMeta {
-      */
-     boolean hasPages();
+@@ -116,6 +121,153 @@ public interface BookMeta extends WritableBookMeta {
+     @NotNull
+     BookMeta clone();
  
-+    // Paper start
++    // Paper start - adventure
++    //<editor-fold desc="deprecations" defaultstate="collapsed">
++    /**
++     * @deprecated use {@link #page(int)}
++     */
++    @Deprecated
++    @Override
++    @NotNull String getPage(int page);
++
++    /**
++     * @deprecated use {@link #page(int, net.kyori.adventure.text.Component)}
++     */
++    @Deprecated
++    @Override
++    void setPage(int page, @NotNull String data);
++
++    /**
++     * @deprecated use {@link #pages()}
++     */
++    @Deprecated
++    @Override
++    @NotNull List<String> getPages();
++
++    /**
++     * @deprecated use {@link #pages(List)}
++     */
++    @Deprecated
++    @Override
++    void setPages(@NotNull List<String> pages);
++
++    /**
++     * @deprecated use {@link #pages(net.kyori.adventure.text.Component...)}
++     */
++    @Deprecated
++    @Override
++    void setPages(@NotNull String... pages);
++
++    /**
++     * @deprecated use {@link #addPages(net.kyori.adventure.text.Component...)}
++     */
++    @Deprecated
++    @Override
++    void addPage(@NotNull String... pages);
++    //</editor-fold>
++
 +    /**
 +     * Gets the title of the book.
 +     * <p>
@@ -4138,6 +4472,7 @@ index 94852d50e88d0594b84b581cd627174043629995..be7c2cfc757e4dd15927be850739d401
 +    @Override
 +    @NotNull BookMeta author(net.kyori.adventure.text.@Nullable Component author);
 +
++
 +    /**
 +     * Gets the specified page in the book. The page must exist.
 +     * <p>
@@ -4152,7 +4487,7 @@ index 94852d50e88d0594b84b581cd627174043629995..be7c2cfc757e4dd15927be850739d401
 +     * Sets the specified page in the book. Pages of the book must be
 +     * contiguous.
 +     * <p>
-+     * The data can be up to 256 characters in length, additional characters
++     * The data can be up to 1024 characters in length, additional characters
 +     * are truncated.
 +     * <p>
 +     * Pages are 1-indexed.
@@ -4163,14 +4498,14 @@ index 94852d50e88d0594b84b581cd627174043629995..be7c2cfc757e4dd15927be850739d401
 +    void page(int page, net.kyori.adventure.text.@NotNull Component data);
 +
 +    /**
-+     * Adds new pages to the end of the book. Up to a maximum of 50 pages with
-+     * 256 characters per page.
++     * Adds new pages to the end of the book. Up to a maximum of 100 pages with
++     * 1024 characters per page.
 +     *
 +     * @param pages A list of strings, each being a page
 +     */
 +    void addPages(net.kyori.adventure.text.@NotNull Component @NotNull ... pages);
 +
-+    interface BookMetaBuilder extends Builder {
++    interface BookMetaBuilder extends net.kyori.adventure.inventory.Book.Builder {
 +
 +        @Override
 +        @NotNull BookMetaBuilder title(net.kyori.adventure.text.@Nullable Component title);
@@ -4193,74 +4528,12 @@ index 94852d50e88d0594b84b581cd627174043629995..be7c2cfc757e4dd15927be850739d401
 +
 +    @Override
 +    @NotNull BookMetaBuilder toBuilder();
-+
 +    // Paper end
 +
-     /**
-      * Gets the specified page in the book. The given page must exist.
-      * <p>
-@@ -126,8 +229,10 @@ public interface BookMeta extends ItemMeta {
-      *
-      * @param page the page number to get, in range [1, getPageCount()]
-      * @return the page from the book
-+     * @deprecated in favour of {@link #page(int)}
-      */
-     @NotNull
-+    @Deprecated // Paper
-     String getPage(int page);
+     // Spigot start
+     public class Spigot {
  
-     /**
-@@ -141,15 +246,19 @@ public interface BookMeta extends ItemMeta {
-      *
-      * @param page the page number to set, in range [1, getPageCount()]
-      * @param data the data to set for that page
-+     * @deprecated in favour of {@link #page(int, net.kyori.adventure.text.Component)}
-      */
-+    @Deprecated // Paper
-     void setPage(int page, @NotNull String data);
- 
-     /**
-      * Gets all the pages in the book.
-      *
-      * @return list of all the pages in the book
-+     * @deprecated in favour of {@link #pages()}
-      */
-     @NotNull
-+    @Deprecated // Paper
-     List<String> getPages();
- 
-     /**
-@@ -157,7 +266,9 @@ public interface BookMeta extends ItemMeta {
-      * pages. Maximum 100 pages with 256 characters per page.
-      *
-      * @param pages A list of pages to set the book to use
-+     * @deprecated in favour of {@link #pages(List)}
-      */
-+    @Deprecated // Paper
-     void setPages(@NotNull List<String> pages);
- 
-     /**
-@@ -165,7 +276,9 @@ public interface BookMeta extends ItemMeta {
-      * pages. Maximum 50 pages with 256 characters per page.
-      *
-      * @param pages A list of strings, each being a page
-+     * @deprecated in favour of {@link #pages(net.kyori.adventure.text.Component...)}
-      */
-+    @Deprecated // Paper
-     void setPages(@NotNull String... pages);
- 
-     /**
-@@ -173,7 +286,9 @@ public interface BookMeta extends ItemMeta {
-      * 256 characters per page.
-      *
-      * @param pages A list of strings, each being a page
-+     * @deprecated in favour of {@link #addPages(net.kyori.adventure.text.Component...)}
-      */
-+    @Deprecated // Paper
-     void addPage(@NotNull String... pages);
- 
-     /**
-@@ -195,8 +310,10 @@ public interface BookMeta extends ItemMeta {
+@@ -124,8 +276,10 @@ public interface BookMeta extends WritableBookMeta {
           *
           * @param page the page number to get
           * @return the page from the book
@@ -4271,7 +4544,7 @@ index 94852d50e88d0594b84b581cd627174043629995..be7c2cfc757e4dd15927be850739d401
          public BaseComponent[] getPage(int page) {
              throw new UnsupportedOperationException("Not supported yet.");
          }
-@@ -210,7 +327,9 @@ public interface BookMeta extends ItemMeta {
+@@ -139,7 +293,9 @@ public interface BookMeta extends WritableBookMeta {
           *
           * @param page the page number to set
           * @param data the data to set for that page
@@ -4281,7 +4554,7 @@ index 94852d50e88d0594b84b581cd627174043629995..be7c2cfc757e4dd15927be850739d401
          public void setPage(int page, @Nullable BaseComponent... data) {
              throw new UnsupportedOperationException("Not supported yet.");
          }
-@@ -219,8 +338,10 @@ public interface BookMeta extends ItemMeta {
+@@ -148,8 +304,10 @@ public interface BookMeta extends WritableBookMeta {
           * Gets all the pages in the book.
           *
           * @return list of all the pages in the book
@@ -4292,7 +4565,7 @@ index 94852d50e88d0594b84b581cd627174043629995..be7c2cfc757e4dd15927be850739d401
          public List<BaseComponent[]> getPages() {
              throw new UnsupportedOperationException("Not supported yet.");
          }
-@@ -230,7 +351,9 @@ public interface BookMeta extends ItemMeta {
+@@ -159,7 +317,9 @@ public interface BookMeta extends WritableBookMeta {
           * pages. Maximum 50 pages with 256 characters per page.
           *
           * @param pages A list of pages to set the book to use
@@ -4302,7 +4575,7 @@ index 94852d50e88d0594b84b581cd627174043629995..be7c2cfc757e4dd15927be850739d401
          public void setPages(@NotNull List<BaseComponent[]> pages) {
              throw new UnsupportedOperationException("Not supported yet.");
          }
-@@ -240,7 +363,9 @@ public interface BookMeta extends ItemMeta {
+@@ -169,7 +329,9 @@ public interface BookMeta extends WritableBookMeta {
           * pages. Maximum 50 pages with 256 characters per page.
           *
           * @param pages A list of component arrays, each being a page
@@ -4312,7 +4585,7 @@ index 94852d50e88d0594b84b581cd627174043629995..be7c2cfc757e4dd15927be850739d401
          public void setPages(@NotNull BaseComponent[]... pages) {
              throw new UnsupportedOperationException("Not supported yet.");
          }
-@@ -250,7 +375,9 @@ public interface BookMeta extends ItemMeta {
+@@ -179,7 +341,9 @@ public interface BookMeta extends WritableBookMeta {
           * with 256 characters per page.
           *
           * @param pages A list of component arrays, each being a page
@@ -4323,10 +4596,10 @@ index 94852d50e88d0594b84b581cd627174043629995..be7c2cfc757e4dd15927be850739d401
              throw new UnsupportedOperationException("Not supported yet.");
          }
 diff --git a/src/main/java/org/bukkit/inventory/meta/ItemMeta.java b/src/main/java/org/bukkit/inventory/meta/ItemMeta.java
-index 8ca9605fc1193de9277407f02f755d81190472a4..d7fab2b856f6dfec4f9225c1bdb4254b238d98a4 100644
+index 3a87089ba78f1e603ef582fcda3eb915d11f21a5..a23d030d2204098be17d8b18021fd0bb79b4431b 100644
 --- a/src/main/java/org/bukkit/inventory/meta/ItemMeta.java
 +++ b/src/main/java/org/bukkit/inventory/meta/ItemMeta.java
-@@ -32,6 +32,24 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
+@@ -35,6 +35,24 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
       */
      boolean hasDisplayName();
  
@@ -4351,7 +4624,7 @@ index 8ca9605fc1193de9277407f02f755d81190472a4..d7fab2b856f6dfec4f9225c1bdb4254b
      /**
       * Gets the display name that is set.
       * <p>
-@@ -39,7 +57,9 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
+@@ -42,7 +60,9 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
       * before calling this method.
       *
       * @return the display name that is set
@@ -4361,7 +4634,7 @@ index 8ca9605fc1193de9277407f02f755d81190472a4..d7fab2b856f6dfec4f9225c1bdb4254b
      @NotNull
      String getDisplayName();
  
-@@ -47,7 +67,9 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
+@@ -50,7 +70,9 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
       * Sets the display name.
       *
       * @param name the name to set
@@ -4371,7 +4644,60 @@ index 8ca9605fc1193de9277407f02f755d81190472a4..d7fab2b856f6dfec4f9225c1bdb4254b
      void setDisplayName(@Nullable String name);
  
      /**
-@@ -82,6 +104,24 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
+@@ -63,6 +85,32 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
+      */
+     boolean hasItemName();
+ 
++    // Paper start
++    /**
++     * Gets the item name component that is set.
++     * <br>
++     * Item name differs from display name in that it is cannot be edited by an
++     * anvil, is not styled with italics, and does not show labels.
++     * <p>
++     * Plugins should check that {@link #hasItemName()} returns <code>true</code> before
++     * calling this method.
++     *
++     * @return the item name that is set
++     * @see #hasItemName()
++     */
++    @org.jetbrains.annotations.NotNull
++    Component itemName();
++
++    /**
++     * Sets the item name.
++     * <br>
++     * Item name differs from display name in that it is cannot be edited by an
++     * anvil, is not styled with italics, and does not show labels.
++     *
++     * @param name the name to set, null to remove it
++     */
++    void itemName(@Nullable final Component name);
++    // Paper end
+     /**
+      * Gets the item name that is set.
+      * <br>
+@@ -73,7 +121,9 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
+      * calling this method.
+      *
+      * @return the item name that is set
++     * @deprecated in favour of {@link #itemName()}
+      */
++    @Deprecated // Paper
+     @NotNull
+     String getItemName();
+ 
+@@ -84,7 +134,9 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
+      * anvil, is not styled with italics, and does not show labels.
+      *
+      * @param name the name to set
++     * @deprecated in favour of {@link #itemName(Component)}
+      */
++    @Deprecated // Paper
+     void setItemName(@Nullable String name);
+ 
+     /**
+@@ -125,6 +177,24 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
       */
      boolean hasLore();
  
@@ -4396,7 +4722,7 @@ index 8ca9605fc1193de9277407f02f755d81190472a4..d7fab2b856f6dfec4f9225c1bdb4254b
      /**
       * Gets the lore that is set.
       * <p>
-@@ -89,7 +129,9 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
+@@ -132,7 +202,9 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
       * calling this method.
       *
       * @return a list of lore that is set
@@ -4406,7 +4732,7 @@ index 8ca9605fc1193de9277407f02f755d81190472a4..d7fab2b856f6dfec4f9225c1bdb4254b
      @Nullable
      List<String> getLore();
  
-@@ -98,7 +140,9 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
+@@ -141,7 +213,9 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
       * Removes lore when given null.
       *
       * @param lore the lore that will be set
@@ -4416,11 +4742,84 @@ index 8ca9605fc1193de9277407f02f755d81190472a4..d7fab2b856f6dfec4f9225c1bdb4254b
      void setLore(@Nullable List<String> lore);
  
      /**
+diff --git a/src/main/java/org/bukkit/inventory/meta/WritableBookMeta.java b/src/main/java/org/bukkit/inventory/meta/WritableBookMeta.java
+index 12595536080ffe09df2b6ecdb83d846f50100d38..9fc47c879ee6b8edf2503f20e4736c2997d2de2e 100644
+--- a/src/main/java/org/bukkit/inventory/meta/WritableBookMeta.java
++++ b/src/main/java/org/bukkit/inventory/meta/WritableBookMeta.java
+@@ -5,8 +5,14 @@ import org.bukkit.Material;
+ import org.jetbrains.annotations.NotNull;
+ 
+ /**
+- * Represents a book ({@link Material#WRITABLE_BOOK} or {@link
+- * Material#WRITTEN_BOOK}) that can have pages.
++ * Represents a book ({@link Material#WRITABLE_BOOK}) that can have pages.
++ * <p>
++ * For {@link Material#WRITTEN_BOOK}, use {@link BookMeta}.
++ * <p>
++ * Before using this type, make sure to check the itemstack's material with
++ * {@link org.bukkit.inventory.ItemStack#getType()}. {@code instanceof} on
++ * the meta instance is not sufficient due to unusual inheritance
++ * with relation to {@link BookMeta}.
+  */
+ public interface WritableBookMeta extends ItemMeta {
+ 
+diff --git a/src/main/java/org/bukkit/inventory/meta/trim/TrimMaterial.java b/src/main/java/org/bukkit/inventory/meta/trim/TrimMaterial.java
+index eb80f24da65918a21a2fa6691eeb64b621febaf4..941fac4eee338870d8c30cb1f64cab572cf54548 100644
+--- a/src/main/java/org/bukkit/inventory/meta/trim/TrimMaterial.java
++++ b/src/main/java/org/bukkit/inventory/meta/trim/TrimMaterial.java
+@@ -51,4 +51,21 @@ public interface TrimMaterial extends Keyed, Translatable {
+      * {@link Material#AMETHYST_SHARD}.
+      */
+     public static final TrimMaterial AMETHYST = Registry.TRIM_MATERIAL.get(NamespacedKey.minecraft("amethyst"));
++
++    // Paper start - adventure
++    /**
++     * Get the description of this {@link TrimMaterial}.
++     *
++     * @return the description
++     */
++    net.kyori.adventure.text.@org.jetbrains.annotations.NotNull Component description();
++
++    /**
++     * @deprecated this method assumes that {@link #description()} will
++     * always be a translatable component which is not guaranteed.
++     */
++    @Override
++    @Deprecated(forRemoval = true)
++    @org.jetbrains.annotations.NotNull String getTranslationKey();
++    // Paper end - adventure
+ }
+diff --git a/src/main/java/org/bukkit/inventory/meta/trim/TrimPattern.java b/src/main/java/org/bukkit/inventory/meta/trim/TrimPattern.java
+index bd512a7840d4686759097ee4cbd8b375c530956b..f2242ddc4085f7e7cdd748d860857822e3d9b007 100644
+--- a/src/main/java/org/bukkit/inventory/meta/trim/TrimPattern.java
++++ b/src/main/java/org/bukkit/inventory/meta/trim/TrimPattern.java
+@@ -83,4 +83,21 @@ public interface TrimPattern extends Keyed, Translatable {
+      * {@link Material#BOLT_ARMOR_TRIM_SMITHING_TEMPLATE}.
+      */
+     public static final TrimPattern BOLT = Registry.TRIM_PATTERN.get(NamespacedKey.minecraft("bolt"));
++
++    // Paper start - adventure
++    /**
++     * Get the description of this {@link TrimPattern}.
++     *
++     * @return the description
++     */
++    net.kyori.adventure.text.@org.jetbrains.annotations.NotNull Component description();
++
++    /**
++     * @deprecated this method assumes that {@link #description()} will
++     * always be a translatable component which is not guaranteed.
++     */
++    @Override
++    @Deprecated(forRemoval = true)
++    @org.jetbrains.annotations.NotNull String getTranslationKey();
++    // Paper end - adventure
+ }
 diff --git a/src/main/java/org/bukkit/map/MapCursor.java b/src/main/java/org/bukkit/map/MapCursor.java
-index b90fd819a781d3a2117ffa25f0864b1576901f9f..7d4f4970dae6fe4eeea6b6b6810dcecfe20d6e51 100644
+index 9679cc595b5009990d8441a6344505eef1f5d265..f973f0f3925819765412f6f134e553d7d74f1467 100644
 --- a/src/main/java/org/bukkit/map/MapCursor.java
 +++ b/src/main/java/org/bukkit/map/MapCursor.java
-@@ -10,7 +10,7 @@ public final class MapCursor {
+@@ -12,7 +12,7 @@ public final class MapCursor {
      private byte x, y;
      private byte direction, type;
      private boolean visible;
@@ -4429,7 +4828,7 @@ index b90fd819a781d3a2117ffa25f0864b1576901f9f..7d4f4970dae6fe4eeea6b6b6810dcecf
  
      /**
       * Initialize the map cursor.
-@@ -24,7 +24,7 @@ public final class MapCursor {
+@@ -26,7 +26,7 @@ public final class MapCursor {
       */
      @Deprecated
      public MapCursor(byte x, byte y, byte direction, byte type, boolean visible) {
@@ -4438,7 +4837,7 @@ index b90fd819a781d3a2117ffa25f0864b1576901f9f..7d4f4970dae6fe4eeea6b6b6810dcecf
      }
  
      /**
-@@ -37,7 +37,7 @@ public final class MapCursor {
+@@ -39,7 +39,7 @@ public final class MapCursor {
       * @param visible Whether the cursor is visible by default.
       */
      public MapCursor(byte x, byte y, byte direction, @NotNull Type type, boolean visible) {
@@ -4447,7 +4846,7 @@ index b90fd819a781d3a2117ffa25f0864b1576901f9f..7d4f4970dae6fe4eeea6b6b6810dcecf
      }
  
      /**
-@@ -49,7 +49,7 @@ public final class MapCursor {
+@@ -51,7 +51,7 @@ public final class MapCursor {
       * @param type The type (color/style) of the map cursor.
       * @param visible Whether the cursor is visible by default.
       * @param caption cursor caption
@@ -4456,7 +4855,7 @@ index b90fd819a781d3a2117ffa25f0864b1576901f9f..7d4f4970dae6fe4eeea6b6b6810dcecf
       */
      @Deprecated
      public MapCursor(byte x, byte y, byte direction, byte type, boolean visible, @Nullable String caption) {
-@@ -58,8 +58,42 @@ public final class MapCursor {
+@@ -60,8 +60,42 @@ public final class MapCursor {
          setDirection(direction);
          setRawType(type);
          this.visible = visible;
@@ -4500,7 +4899,7 @@ index b90fd819a781d3a2117ffa25f0864b1576901f9f..7d4f4970dae6fe4eeea6b6b6810dcecf
  
      /**
       * Initialize the map cursor.
-@@ -77,7 +111,7 @@ public final class MapCursor {
+@@ -79,7 +113,7 @@ public final class MapCursor {
          setDirection(direction);
          setType(type);
          this.visible = visible;
@@ -4509,7 +4908,7 @@ index b90fd819a781d3a2117ffa25f0864b1576901f9f..7d4f4970dae6fe4eeea6b6b6810dcecf
      }
  
      /**
-@@ -200,23 +234,45 @@ public final class MapCursor {
+@@ -202,23 +236,45 @@ public final class MapCursor {
          this.visible = visible;
      }
  
@@ -4692,7 +5091,7 @@ index 78fd35e6115072c6bc2ff5a899ffc2edb8f45801..22b1dc5fd4d453161a5ee520072f8e8f
  
      /**
 diff --git a/src/main/java/org/bukkit/scoreboard/Scoreboard.java b/src/main/java/org/bukkit/scoreboard/Scoreboard.java
-index 083bb2c92a2c557e10b705b773ced97401586c3c..d5723e977d9a25701a4f387f1b26d2414e0fffb8 100644
+index bf52375e9ed9ec172eca1d27c06c379e3fc216bc..3377511e1a6dd4aeb78871e47169d5bd9456c1aa 100644
 --- a/src/main/java/org/bukkit/scoreboard/Scoreboard.java
 +++ b/src/main/java/org/bukkit/scoreboard/Scoreboard.java
 @@ -26,6 +26,71 @@ public interface Scoreboard {
@@ -4767,31 +5166,25 @@ index 083bb2c92a2c557e10b705b773ced97401586c3c..d5723e977d9a25701a4f387f1b26d241
      /**
       * Registers an Objective on this Scoreboard
       *
-@@ -37,9 +102,10 @@ public interface Scoreboard {
+@@ -37,7 +102,7 @@ public interface Scoreboard {
       *     characters.
       * @throws IllegalArgumentException if an objective by that name already
       *     exists
 -     * @deprecated use {@link #registerNewObjective(String, Criteria, String)}
 +     * @deprecated use {@link #registerNewObjective(String, Criteria, net.kyori.adventure.text.Component)}
       */
+     @Deprecated
      @NotNull
-+    @Deprecated // Paper
-     Objective registerNewObjective(@NotNull String name, @NotNull String criteria, @NotNull String displayName);
- 
-     /**
-@@ -54,9 +120,10 @@ public interface Scoreboard {
+@@ -55,7 +120,7 @@ public interface Scoreboard {
       *     characters.
       * @throws IllegalArgumentException if an objective by that name already
       *     exists
 -     * @deprecated use {@link #registerNewObjective(String, Criteria, String, RenderType)}
 +     * @deprecated use {@link #registerNewObjective(String, Criteria, net.kyori.adventure.text.Component, RenderType)}
       */
+     @Deprecated
      @NotNull
-+    @Deprecated // Paper
-     Objective registerNewObjective(@NotNull String name, @NotNull String criteria, @NotNull String displayName, @NotNull RenderType renderType);
- 
-     /**
-@@ -70,8 +137,10 @@ public interface Scoreboard {
+@@ -72,8 +137,10 @@ public interface Scoreboard {
       *     characters.
       * @throws IllegalArgumentException if an objective by that name already
       *     exists
@@ -4802,7 +5195,7 @@ index 083bb2c92a2c557e10b705b773ced97401586c3c..d5723e977d9a25701a4f387f1b26d241
      Objective registerNewObjective(@NotNull String name, @NotNull Criteria criteria, @NotNull String displayName);
  
      /**
-@@ -86,8 +155,10 @@ public interface Scoreboard {
+@@ -88,8 +155,10 @@ public interface Scoreboard {
       *     characters.
       * @throws IllegalArgumentException if an objective by that name already
       *     exists

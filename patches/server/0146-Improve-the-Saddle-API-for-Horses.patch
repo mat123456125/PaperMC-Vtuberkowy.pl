@@ -7,7 +7,7 @@ Not all horses with Saddles have armor. This lets us break up the horses with sa
 and access their saddle state separately from an interface shared with Armor.
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftAbstractHorse.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftAbstractHorse.java
-index 349bc3becee3f878fe8f6bc589cc9fbecf7dd17a..4bb5e953ec0ad6a2e068cb26237bc59e68c13699 100644
+index 3b7a355945adbc671b1c3b6381e6fbbcb9fe7294..5192fa2aeba7833fca456bded0deedde7de03506 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftAbstractHorse.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftAbstractHorse.java
 @@ -5,6 +5,7 @@ import java.util.UUID;
@@ -27,7 +27,7 @@ index 349bc3becee3f878fe8f6bc589cc9fbecf7dd17a..4bb5e953ec0ad6a2e068cb26237bc59e
      }
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryHorse.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryHorse.java
-index 7013059856c2471dc34112a1a2068b96b809dd96..b72b4260fc1c0e9928d70f97589d8db00849b9e8 100644
+index 5686c13b77f1c18b7d690859c6bea4f7b721ef13..07a304edc2a7b3450a55728e78a4fe37febdbadc 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryHorse.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryHorse.java
 @@ -4,7 +4,7 @@ import net.minecraft.world.Container;
@@ -37,8 +37,8 @@ index 7013059856c2471dc34112a1a2068b96b809dd96..b72b4260fc1c0e9928d70f97589d8db0
 -public class CraftInventoryHorse extends CraftInventoryAbstractHorse implements HorseInventory {
 +public class CraftInventoryHorse extends CraftSaddledInventory implements HorseInventory {
  
-     public CraftInventoryHorse(Container inventory) {
-         super(inventory);
+     private final Container bodyArmorInventory;
+ 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftSaddledInventory.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftSaddledInventory.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..3a617c07d445bacf5a13e0e3ff6481823cfc8477

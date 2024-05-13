@@ -5,10 +5,10 @@ Subject: [PATCH] Ocelot despawns should honor nametags and leash
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/animal/Ocelot.java b/src/main/java/net/minecraft/world/entity/animal/Ocelot.java
-index 68679cd5857240ec4bc2951fa42a0dbbd4c13ee0..4300fab61765dd224fab084d118aae7294fc9de6 100644
+index af9f6696f52b0f44f3b4f897a5dbd174034682c3..2c7491edbb60e7ec6a208ea7292cd28a3f8f9e31 100644
 --- a/src/main/java/net/minecraft/world/entity/animal/Ocelot.java
 +++ b/src/main/java/net/minecraft/world/entity/animal/Ocelot.java
-@@ -135,7 +135,7 @@ public class Ocelot extends Animal {
+@@ -133,7 +133,7 @@ public class Ocelot extends Animal {
  
      @Override
      public boolean removeWhenFarAway(double distanceSquared) {

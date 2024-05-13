@@ -62,6 +62,7 @@ out/
 
 # other stuff
 run/
+logs/
 
 Paper-Server
 Paper-API

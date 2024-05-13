@@ -5,10 +5,10 @@ Subject: [PATCH] Remap fixes
 
 
 diff --git a/src/main/java/net/minecraft/core/BlockPos.java b/src/main/java/net/minecraft/core/BlockPos.java
-index ad3035da44c6af2fa7cc53926f33526a43740313..e89fa618fa20e3e843d8de81629e6dc551777823 100644
+index f0a764d3e1a756537b8188e9f5361d0dbaca25a9..478d2114fbd5c499a8adbf8b6cefcc8335e830dc 100644
 --- a/src/main/java/net/minecraft/core/BlockPos.java
 +++ b/src/main/java/net/minecraft/core/BlockPos.java
-@@ -278,9 +278,11 @@ public class BlockPos extends Vec3i {
+@@ -311,9 +311,11 @@ public class BlockPos extends Vec3i {
  
      public static Iterable<BlockPos> withinManhattan(BlockPos center, int rangeX, int rangeY, int rangeZ) {
          int i = rangeX + rangeY + rangeZ;
@@ -20,10 +20,10 @@ index ad3035da44c6af2fa7cc53926f33526a43740313..e89fa618fa20e3e843d8de81629e6dc5
 +        int centerY = center.getY();
 +        int centerZ = center.getZ();
 +        // Paper end
-         return () -> {
-             return new AbstractIterator<BlockPos>() {
+         return () -> new AbstractIterator<BlockPos>() {
                  private final BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
-@@ -295,7 +297,7 @@ public class BlockPos extends Vec3i {
+                 private int currentDepth;
+@@ -327,7 +329,7 @@ public class BlockPos extends Vec3i {
                  protected BlockPos computeNext() {
                      if (this.zMirror) {
                          this.zMirror = false;
@@ -32,7 +32,7 @@ index ad3035da44c6af2fa7cc53926f33526a43740313..e89fa618fa20e3e843d8de81629e6dc5
                          return this.cursor;
                      } else {
                          BlockPos blockPos;
-@@ -321,7 +323,7 @@ public class BlockPos extends Vec3i {
+@@ -353,7 +355,7 @@ public class BlockPos extends Vec3i {
                              int k = this.currentDepth - Math.abs(i) - Math.abs(j);
                              if (k <= rangeZ) {
                                  this.zMirror = k != 0;
@@ -42,10 +42,10 @@ index ad3035da44c6af2fa7cc53926f33526a43740313..e89fa618fa20e3e843d8de81629e6dc5
                          }
  
 diff --git a/src/main/java/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java b/src/main/java/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java
-index 3ba785845a63e46a44fc48264d08c96bfc34ab8b..92bd58010e8c89e361e28aec59447349edbbc028 100644
+index 7344cff32fa6fe3dedb74ed98126072c55b0abd2..d98b28e9488a5a7736719cf656736bb026ec8c7e 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java
 +++ b/src/main/java/net/minecraft/world/entity/ai/behavior/BehaviorUtils.java
-@@ -173,11 +173,11 @@ public class BehaviorUtils {
+@@ -169,10 +169,10 @@ public class BehaviorUtils {
  
          return optional.map((uuid) -> {
              return ((ServerLevel) entity.level()).getEntity(uuid);
@@ -53,31 +53,16 @@ index 3ba785845a63e46a44fc48264d08c96bfc34ab8b..92bd58010e8c89e361e28aec59447349
 +        }).map((entity1) -> { // Paper - remap fix
              LivingEntity entityliving1;
  
--            if (entity instanceof LivingEntity) {
--                LivingEntity entityliving2 = (LivingEntity) entity;
-+            if (entity1 instanceof LivingEntity) { // Paper - remap fix
-+                LivingEntity entityliving2 = (LivingEntity) entity1; // Paper - remap fix
- 
+-            if (entity instanceof LivingEntity entityliving2) {
++            if (entity1 instanceof LivingEntity entityliving2) { // Paper - remap fix
                  entityliving1 = entityliving2;
              } else {
-diff --git a/src/main/java/net/minecraft/world/item/crafting/RecipeManager.java b/src/main/java/net/minecraft/world/item/crafting/RecipeManager.java
-index 7918deb55e6ed2e16eba501ab380a456270d9512..a81475d0cd3c5b75b4abe0d1a01389372a4d9ab1 100644
---- a/src/main/java/net/minecraft/world/item/crafting/RecipeManager.java
-+++ b/src/main/java/net/minecraft/world/item/crafting/RecipeManager.java
-@@ -197,7 +197,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
-         Builder<ResourceLocation, RecipeHolder<?>> builder = ImmutableMap.builder();
- 
-         recipes.forEach((recipeholder) -> {
--            Map<ResourceLocation, RecipeHolder<?>> map1 = (Map) map.computeIfAbsent(recipeholder.value().getType(), (recipes) -> {
-+            Map<ResourceLocation, RecipeHolder<?>> map1 = (Map) map.computeIfAbsent(recipeholder.value().getType(), (recipes_) -> { // Paper - remap fix
-                 return new Object2ObjectLinkedOpenHashMap<>(); // CraftBukkit
-             });
-             ResourceLocation minecraftkey = recipeholder.id();
+                 entityliving1 = null;
 diff --git a/src/main/java/net/minecraft/world/level/storage/loot/LootTable.java b/src/main/java/net/minecraft/world/level/storage/loot/LootTable.java
-index 95a5ce711150c4c999a9d17f28a497f034638610..214215d203892b8009595539f25ce26e8752debd 100644
+index 61592d57c26c359abda266f4ac8c58419e9beb02..83fce6746aaa3b378da6c5573ec9991d8438b071 100644
 --- a/src/main/java/net/minecraft/world/level/storage/loot/LootTable.java
 +++ b/src/main/java/net/minecraft/world/level/storage/loot/LootTable.java
-@@ -251,8 +251,8 @@ public class LootTable {
+@@ -255,8 +255,8 @@ public class LootTable {
  
      public static class Builder implements FunctionUserBuilder<LootTable.Builder> {
  
@@ -119,56 +104,18 @@ index b70450722da13bc4d358a70d3d1d2f30a2cca2b9..86d86c292bdeeb7f42685691287c3b4b
      }
  }
 diff --git a/src/test/java/org/bukkit/ParticleTest.java b/src/test/java/org/bukkit/ParticleTest.java
-index 1edc58410316eaf45858db56897179587e8b22ee..cf6f34e506570e7bb9624c5899fbcdd762d8e0c4 100644
+index 9c9f5dd2351b3067b54d6cc5bdb572c46b12aaa8..307e8a3694c6f0b48d2df9792c3e5fdbaae1fd8e 100644
 --- a/src/test/java/org/bukkit/ParticleTest.java
 +++ b/src/test/java/org/bukkit/ParticleTest.java
-@@ -231,7 +231,7 @@ public class ParticleTest extends AbstractTestingBase {
+@@ -250,7 +250,7 @@ public class ParticleTest extends AbstractTestingBase {
                  Check in CraftParticle if the conversion is still correct.
                  """, bukkit.getKey()));
  
--        DataResult<Tag> encoded = assertDoesNotThrow(() -> minecraft.codec().encodeStart(DynamicOpsNBT.INSTANCE, particleParam),
-+        DataResult<Tag> encoded = assertDoesNotThrow(() -> minecraft.codec().encodeStart(NbtOps.INSTANCE, particleParam), // Paper - remap fix
+-        DataResult<Tag> encoded = assertDoesNotThrow(() -> minecraft.codec().codec().encodeStart(DynamicOpsNBT.INSTANCE, particleParam),
++        DataResult<Tag> encoded = assertDoesNotThrow(() -> minecraft.codec().codec().encodeStart(NbtOps.INSTANCE, particleParam), // Paper - remap fix
                  String.format("""
                          Could not encoded particle param for particle %s.
                          This can indicated, that the wrong particle param is created in CraftParticle.
-diff --git a/src/test/java/org/bukkit/RegistryConstantsTest.java b/src/test/java/org/bukkit/RegistryConstantsTest.java
-index 6be404dafe1f0ae5ab39a0782e4c3ca7c0923752..545a329a52be0dc1f3cf8ca1315152d8b4a465dd 100644
---- a/src/test/java/org/bukkit/RegistryConstantsTest.java
-+++ b/src/test/java/org/bukkit/RegistryConstantsTest.java
-@@ -19,17 +19,17 @@ public class RegistryConstantsTest extends AbstractTestingBase {
- 
-     @Test
-     public void testTrimMaterial() {
--        this.testExcessConstants(TrimMaterial.class, Registry.TRIM_MATERIAL);
-+        this.testExcessConstants(TrimMaterial.class, org.bukkit.Registry.TRIM_MATERIAL); // Paper - remap fix
-         this.testMissingConstants(TrimMaterial.class, Registries.TRIM_MATERIAL);
-     }
- 
-     @Test
-     public void testTrimPattern() {
--        this.testExcessConstants(TrimPattern.class, Registry.TRIM_PATTERN);
-+        this.testExcessConstants(TrimPattern.class, org.bukkit.Registry.TRIM_PATTERN); // Paper - remap fix
-         this.testMissingConstants(TrimPattern.class, Registries.TRIM_PATTERN);
-     }
- 
--    private <T extends Keyed> void testExcessConstants(Class<T> clazz, Registry<T> registry) {
-+    private <T extends Keyed> void testExcessConstants(Class<T> clazz, org.bukkit.Registry<T> registry) { // Paper - remap fix
-         List<NamespacedKey> excessKeys = new ArrayList<>();
- 
-         for (Field field : clazz.getFields()) {
-diff --git a/src/test/java/org/bukkit/RegistryLoadOrderTest.java b/src/test/java/org/bukkit/RegistryLoadOrderTest.java
-index e4298c14eb793743081cb0088427bb5a50d74b46..194ff80040eec0427acfef644cd85666370902fa 100644
---- a/src/test/java/org/bukkit/RegistryLoadOrderTest.java
-+++ b/src/test/java/org/bukkit/RegistryLoadOrderTest.java
-@@ -20,7 +20,7 @@ public class RegistryLoadOrderTest extends AbstractTestingBase {
- 
-     private static boolean initInterface = false;
-     private static boolean initAbstract = false;
--    private static Registry<Keyed> registry;
-+    private static org.bukkit.Registry<Keyed> registry; // Paper - remap fix
- 
-     public static Stream<Arguments> data() {
-         return Stream.of(
 diff --git a/src/test/java/org/bukkit/entity/EntityTypesTest.java b/src/test/java/org/bukkit/entity/EntityTypesTest.java
 index 32df0090aab65b551b524603cce0b96e461cc358..952924abae79cc504342bbdb6f6953ab8a6cc295 100644
 --- a/src/test/java/org/bukkit/entity/EntityTypesTest.java
@@ -224,3 +171,41 @@ index 5818bfa69a8573a2a8f350066f829d587cbc546b..8e421a1bee0c526e3024eab9ba4cc0b3
              org.bukkit.entity.Panda.Gene bukkit = CraftPanda.fromNms(gene);
  
              assertNotNull(bukkit, "Bukkit gene null for " + gene);
+diff --git a/src/test/java/org/bukkit/registry/RegistryConstantsTest.java b/src/test/java/org/bukkit/registry/RegistryConstantsTest.java
+index f3de891458ea190e1d608511b5984ca25b06b74c..1b1e55f70b3c9f922bd1cc63209816f50d7d29d1 100644
+--- a/src/test/java/org/bukkit/registry/RegistryConstantsTest.java
++++ b/src/test/java/org/bukkit/registry/RegistryConstantsTest.java
+@@ -28,17 +28,17 @@ public class RegistryConstantsTest extends AbstractTestingBase {
+ 
+     @Test
+     public void testTrimMaterial() {
+-        this.testExcessConstants(TrimMaterial.class, Registry.TRIM_MATERIAL);
++        this.testExcessConstants(TrimMaterial.class, org.bukkit.Registry.TRIM_MATERIAL); // Paper - remap fix
+         this.testMissingConstants(TrimMaterial.class, Registries.TRIM_MATERIAL);
+     }
+ 
+     @Test
+     public void testTrimPattern() {
+-        this.testExcessConstants(TrimPattern.class, Registry.TRIM_PATTERN);
++        this.testExcessConstants(TrimPattern.class, org.bukkit.Registry.TRIM_PATTERN); // Paper - remap fix
+         this.testMissingConstants(TrimPattern.class, Registries.TRIM_PATTERN);
+     }
+ 
+-    private <T extends Keyed> void testExcessConstants(Class<T> clazz, Registry<T> registry) {
++    private <T extends Keyed> void testExcessConstants(Class<T> clazz, org.bukkit.Registry<T> registry) { // Paper - remap fix
+         List<NamespacedKey> excessKeys = new ArrayList<>();
+ 
+         for (Field field : clazz.getFields()) {
+diff --git a/src/test/java/org/bukkit/registry/RegistryLoadOrderTest.java b/src/test/java/org/bukkit/registry/RegistryLoadOrderTest.java
+index 7d332ecf7905f71de106fe0e5fb4cc3e16bd6035..d7ef3a9a545d5278832b864bca683796b1fd0d42 100644
+--- a/src/test/java/org/bukkit/registry/RegistryLoadOrderTest.java
++++ b/src/test/java/org/bukkit/registry/RegistryLoadOrderTest.java
+@@ -24,7 +24,7 @@ public class RegistryLoadOrderTest extends AbstractTestingBase {
+ 
+     private static boolean initInterface = false;
+     private static boolean initAbstract = false;
+-    private static Registry<Keyed> registry;
++    private static org.bukkit.Registry<Keyed> registry; // Paper - remap fix
+ 
+     public static Stream<Arguments> data() {
+         return Stream.of(

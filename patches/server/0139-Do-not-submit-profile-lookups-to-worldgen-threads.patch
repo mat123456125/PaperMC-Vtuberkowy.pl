@@ -10,13 +10,13 @@ out due to a sync load, as the worldgen threads will be
 stalling on profile lookups.
 
 diff --git a/src/main/java/net/minecraft/Util.java b/src/main/java/net/minecraft/Util.java
-index 9870eccc1dc5c2201f12f8e2affe647f6b0375f8..30237ca94a36197ce21369bdcc7bb1dfafe02680 100644
+index 9d91e7890d8cba72f0aa2ca9661f6de7ae8a0dcd..cf54e2c8e8aadb9e7343382a5ba59c657234c9b9 100644
 --- a/src/main/java/net/minecraft/Util.java
 +++ b/src/main/java/net/minecraft/Util.java
-@@ -82,6 +82,22 @@ public class Util {
-     private static final String MAX_THREADS_SYSTEM_PROPERTY = "max.bg.threads";
-     private static final AtomicInteger WORKER_COUNT = new AtomicInteger(1);
+@@ -93,6 +93,22 @@ public class Util {
      private static final ExecutorService BACKGROUND_EXECUTOR = makeExecutor("Main");
+     private static final ExecutorService IO_POOL = makeIoExecutor("IO-Worker-", false);
+     private static final ExecutorService DOWNLOAD_POOL = makeIoExecutor("Download-", true);
 +    // Paper start - don't submit BLOCKING PROFILE LOOKUPS to the world gen thread
 +    public static final ExecutorService PROFILE_EXECUTOR = Executors.newFixedThreadPool(2, new java.util.concurrent.ThreadFactory() {
 +
@@ -33,45 +33,45 @@ index 9870eccc1dc5c2201f12f8e2affe647f6b0375f8..30237ca94a36197ce21369bdcc7bb1df
 +        }
 +    });
 +    // Paper end - don't submit BLOCKING PROFILE LOOKUPS to the world gen thread
-     private static final ExecutorService IO_POOL = makeIoExecutor();
      private static final DateTimeFormatter FILENAME_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss", Locale.ROOT);
+     public static final int LINEAR_LOOKUP_THRESHOLD = 8;
      public static final long NANOS_PER_MILLI = 1000000L;
 diff --git a/src/main/java/net/minecraft/server/players/GameProfileCache.java b/src/main/java/net/minecraft/server/players/GameProfileCache.java
-index 82f6404e5c4c5b2c9aea1b1c27ebee1d3c7ee9dc..c70cd016e1978931d115cfca94664897f0158196 100644
+index aeb0c7ce9b6f93dadd407dbdefba053568f2e2fe..416b26c2ab62b29d640169166980e398d5824b14 100644
 --- a/src/main/java/net/minecraft/server/players/GameProfileCache.java
 +++ b/src/main/java/net/minecraft/server/players/GameProfileCache.java
-@@ -167,7 +167,7 @@ public class GameProfileCache {
+@@ -169,7 +169,7 @@ public class GameProfileCache {
              } else {
                  CompletableFuture<Optional<GameProfile>> completablefuture1 = CompletableFuture.supplyAsync(() -> {
                      return this.get(username);
 -                }, Util.backgroundExecutor()).whenCompleteAsync((optional, throwable) -> {
-+                }, Util.PROFILE_EXECUTOR).whenCompleteAsync((optional, throwable) -> { // Paper - not a good idea to use BLOCKING OPERATIONS on the worldgen executor
++                }, Util.PROFILE_EXECUTOR).whenCompleteAsync((optional, throwable) -> { // Paper - don't submit BLOCKING PROFILE LOOKUPS to the world gen thread
                      this.requests.remove(username);
                  }, this.executor);
  
 diff --git a/src/main/java/net/minecraft/world/level/block/entity/SkullBlockEntity.java b/src/main/java/net/minecraft/world/level/block/entity/SkullBlockEntity.java
-index cf7e64eac9e3eb395a0be0a2a4fa0175a731b6e7..f5162f7171c348ff523b18e577246561d79e1c20 100644
+index 6097e0ab387cfa4c2c9ab0389fc5bb6cd899ecc3..ebba6bc5b337d19e32be5a78294501ed8300f2bd 100644
 --- a/src/main/java/net/minecraft/world/level/block/entity/SkullBlockEntity.java
 +++ b/src/main/java/net/minecraft/world/level/block/entity/SkullBlockEntity.java
-@@ -222,7 +222,7 @@ public class SkullBlockEntity extends BlockEntity {
-             } else {
-                 return Optional.empty();
+@@ -105,7 +105,7 @@ public class SkullBlockEntity extends BlockEntity {
+                 ProfileResult profileResult = apiServices.sessionService().fetchProfile(uuid, true);
+                 return Optional.ofNullable(profileResult).map(ProfileResult::profile);
              }
 -        }, Util.backgroundExecutor());
-+        }, Util.PROFILE_EXECUTOR); // Paper - not a good idea to use BLOCKING OPERATIONS on the worldgen executor
++        }, Util.PROFILE_EXECUTOR); // Paper - don't submit BLOCKING PROFILE LOOKUPS to the world gen thread
      }
  
-     private static boolean hasTextures(GameProfile profile) {
+     public static void clear() {
 diff --git a/src/main/java/org/bukkit/craftbukkit/profile/CraftPlayerProfile.java b/src/main/java/org/bukkit/craftbukkit/profile/CraftPlayerProfile.java
-index eef39c0323c57cbe33cee4cd38ad9f48654df2a9..9eafa36b086ed4cde107b81aa9470d1a43e557f1 100644
+index 866f9d00669923ee01ac97399cd78b5ee58f950f..6f0edd4d1c473179c03253326a3c7b5910ec53ad 100644
 --- a/src/main/java/org/bukkit/craftbukkit/profile/CraftPlayerProfile.java
 +++ b/src/main/java/org/bukkit/craftbukkit/profile/CraftPlayerProfile.java
-@@ -125,7 +125,7 @@ public final class CraftPlayerProfile implements PlayerProfile {
+@@ -134,7 +134,7 @@ public final class CraftPlayerProfile implements PlayerProfile {
  
      @Override
      public CompletableFuture<PlayerProfile> update() {
 -        return CompletableFuture.supplyAsync(this::getUpdatedProfile, Util.backgroundExecutor());
-+        return CompletableFuture.supplyAsync(this::getUpdatedProfile, Util.PROFILE_EXECUTOR); // Paper - not a good idea to use BLOCKING OPERATIONS on the worldgen executor
++        return CompletableFuture.supplyAsync(this::getUpdatedProfile, Util.PROFILE_EXECUTOR); // Paper - don't submit BLOCKING PROFILE LOOKUPS to the world gen thread
      }
  
      private CraftPlayerProfile getUpdatedProfile() {

@@ -7,10 +7,10 @@ Provides counts without the ineffeciency of using .getEntities().size()
 which creates copy of the collections.
 
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index 3559115d09b57acf5c2853b811862e5131f2a625..dbb799aed5bbb80edd2428b63d3fce15cf2e2f05 100644
+index 890ae536fdaff11055b72b1be0fbf3766a41812c..4dc687f16a8181876fb7b3e56b39a55ea5507408 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
-@@ -47,6 +47,33 @@ import org.jetbrains.annotations.Nullable;
+@@ -49,6 +49,33 @@ import org.jetbrains.annotations.Nullable;
   */
  public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient, Metadatable, PersistentDataHolder, Keyed, net.kyori.adventure.audience.ForwardingAudience { // Paper
  

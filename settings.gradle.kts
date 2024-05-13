@@ -8,7 +8,7 @@ pluginManagement {
 }
 
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.7.0"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
 
 if (!file(".git").exists()) {
@@ -33,25 +33,27 @@ if (!file(".git").exists()) {
 
 rootProject.name = "paper"
 
-for (name in listOf("Paper-API", "Paper-Server", "Paper-MojangAPI")) {
+for (name in listOf("Paper-API", "Paper-Server")) {
     val projName = name.lowercase(Locale.ENGLISH)
     include(projName)
     findProject(":$projName")!!.projectDir = file(name)
 }
 
-mapOf("test-plugin.settings.gradle.kts" to """
-        // Uncomment to enable the test plugin module
-        // include(":test-plugin")
-    """.trimIndent(),
-    "paper-api-generator.settings.gradle.kts" to """
-        // Uncomment to enable the api generator module
-        // include(":paper-api-generator")
-    """.trimIndent()
-).forEach { (fileName, text) ->
-    val settingsFile = file(fileName)
+optionalInclude("test-plugin")
+optionalInclude("paper-api-generator")
+
+fun optionalInclude(name: String, op: (ProjectDescriptor.() -> Unit)? = null) {
+    val settingsFile = file("$name.settings.gradle.kts")
     if (settingsFile.exists()) {
         apply(from = settingsFile)
+        findProject(":$name")?.let { op?.invoke(it) }
     } else {
-        settingsFile.writeText(text + "\n")
+        settingsFile.writeText(
+            """
+            // Uncomment to enable the '$name' project
+            // include(":$name")
+
+            """.trimIndent()
+        )
     }
 }

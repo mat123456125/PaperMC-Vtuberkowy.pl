@@ -48,10 +48,10 @@ index 0000000000000000000000000000000000000000..909617079db61b675cc7b60b44ef96b3
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index 251fa656bf17ecdd031c0e16def5eff3f553e9b4..e108f8a7376e5f90a1e74c0d5ba40ac6c2818523 100644
+index 3e32a6bbf593b269f1af23c7e2fdafaccc0d2110..d60780a26e10f5f9c80446693552384281327b51 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
-@@ -57,6 +57,7 @@ import org.bukkit.util.CachedServerIcon;
+@@ -60,6 +60,7 @@ import org.bukkit.util.CachedServerIcon;
  import org.jetbrains.annotations.Contract;
  import org.jetbrains.annotations.NotNull;
  import org.jetbrains.annotations.Nullable;
@@ -59,7 +59,7 @@ index 251fa656bf17ecdd031c0e16def5eff3f553e9b4..e108f8a7376e5f90a1e74c0d5ba40ac6
  
  /**
   * Represents the Bukkit core, for version and Server singleton handling
-@@ -106,7 +107,25 @@ public final class Bukkit {
+@@ -109,7 +110,25 @@ public final class Bukkit {
          }
  
          Bukkit.server = server;

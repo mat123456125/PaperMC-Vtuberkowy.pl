@@ -6,15 +6,15 @@ Subject: [PATCH] Allow specifying a custom "authentication servers down" kick
 
 
 diff --git a/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
-index b52ed512000328c1ac006fac18d997157faf4cb6..b98c7bb70a2d8867e1236d3c8d78d2cfffe76e28 100644
+index da300bbe01399eec9d45f68aeb7c214cab4108fb..a5b627ce61187696dfce3746c7c06cbaaf1149f5 100644
 --- a/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
-@@ -259,7 +259,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
+@@ -301,7 +301,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
                          ServerLoginPacketListenerImpl.LOGGER.warn("Authentication servers are down but will let them in anyway!");
                          ServerLoginPacketListenerImpl.this.startClientVerification(ServerLoginPacketListenerImpl.this.createOfflineProfile(s1)); // Spigot
                      } else {
 -                        ServerLoginPacketListenerImpl.this.disconnect(Component.translatable("multiplayer.disconnect.authservers_down"));
-+                        ServerLoginPacketListenerImpl.this.disconnect(io.papermc.paper.adventure.PaperAdventure.asVanilla(io.papermc.paper.configuration.GlobalConfiguration.get().messages.kick.authenticationServersDown)); // Paper
++                        ServerLoginPacketListenerImpl.this.disconnect(io.papermc.paper.adventure.PaperAdventure.asVanilla(io.papermc.paper.configuration.GlobalConfiguration.get().messages.kick.authenticationServersDown)); // Paper - Configurable kick message
                          ServerLoginPacketListenerImpl.LOGGER.error("Couldn't verify username because servers are unavailable");
                      }
                      // CraftBukkit start - catch all exceptions

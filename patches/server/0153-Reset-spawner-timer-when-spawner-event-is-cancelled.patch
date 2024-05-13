@@ -5,10 +5,10 @@ Subject: [PATCH] Reset spawner timer when spawner event is cancelled
 
 
 diff --git a/src/main/java/net/minecraft/world/level/BaseSpawner.java b/src/main/java/net/minecraft/world/level/BaseSpawner.java
-index 5d6403fa27521860a69a707dc4358b013adfafd7..20c39481bcf05e0d43c97b7e841ec9f5f6a0d45d 100644
+index 43d399e1a0ba2fb0541f851a28032fa60fc01b33..31fe2faf9137ac8b1acca9a5ffc5bbcc8aab16c1 100644
 --- a/src/main/java/net/minecraft/world/level/BaseSpawner.java
 +++ b/src/main/java/net/minecraft/world/level/BaseSpawner.java
-@@ -166,6 +166,7 @@ public abstract class BaseSpawner {
+@@ -177,6 +177,7 @@ public abstract class BaseSpawner {
                          }
  
                          entity.spawnedViaMobSpawner = true; // Paper
@@ -16,7 +16,7 @@ index 5d6403fa27521860a69a707dc4358b013adfafd7..20c39481bcf05e0d43c97b7e841ec9f5
                          // CraftBukkit start
                          if (org.bukkit.craftbukkit.event.CraftEventFactory.callSpawnerSpawnEvent(entity, pos).isCancelled()) {
                              continue;
-@@ -182,7 +183,7 @@ public abstract class BaseSpawner {
+@@ -193,7 +194,7 @@ public abstract class BaseSpawner {
                              ((Mob) entity).spawnAnim();
                          }
  
