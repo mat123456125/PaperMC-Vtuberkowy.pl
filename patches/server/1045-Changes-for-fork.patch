@@ -1,0 +1,133 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mateusz Jarzemski <mat123456125@gmail.com>
+Date: Sun, 21 Jul 2024 16:46:36 +0200
+Subject: [PATCH] Changes for fork
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java b/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java
+index c7f012674361a323c1efeca4660cd3f46d308ee1..61e8f21f2a193ae62a5d1dc823cf5632434e4b64 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java
++++ b/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java
+@@ -32,6 +32,7 @@ public class GossipContainer {
+     private static final Logger LOGGER = LogUtils.getLogger();
+     public static final int DISCARD_THRESHOLD = 2;
+     public final Map<UUID, GossipContainer.EntityGossips> gossips = Maps.newHashMap();
++    private final UUID globalGossipsId = UUID.fromString("38400000-8cf0-11bd-b23e-10b96e4ef00d");
+ 
+     @VisibleForDebug
+     public Map<UUID, Object2IntMap<GossipType>> getGossipEntries() {
+@@ -112,6 +113,14 @@ public class GossipContainer {
+             }
+         });
+     }
++    public int getGlobalReputation()
++    {
++        GossipContainer.EntityGossips entityGossips = this.gossips.get(globalGossipsId);
++        Predicate<GossipType> gossipTypeFilter = (reputationtype) -> {
++            return true;
++        };
++        return entityGossips != null ? entityGossips.weightedValue(gossipTypeFilter) : 0;
++    }
+ 
+     public int getReputation(UUID target, Predicate<GossipType> gossipTypeFilter) {
+         GossipContainer.EntityGossips entityGossips = this.gossips.get(target);
+@@ -122,6 +131,12 @@ public class GossipContainer {
+         return this.gossips.values().stream().filter(reputation -> predicate.test((double)(reputation.entries.getOrDefault(type, 0) * type.weight))).count();
+     }
+ 
++    public void addWithGlobal(UUID target, GossipType type, int value)
++    {
++        this.add(globalGossipsId, type, value);
++        this.add(target, type, value);
++    }
++
+     public void add(UUID target, GossipType type, int value) {
+         GossipContainer.EntityGossips entityGossips = this.getOrCreate(target);
+         entityGossips.entries.mergeInt(type, value, (left, right) -> this.mergeValuesForAddition(type, left, right));
+diff --git a/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java b/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
+index b83be9bbb9f348da83c0fd1ecc7f65c8a58b45b9..caf9273cfafbbaaf8dc95498927383e608773665 100644
+--- a/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
++++ b/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
+@@ -419,7 +419,7 @@ public class FallingBlockEntity extends Entity {
+         boolean flag = (resourcekey1 == Level.END || resourcekey == Level.END) && resourcekey1 != resourcekey;
+         Entity entity = super.changeDimension(teleportTarget);
+ 
+-        this.forceTickAfterTeleportToDuplicate = entity != null && flag && io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.allowUnsafeEndPortalTeleportation; // Paper
++        this.forceTickAfterTeleportToDuplicate = entity != null && flag;
+         return entity;
+     }
+ }
+diff --git a/src/main/java/net/minecraft/world/entity/item/ItemEntity.java b/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
+index ea0d9335446b20073b9aafb9de453097355db79c..01a1c6ac003f44b3dc14f33a474ec33a5b83b640 100644
+--- a/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
++++ b/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
+@@ -315,7 +315,8 @@ public class ItemEntity extends Entity implements TraceableEntity {
+     private boolean isMergable() {
+         ItemStack itemstack = this.getItem();
+ 
+-        return this.isAlive() && this.pickupDelay != 32767 && this.age != -32768 && this.age < this.despawnRate && itemstack.getCount() < itemstack.getMaxStackSize(); // Paper - Alternative item-despawn-rate
++        return this.isAlive() && itemstack.getItem() != Items.TORCH &&
++            this.pickupDelay != 32767 && this.age != -32768 && this.age < this.despawnRate && itemstack.getCount() < itemstack.getMaxStackSize(); // Paper - respect despawn rate in pickup check.
+     }
+ 
+     private void tryToMerge(ItemEntity other) {
+diff --git a/src/main/java/net/minecraft/world/entity/npc/Villager.java b/src/main/java/net/minecraft/world/entity/npc/Villager.java
+index 7e1871401ec5e3e9a85232053490259f132aec0a..45f6b77e34b1e04e71f8ca0246315b71cff643fd 100644
+--- a/src/main/java/net/minecraft/world/entity/npc/Villager.java
++++ b/src/main/java/net/minecraft/world/entity/npc/Villager.java
+@@ -504,7 +504,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+     }
+ 
+     private void updateSpecialPrices(Player player) {
+-        int i = this.getPlayerReputation(player);
++        int i = this.getPlayerReputation(null);  // get global reputation
+ 
+         if (i != 0) {
+             Iterator iterator = this.getOffers().iterator();
+@@ -773,6 +773,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+     }
+ 
+     public int getPlayerReputation(Player player) {
++        if(player == null) return this.gossips.getGlobalReputation();
+         return this.gossips.getReputation(player.getUUID(), (reputationtype) -> {
+             return true;
+         });
+@@ -1012,14 +1013,14 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+     @Override
+     public void onReputationEventFrom(ReputationEventType interaction, Entity entity) {
+         if (interaction == ReputationEventType.ZOMBIE_VILLAGER_CURED) {
+-            this.gossips.add(entity.getUUID(), GossipType.MAJOR_POSITIVE, 20);
+-            this.gossips.add(entity.getUUID(), GossipType.MINOR_POSITIVE, 25);
++            this.gossips.addWithGlobal(entity.getUUID(), GossipType.MAJOR_POSITIVE, 20);
++            this.gossips.addWithGlobal(entity.getUUID(), GossipType.MINOR_POSITIVE, 25);
+         } else if (interaction == ReputationEventType.TRADE) {
+-            this.gossips.add(entity.getUUID(), GossipType.TRADING, 2);
++            this.gossips.addWithGlobal(entity.getUUID(), GossipType.TRADING, 2);
+         } else if (interaction == ReputationEventType.VILLAGER_HURT) {
+-            this.gossips.add(entity.getUUID(), GossipType.MINOR_NEGATIVE, 25);
++            this.gossips.addWithGlobal(entity.getUUID(), GossipType.MINOR_NEGATIVE, 25);
+         } else if (interaction == ReputationEventType.VILLAGER_KILLED) {
+-            this.gossips.add(entity.getUUID(), GossipType.MAJOR_NEGATIVE, 25);
++            this.gossips.addWithGlobal(entity.getUUID(), GossipType.MAJOR_NEGATIVE, 25);
+         }
+ 
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java b/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
+index 1aa5e57a4e6a4be60514d8808a2e6c973d93e798..8263a3eb534f49d9ff242f968c8f0de8aeb965e1 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
+@@ -127,11 +127,9 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+     public void tick() {
+         Entity entity = this.getOwner();
+ 
+-        if (entity instanceof ServerPlayer && !entity.isAlive() && this.level().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
+-            this.discard(EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
+-        } else {
+-            super.tick();
+-        }
++        // no remove on death
++        super.tick();
++
+ 
+     }
+ 
