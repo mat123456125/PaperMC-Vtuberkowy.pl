@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 8 Apr 2021 17:36:15 -0700
+Subject: [PATCH] add isDeeplySleeping to HumanEntity
+
+
+diff --git a/src/main/java/org/bukkit/entity/HumanEntity.java b/src/main/java/org/bukkit/entity/HumanEntity.java
+index 4d6ceca22d98a3e46aa26ef26176c5417a5ccf35..58c842a1fd946d94ae29c7d2439aaf77e47f69b4 100644
+--- a/src/main/java/org/bukkit/entity/HumanEntity.java
++++ b/src/main/java/org/bukkit/entity/HumanEntity.java
+@@ -364,6 +364,15 @@ public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder
+     void setHurtDirection(float hurtDirection);
+     // Paper end
+ 
++    // Paper start
++    /**
++     * If the player has slept enough to count towards passing the night.
++     *
++     * @return true if the player has slept enough
++     */
++    public boolean isDeeplySleeping();
++    // Paper end
++
+     /**
+      * Get the sleep ticks of the player. This value may be capped.
+      *

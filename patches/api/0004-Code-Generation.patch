@@ -85,16 +85,17 @@ index 0000000000000000000000000000000000000000..2512dba27edfdccbc4430815b6cba048
 +}
 diff --git a/src/main/java/io/papermc/paper/registry/RegistryKey.java b/src/main/java/io/papermc/paper/registry/RegistryKey.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7b79bf33074355020e0b3b5ef40c7f2e6ba644b4
+index 0000000000000000000000000000000000000000..76daccf4ea502e1747a6f9176dc16fd20c561286
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/registry/RegistryKey.java
-@@ -0,0 +1,141 @@
+@@ -0,0 +1,147 @@
 +package io.papermc.paper.registry;
 +
 +import net.kyori.adventure.key.Keyed;
 +import org.bukkit.Art;
 +import org.bukkit.Fluid;
 +import org.bukkit.GameEvent;
++import org.bukkit.JukeboxSong;
 +import org.bukkit.MusicInstrument;
 +import org.bukkit.Particle;
 +import org.bukkit.Sound;
@@ -156,11 +157,6 @@ index 0000000000000000000000000000000000000000..7b79bf33074355020e0b3b5ef40c7f2e
 +     */
 +    RegistryKey<MusicInstrument> INSTRUMENT = create("instrument");
 +    /**
-+     * Built-in registry for enchantments.
-+     * @see io.papermc.paper.registry.keys.EnchantmentKeys
-+     */
-+    RegistryKey<Enchantment> ENCHANTMENT = create("enchantment");
-+    /**
 +     * Built-in registry for potion effect types (mob effects).
 +     * @see io.papermc.paper.registry.keys.MobEffectKeys
 +     */
@@ -206,10 +202,20 @@ index 0000000000000000000000000000000000000000..7b79bf33074355020e0b3b5ef40c7f2e
 +     */
 +    RegistryKey<DamageType> DAMAGE_TYPE = create("damage_type");
 +    /**
-+     * Data-driven registry for wolf variants
++     * Data-driven registry for wolf variants.
 +     * @see io.papermc.paper.registry.keys.WolfVariantKeys
 +     */
 +    RegistryKey<Wolf.Variant> WOLF_VARIANT = create("wolf_variant");
++    /**
++     * Data-driven registry for enchantments.
++     * @see io.papermc.paper.registry.keys.EnchantmentKeys
++     */
++    RegistryKey<Enchantment> ENCHANTMENT = create("enchantment");
++    /**
++     * Data-driven registry for jukebox songs.
++     */
++    @ApiStatus.Experimental
++    RegistryKey<JukeboxSong> JUKEBOX_SONG = create("jukebox_song");
 +
 +
 +    /* ******************* *
@@ -325,14 +331,13 @@ index 0000000000000000000000000000000000000000..1a97b3359c4ece5c29131da7c3f208aa
 +record TypedKeyImpl<T>(@NotNull Key key, @NotNull RegistryKey<T> registryKey) implements TypedKey<T> {
 +}
 diff --git a/src/main/java/org/bukkit/MinecraftExperimental.java b/src/main/java/org/bukkit/MinecraftExperimental.java
-index b6f4810e387c22c4a70609ea1d605130245689a5..03824ae54e1bdb8b14f79b3c5e0294ae725e43f8 100644
+index a86b87e4c3332202e40e484c3f9c6562b419c70f..305532968f9f7dd497c77259ed147ea2f081bc74 100644
 --- a/src/main/java/org/bukkit/MinecraftExperimental.java
 +++ b/src/main/java/org/bukkit/MinecraftExperimental.java
-@@ -47,6 +47,6 @@ public @interface MinecraftExperimental {
+@@ -47,5 +47,6 @@ public @interface MinecraftExperimental {
      @ApiStatus.Internal
      public enum Requires {
  
--        UPDATE_1_21
-+        UPDATE_1_21, BUNDLE, TRADE_REBALANCE // Paper
++        BUNDLE, TRADE_REBALANCE // Paper
      }
  }
