@@ -476,7 +476,7 @@ index 24735284fda151414d99faad401d25ba60995f9a..23b342cc31c7e72ade0e1ccad86a9ccf
      public void tick() {
          super.tick();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index e7889c9c7b155db46730f5e168bb7fd3d1732a8c..334859c5ff7023c730513301cc11c9837b2c7823 100644
+index ff7071581c3d90117d53d2a6a8fb31e67a68e531..e7745a032d643d6105d8b7b4cddf9ada9db3cbe2 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -380,6 +380,15 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
@@ -651,10 +651,10 @@ index 789fea258d70e60d38271ebb31270562dc7eb3ab..d0ab3db7bbd2942db19f473474371b20
                          }
                      }
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index 8b034b6bda937b25dbb3d09b8293fed6d7dc512c..52a7ed0d991758bad0dcedcb7f97fb15ac6c6d04 100644
+index 23bcc2956a2f00fd88355040e7a19862e20eabcc..995e882080818ae84028147d84a3be24ccc3cba1 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
-@@ -124,6 +124,29 @@ public class ItemEntity extends Entity implements TraceableEntity {
+@@ -125,6 +125,29 @@ public class ItemEntity extends Entity implements TraceableEntity {
          return 0.04;
      }
  
@@ -685,7 +685,7 @@ index 8b034b6bda937b25dbb3d09b8293fed6d7dc512c..52a7ed0d991758bad0dcedcb7f97fb15
      public void tick() {
          if (this.getItem().isEmpty()) {
 diff --git a/net/minecraft/world/entity/npc/Villager.java b/net/minecraft/world/entity/npc/Villager.java
-index 27568a1604d2dd5d46e836bbc25431929e218aa1..2b83262e4a13eae86df82913ce4f3121e3631a43 100644
+index b426f4aed2e5ae50e4c0fc069cb8cf9adb25fc9e..a173b9adac3256c3beeb570f14add5c42ba1430a 100644
 --- a/net/minecraft/world/entity/npc/Villager.java
 +++ b/net/minecraft/world/entity/npc/Villager.java
 @@ -265,11 +265,35 @@ public class Villager extends AbstractVillager implements ReputationEventHandler

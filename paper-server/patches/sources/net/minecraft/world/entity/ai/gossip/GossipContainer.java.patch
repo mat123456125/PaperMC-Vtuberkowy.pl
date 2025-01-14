@@ -1,5 +1,42 @@
 --- a/net/minecraft/world/entity/ai/gossip/GossipContainer.java
 +++ b/net/minecraft/world/entity/ai/gossip/GossipContainer.java
+@@ -32,6 +_,7 @@
+     private static final Logger LOGGER = LogUtils.getLogger();
+     public static final int DISCARD_THRESHOLD = 2;
+     public final Map<UUID, GossipContainer.EntityGossips> gossips = Maps.newHashMap();
++    private final UUID globalGossipsId = UUID.fromString("38400000-8cf0-11bd-b23e-10b96e4ef00d");
+ 
+     @VisibleForDebug
+     public Map<UUID, Object2IntMap<GossipType>> getGossipEntries() {
+@@ -98,6 +_,15 @@
+             }
+         });
+     }
++    public int getGlobalReputation()
++    {
++        GossipContainer.EntityGossips entityGossips = this.gossips.get(globalGossipsId);
++        Predicate<GossipType> gossipTypeFilter = (reputationtype) -> {
++            return true;
++        };
++        return entityGossips != null ? entityGossips.weightedValue(gossipTypeFilter) : 0;
++    }
++
+ 
+     public int getReputation(UUID identifier, Predicate<GossipType> gossip) {
+         GossipContainer.EntityGossips entityGossips = this.gossips.get(identifier);
+@@ -106,6 +_,12 @@
+ 
+     public long getCountForType(GossipType gossipType, DoublePredicate gossipPredicate) {
+         return this.gossips.values().stream().filter(gossips -> gossipPredicate.test(gossips.entries.getOrDefault(gossipType, 0) * gossipType.weight)).count();
++	}
++	
++    public void addWithGlobal(UUID target, GossipType type, int value)
++    {
++        this.add(globalGossipsId, type, value);
++        this.add(target, type, value);
+     }
+ 
+     public void add(UUID identifier, GossipType gossipType, int gossipValue) {
 @@ -216,6 +_,44 @@
          public void remove(GossipType gossipType) {
              this.entries.removeInt(gossipType);

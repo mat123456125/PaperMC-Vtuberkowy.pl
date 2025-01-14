@@ -98,10 +98,10 @@ index c215d97c24e6501e1a48a76fc08bf48ff4dfe462..bd31d1cac0d022a72bd536c41d1ef811
      }
  }
 diff --git a/net/minecraft/world/entity/ai/gossip/GossipContainer.java b/net/minecraft/world/entity/ai/gossip/GossipContainer.java
-index 2c839dc80f451c83135828a97aced1a531004bab..b74a4ce1b629d440681a1f5c026997ccaf1d0373 100644
+index 47f77d972b9b1b5af9384f5aebff3f33ce507c35..7eb77ba1c7aa7f789e63c76112894d4aca22ac44 100644
 --- a/net/minecraft/world/entity/ai/gossip/GossipContainer.java
 +++ b/net/minecraft/world/entity/ai/gossip/GossipContainer.java
-@@ -59,8 +59,22 @@ public class GossipContainer {
+@@ -60,8 +60,22 @@ public class GossipContainer {
          return this.gossips.entrySet().stream().flatMap(gossip -> gossip.getValue().unpack(gossip.getKey()));
      }
  
@@ -125,7 +125,7 @@ index 2c839dc80f451c83135828a97aced1a531004bab..b74a4ce1b629d440681a1f5c026997cc
          if (list.isEmpty()) {
              return Collections.emptyList();
          } else {
-@@ -145,7 +159,7 @@ public class GossipContainer {
+@@ -161,7 +175,7 @@ public class GossipContainer {
  
      public <T> T store(DynamicOps<T> ops) {
          return GossipContainer.GossipEntry.LIST_CODEC
@@ -134,7 +134,7 @@ index 2c839dc80f451c83135828a97aced1a531004bab..b74a4ce1b629d440681a1f5c026997cc
              .resultOrPartial(errorMessage -> LOGGER.warn("Failed to serialize gossips: {}", errorMessage))
              .orElseGet(ops::emptyList);
      }
-@@ -172,12 +186,23 @@ public class GossipContainer {
+@@ -188,12 +202,23 @@ public class GossipContainer {
          final Object2IntMap<GossipType> entries = new Object2IntOpenHashMap<>();
  
          public int weightedValue(Predicate<GossipType> gossipType) {

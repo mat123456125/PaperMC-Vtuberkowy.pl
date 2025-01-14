@@ -1,5 +1,13 @@
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
+@@ -25,6 +_,7 @@
+ import net.minecraft.world.entity.player.Player;
+ import net.minecraft.world.item.Item;
+ import net.minecraft.world.item.ItemStack;
++import net.minecraft.world.item.Items;
+ import net.minecraft.world.level.Explosion;
+ import net.minecraft.world.level.GameRules;
+ import net.minecraft.world.level.Level;
 @@ -49,6 +_,9 @@
      @Nullable
      public UUID target;
@@ -88,12 +96,14 @@
                      this.tryToMerge(itemEntity);
                      if (this.isRemoved()) {
                          break;
-@@ -224,14 +_,14 @@
+@@ -224,14 +_,16 @@
  
      private boolean isMergable() {
          ItemStack item = this.getItem();
 -        return this.isAlive() && this.pickupDelay != 32767 && this.age != -32768 && this.age < 6000 && item.getCount() < item.getMaxStackSize();
-+        return this.isAlive() && this.pickupDelay != 32767 && this.age != -32768 && this.age < this.despawnRate && item.getCount() < item.getMaxStackSize(); // Paper - Alternative item-despawn-rate
++
++		return this.isAlive() && item.getItem() != Items.TORCH &&
++            this.pickupDelay != 32767 && this.age != -32768 && this.age < this.despawnRate && item.getCount() < item.getMaxStackSize(); // Paper - respect despawn rate in pickup check.
      }
  
      private void tryToMerge(ItemEntity itemEntity) {

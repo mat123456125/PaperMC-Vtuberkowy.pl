@@ -56,15 +56,37 @@
              }
          }
      }
-@@ -185,7 +_,7 @@
-         if (owner instanceof ServerPlayer serverPlayer
-             && !owner.isAlive()
-             && serverPlayer.serverLevel().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
+@@ -182,25 +_,11 @@
+         int sectionPosX = SectionPos.blockToSectionCoord(this.position().x());
+         int sectionPosZ = SectionPos.blockToSectionCoord(this.position().z());
+         Entity owner = this.getOwner();
+-        if (owner instanceof ServerPlayer serverPlayer
+-            && !owner.isAlive()
+-            && serverPlayer.serverLevel().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
 -            this.discard();
-+            this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
-         } else {
-             super.tick();
-         }
+-        } else {
+-            super.tick();
+-        }
+-
+-        if (this.isAlive()) {
+-            BlockPos blockPos = BlockPos.containing(this.position());
+-            if ((
+-                    --this.ticketTimer <= 0L
+-                        || sectionPosX != SectionPos.blockToSectionCoord(blockPos.getX())
+-                        || sectionPosZ != SectionPos.blockToSectionCoord(blockPos.getZ())
+-                )
+-                && owner instanceof ServerPlayer serverPlayer1) {
+-                this.ticketTimer = serverPlayer1.registerAndUpdateEnderPearlTicket(this);
+-            }
+-        }
++
++        // no remove on death
++        super.tick();
++
++
+     }
+ 
+     private void playSound(Level level, Vec3 pos) {
 @@ -212,7 +_,7 @@
      public Entity teleport(TeleportTransition teleportTransition) {
          Entity entity = super.teleport(teleportTransition);

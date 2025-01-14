@@ -31,7 +31,7 @@ this fix, as the data will remain in the oversized file. Once the server returns
 to a jar with this fix, the data will be restored.
 
 diff --git a/net/minecraft/world/level/chunk/storage/RegionFile.java b/net/minecraft/world/level/chunk/storage/RegionFile.java
-index d0854fa02be52f560fc91adeb8495a6bd22f6f74..783a2d80f6197dd0af0dc81909f0353a8ea2ecf4 100644
+index 43d38cf26224919cd53d7479753d658f4ab40dbc..4eb07097986aac67421dd8e6a17cc5436da91187 100644
 --- a/net/minecraft/world/level/chunk/storage/RegionFile.java
 +++ b/net/minecraft/world/level/chunk/storage/RegionFile.java
 @@ -53,6 +53,7 @@ public class RegionFile implements AutoCloseable {
