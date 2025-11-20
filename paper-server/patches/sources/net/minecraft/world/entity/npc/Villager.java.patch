@@ -37,8 +37,12 @@
              }
          }
  
-@@ -478,6 +_,7 @@
-         int playerReputation = this.getPlayerReputation(player);
+@@ -475,9 +_,10 @@
+     }
+ 
+     private void updateSpecialPrices(Player player) {
+-        int playerReputation = this.getPlayerReputation(player);
++        int playerReputation = this.getPlayerReputation(null);  // get global reputation
          if (playerReputation != 0) {
              for (MerchantOffer merchantOffer : this.getOffers()) {
 +                if (merchantOffer.ignoreDiscounts) continue; // Paper - Add ignore discounts API
@@ -71,6 +75,14 @@
          Entity entity = damageSource.getEntity();
          if (entity != null) {
              this.tellWitnessesThatIWasMurdered(entity);
+@@ -691,6 +_,7 @@
+     }
+ 
+     public int getPlayerReputation(Player player) {
++        if(player == null) return this.gossips.getGlobalReputation();
+         return this.gossips.getReputation(player.getUUID(), type -> true);
+     }
+ 
 @@ -781,12 +_,19 @@
      @Override
      public void thunderHit(ServerLevel level, LightningBolt lightning) {
@@ -146,3 +158,32 @@
                      entitiesOfClass.forEach(GolemSensor::golemDetected);
                  }
              }
+@@ -899,17 +_,18 @@
+     }
+ 
+     @Override
+-    public void onReputationEventFrom(ReputationEventType type, Entity target) {
+-        if (type == ReputationEventType.ZOMBIE_VILLAGER_CURED) {
+-            this.gossips.add(target.getUUID(), GossipType.MAJOR_POSITIVE, 20);
+-            this.gossips.add(target.getUUID(), GossipType.MINOR_POSITIVE, 25);
+-        } else if (type == ReputationEventType.TRADE) {
+-            this.gossips.add(target.getUUID(), GossipType.TRADING, 2);
+-        } else if (type == ReputationEventType.VILLAGER_HURT) {
+-            this.gossips.add(target.getUUID(), GossipType.MINOR_NEGATIVE, 25);
+-        } else if (type == ReputationEventType.VILLAGER_KILLED) {
+-            this.gossips.add(target.getUUID(), GossipType.MAJOR_NEGATIVE, 25);
++    public void onReputationEventFrom(ReputationEventType interaction, Entity entity) {
++        if (interaction == ReputationEventType.ZOMBIE_VILLAGER_CURED) {
++            this.gossips.addWithGlobal(entity.getUUID(), GossipType.MAJOR_POSITIVE, 20);
++            this.gossips.addWithGlobal(entity.getUUID(), GossipType.MINOR_POSITIVE, 25);
++        } else if (interaction == ReputationEventType.TRADE) {
++            this.gossips.addWithGlobal(entity.getUUID(), GossipType.TRADING, 2);
++        } else if (interaction == ReputationEventType.VILLAGER_HURT) {
++            this.gossips.addWithGlobal(entity.getUUID(), GossipType.MINOR_NEGATIVE, 25);
++        } else if (interaction == ReputationEventType.VILLAGER_KILLED) {
++            this.gossips.addWithGlobal(entity.getUUID(), GossipType.MAJOR_NEGATIVE, 25);
+         }
++
+     }
+ 
+     @Override

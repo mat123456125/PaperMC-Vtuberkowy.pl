@@ -9,7 +9,7 @@ creating too large of a packet to sed.
 Co-authored-by: Spottedleaf <Spottedleaf@users.noreply.github.com>
 
 diff --git a/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java b/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java
-index de234f220ba09ad9b5e0c8215b49d20ca51d0ac7..e216a9d70be5a3da7c03ee99a8986391ef2dbd5b 100644
+index 02a9ef203cf963d74fd900f8dadf081340cffc6f..bd9b29da33670afd6ad0ea86927dad8c4a69faca 100644
 --- a/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java
 +++ b/net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData.java
 @@ -32,6 +32,14 @@ public class ClientboundLevelChunkPacketData {

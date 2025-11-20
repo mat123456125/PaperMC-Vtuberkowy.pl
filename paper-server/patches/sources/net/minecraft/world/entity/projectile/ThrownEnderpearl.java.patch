@@ -60,15 +60,48 @@
              }
          }
      }
-@@ -165,7 +_,7 @@
-                 && !entity.isAlive()
-                 && !serverPlayer.wonGame
-                 && serverPlayer.level().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
+@@ -157,33 +_,14 @@
+ 
+     @Override
+     public void tick() {
+-        if (this.level() instanceof ServerLevel serverLevel) {
+-            int var7 = SectionPos.blockToSectionCoord(this.position().x());
+-            int sectionPosZ = SectionPos.blockToSectionCoord(this.position().z());
+-            Entity entity = this.owner != null ? findOwnerIncludingDeadPlayer(serverLevel, this.owner.getUUID()) : null;
+-            if (entity instanceof ServerPlayer serverPlayer
+-                && !entity.isAlive()
+-                && !serverPlayer.wonGame
+-                && serverPlayer.level().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
 -                this.discard();
-+                this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
-             } else {
-                 super.tick();
-             }
+-            } else {
+-                super.tick();
+-            }
+-
+-            if (this.isAlive()) {
+-                BlockPos blockPos = BlockPos.containing(this.position());
+-                if ((
+-                        --this.ticketTimer <= 0L
+-                            || var7 != SectionPos.blockToSectionCoord(blockPos.getX())
+-                            || sectionPosZ != SectionPos.blockToSectionCoord(blockPos.getZ())
+-                    )
+-                    && entity instanceof ServerPlayer serverPlayer1) {
+-                    this.ticketTimer = serverPlayer1.registerAndUpdateEnderPearlTicket(this);
+-                }
+-            }
+-        } else {
+-            super.tick();
+-        }
++        int sectionPosX = SectionPos.blockToSectionCoord(this.position().x());
++        int sectionPosZ = SectionPos.blockToSectionCoord(this.position().z());
++        Entity owner = this.getOwner();
++
++        // no remove on death
++        super.tick();
++
++
+     }
+ 
+     private void playSound(Level level, Vec3 pos) {
 @@ -195,7 +_,7 @@
      public Entity teleport(TeleportTransition teleportTransition) {
          Entity entity = super.teleport(teleportTransition);

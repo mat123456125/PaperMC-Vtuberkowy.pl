@@ -48,7 +48,7 @@ index 2a86ca1de6920017be6cd4a3a5251e892067f07c..f571ff64ae1007f8f0632febd2dcca70
              serverEntity.getLastSentYRot(),
              entity.getType(),
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
-index 032d164284ebc8fd4cfbc96f1381e8627edd1605..30c26d1f79621ac89d5dfd4652e627062af57956 100644
+index 5807ae8e9e612c0c926d87cdefd3df4d4f31d69a..ccf5ee2d8a84c7cd136bf45ec19d6591586f5fd8 100644
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
 @@ -1326,6 +1326,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider

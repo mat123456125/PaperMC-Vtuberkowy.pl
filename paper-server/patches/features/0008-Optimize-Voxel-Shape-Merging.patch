@@ -67,7 +67,7 @@ index 60b56a5086b8aad0fad693f686b89138b3a4c80d..5b079ec43c259368d0eed4e838588071
          this.firstIndices = new int[i];
          this.secondIndices = new int[i];
 diff --git a/net/minecraft/world/phys/shapes/Shapes.java b/net/minecraft/world/phys/shapes/Shapes.java
-index 881455dd3d576528adc68e00c00eb2819ccd4f0c..3205cc111b1165cd98705bb70d65c858961abc33 100644
+index 608dcf0e486c1cf2303e2039221e414ce6f069d0..3d516ee588efe59da26389752a686e0b77729607 100644
 --- a/net/minecraft/world/phys/shapes/Shapes.java
 +++ b/net/minecraft/world/phys/shapes/Shapes.java
 @@ -347,9 +347,22 @@ public final class Shapes {

@@ -60,7 +60,7 @@ index f31b7ddddf80e58c2323d85ff48a98c3e92e33e0..488fc6088d69148f60a913b42ffb964c
              spawnState = NaturalSpawner.createState(naturalSpawnChunkCount, this.level.getAllEntities(), this::getFullChunk, null, true);
          } else {
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index ebca471ba92f49b00707a3d193cd424a94b956e4..e2fdaf72b9714d919938b3e82328971c887c7ab1 100644
+index 446656ca6500448fea46a5765ca98841cb80cd7c..b4a996ac6c570e988b38237a32f90ec5042cbc17 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -423,6 +423,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
