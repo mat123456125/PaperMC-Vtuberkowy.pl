@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/vehicle/AbstractMinecartContainer.java
 +++ b/net/minecraft/world/entity/vehicle/AbstractMinecartContainer.java
-@@ -21,10 +_,11 @@
+@@ -22,10 +_,11 @@
  import net.minecraft.world.phys.Vec3;
  
  public abstract class AbstractMinecartContainer extends AbstractMinecart implements ContainerEntity {
@@ -11,20 +11,15 @@
      public long lootTableSeed;
 +    private final com.destroystokyo.paper.loottable.PaperLootableInventoryData lootableData = new com.destroystokyo.paper.loottable.PaperLootableInventoryData(); // Paper - LootTable API
  
-     protected AbstractMinecartContainer(EntityType<?> entityType, Level level) {
-         super(entityType, level);
-@@ -72,11 +_,18 @@
+     protected AbstractMinecartContainer(EntityType<?> type, Level level) {
+         super(type, level);
+@@ -72,12 +_,12 @@
+     }
  
      @Override
-     public void remove(Entity.RemovalReason reason) {
-+        // CraftBukkit start - add Bukkit remove cause
-+        this.remove(reason, null);
-+    }
-+
-+    @Override
-+    public void remove(Entity.RemovalReason reason, org.bukkit.event.entity.EntityRemoveEvent.Cause cause) {
-+        // CraftBukkit end  - add Bukkit remove cause
-         if (!this.level().isClientSide && reason.shouldDestroy()) {
+-    public void remove(Entity.RemovalReason reason) {
++    public void remove(Entity.RemovalReason reason, @Nullable org.bukkit.event.entity.EntityRemoveEvent.Cause cause) { // CraftBukkit - add Bukkit remove cause
+         if (!this.level().isClientSide() && reason.shouldDestroy()) {
              Containers.dropContents(this.level(), this, this);
          }
  
@@ -33,7 +28,7 @@
      }
  
      @Override
-@@ -164,4 +_,50 @@
+@@ -165,4 +_,56 @@
      public void clearItemStacks() {
          this.itemStacks = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
      }
@@ -49,23 +44,28 @@
 +    public java.util.List<org.bukkit.entity.HumanEntity> transaction = new java.util.ArrayList<>();
 +    private int maxStack = MAX_STACK;
 +
++    @Override
 +    public java.util.List<net.minecraft.world.item.ItemStack> getContents() {
 +        return this.itemStacks;
 +    }
 +
++    @Override
 +    public void onOpen(org.bukkit.craftbukkit.entity.CraftHumanEntity player) {
 +        this.transaction.add(player);
 +    }
 +
++    @Override
 +    public void onClose(org.bukkit.craftbukkit.entity.CraftHumanEntity player) {
 +        this.transaction.remove(player);
 +    }
 +
++    @Override
 +    public java.util.List<org.bukkit.entity.HumanEntity> getViewers() {
 +        return this.transaction;
 +    }
 +
-+    public org.bukkit.inventory.InventoryHolder getOwner() {
++    @Override
++    public @Nullable org.bukkit.inventory.InventoryHolder getOwner() {
 +        return this.getBukkitEntity() instanceof final org.bukkit.inventory.InventoryHolder inventoryHolder ? inventoryHolder : null;
 +    }
 +
@@ -74,6 +74,7 @@
 +        return this.maxStack;
 +    }
 +
++    @Override
 +    public void setMaxStackSize(int size) {
 +        this.maxStack = size;
 +    }

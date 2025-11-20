@@ -9,7 +9,7 @@
      private long inhabitedTime;
      @Nullable
      @Deprecated
-@@ -82,6 +_,11 @@
+@@ -82,6 +_,10 @@
      public final Map<BlockPos, BlockEntity> blockEntities = new Object2ObjectOpenHashMap<>();
      protected final LevelHeightAccessor levelHeightAccessor;
      protected final LevelChunkSection[] sections;
@@ -17,7 +17,6 @@
 +    private static final org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry();
 +    public org.bukkit.craftbukkit.persistence.DirtyCraftPersistentDataContainer persistentDataContainer = new org.bukkit.craftbukkit.persistence.DirtyCraftPersistentDataContainer(ChunkAccess.DATA_TYPE_REGISTRY);
 +    // CraftBukkit end
-+    public final Registry<Biome> biomeRegistry; // CraftBukkit
  
      public ChunkAccess(
          ChunkPos chunkPos,
@@ -31,23 +30,16 @@
          this.upgradeData = upgradeData;
          this.levelHeightAccessor = levelHeightAccessor;
          this.sections = new LevelChunkSection[levelHeightAccessor.getSectionsCount()];
-@@ -109,6 +_,7 @@
-         }
- 
-         replaceMissingSections(biomeRegistry, this.sections);
-+        this.biomeRegistry = biomeRegistry; // CraftBukkit
-     }
- 
-     private static void replaceMissingSections(Registry<Biome> biomeRegistry, LevelChunkSection[] sections) {
-@@ -123,6 +_,7 @@
+@@ -123,6 +_,8 @@
          return GameEventListenerRegistry.NOOP;
      }
  
 +    public abstract BlockState getBlockState(final int x, final int y, final int z); // Paper
++
      @Nullable
-     public abstract BlockState setBlockState(BlockPos pos, BlockState state, boolean isMoving);
- 
-@@ -273,6 +_,7 @@
+     public BlockState setBlockState(BlockPos pos, BlockState state) {
+         return this.setBlockState(pos, state, Block.UPDATE_ALL);
+@@ -274,6 +_,7 @@
      public boolean tryMarkSaved() {
          if (this.unsaved) {
              this.unsaved = false;
@@ -55,7 +47,7 @@
              return true;
          } else {
              return false;
-@@ -280,7 +_,7 @@
+@@ -281,7 +_,7 @@
      }
  
      public boolean isUnsaved() {
@@ -64,7 +56,7 @@
      }
  
      public abstract ChunkStatus getPersistedStatus();
-@@ -446,6 +_,22 @@
+@@ -447,6 +_,22 @@
              throw new ReportedException(crashReport);
          }
      }

@@ -1,19 +1,19 @@
 --- a/net/minecraft/world/entity/animal/Pufferfish.java
 +++ b/net/minecraft/world/entity/animal/Pufferfish.java
-@@ -95,24 +_,36 @@
+@@ -97,24 +_,36 @@
      public void tick() {
-         if (!this.level().isClientSide && this.isAlive() && this.isEffectiveAi()) {
+         if (!this.level().isClientSide() && this.isAlive() && this.isEffectiveAi()) {
              if (this.inflateCounter > 0) {
 +                boolean increase = true; // Paper - Add PufferFishStateChangeEvent
                  if (this.getPuffState() == 0) {
 +                    if (new io.papermc.paper.event.entity.PufferFishStateChangeEvent((org.bukkit.entity.PufferFish) getBukkitEntity(), 1).callEvent()) { // Paper - Add PufferFishStateChangeEvent
                      this.makeSound(SoundEvents.PUFFER_FISH_BLOW_UP);
-                     this.setPuffState(1);
+                     this.setPuffState(STATE_MID);
 +                    } else { increase = false; } // Paper - Add PufferFishStateChangeEvent
                  } else if (this.inflateCounter > 40 && this.getPuffState() == 1) {
 +                    if (new io.papermc.paper.event.entity.PufferFishStateChangeEvent((org.bukkit.entity.PufferFish) getBukkitEntity(), 2).callEvent()) { // Paper - Add PufferFishStateChangeEvent
                      this.makeSound(SoundEvents.PUFFER_FISH_BLOW_UP);
-                     this.setPuffState(2);
+                     this.setPuffState(STATE_FULL);
 +                    } else { increase = false; } // Paper - Add PufferFishStateChangeEvent
                  }
  
@@ -24,12 +24,12 @@
                  if (this.deflateTimer > 60 && this.getPuffState() == 2) {
 +                    if (new io.papermc.paper.event.entity.PufferFishStateChangeEvent((org.bukkit.entity.PufferFish) getBukkitEntity(), 1).callEvent()) { // Paper - Add PufferFishStateChangeEvent
                      this.makeSound(SoundEvents.PUFFER_FISH_BLOW_OUT);
-                     this.setPuffState(1);
+                     this.setPuffState(STATE_MID);
 +                    } else { increase = false; } // Paper - Add PufferFishStateChangeEvent
                  } else if (this.deflateTimer > 100 && this.getPuffState() == 1) {
 +                    if (new io.papermc.paper.event.entity.PufferFishStateChangeEvent((org.bukkit.entity.PufferFish) getBukkitEntity(), 0).callEvent()) { // Paper - Add PufferFishStateChangeEvent
                      this.makeSound(SoundEvents.PUFFER_FISH_BLOW_OUT);
-                     this.setPuffState(0);
+                     this.setPuffState(STATE_SMALL);
 +                    } else { increase = false; } // Paper - Add PufferFishStateChangeEvent
                  }
  
@@ -37,7 +37,7 @@
                  this.deflateTimer++;
              }
          }
-@@ -136,7 +_,7 @@
+@@ -138,7 +_,7 @@
      private void touch(ServerLevel level, Mob mob) {
          int puffState = this.getPuffState();
          if (mob.hurtServer(level, this.damageSources().mobAttack(this), 1 + puffState)) {
@@ -46,7 +46,7 @@
              this.playSound(SoundEvents.PUFFER_FISH_STING, 1.0F, 1.0F);
          }
      }
-@@ -151,7 +_,7 @@
+@@ -153,7 +_,7 @@
                  serverPlayer.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.PUFFER_FISH_STING, 0.0F));
              }
  

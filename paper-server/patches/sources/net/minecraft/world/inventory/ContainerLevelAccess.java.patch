@@ -51,7 +51,7 @@
 +    }
 +
 +    default org.bukkit.Location getLocation() {
-+        return new org.bukkit.Location(this.getWorld().getWorld(), this.getPosition().getX(), this.getPosition().getY(), this.getPosition().getZ());
++        return org.bukkit.craftbukkit.util.CraftLocation.toBukkit(this.getPosition(), this.getWorld());
 +    }
 +    // CraftBukkit end
 +    // Paper start - Add missing InventoryHolders
@@ -59,7 +59,7 @@
 +        return false;
 +    }
 +
-+    default org.bukkit.inventory.@org.jetbrains.annotations.Nullable BlockInventoryHolder createBlockHolder(AbstractContainerMenu menu) {
++    default @javax.annotation.Nullable org.bukkit.inventory.BlockInventoryHolder createBlockHolder(AbstractContainerMenu menu) {
 +        if (!this.isBlock()) {
 +            return null;
 +        }

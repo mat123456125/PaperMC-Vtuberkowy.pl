@@ -168,7 +168,7 @@ public abstract class PotionEffectType implements Keyed, Translatable, net.kyori
     public static final PotionEffectType CONDUIT_POWER = getPotionEffectType(29, "conduit_power");
 
     /**
-     * Increses underwater movement speed.<br>
+     * Increases underwater movement speed.<br>
      * Squee'ek uh'k kk'kkkk squeek eee'eek.
      */
     public static final PotionEffectType DOLPHINS_GRACE = getPotionEffectType(30, "dolphins_grace");
@@ -271,7 +271,7 @@ public abstract class PotionEffectType implements Keyed, Translatable, net.kyori
      * @return duration modifier
      * @deprecated unused, always 1.0
      */
-    @Deprecated(since = "1.14")
+    @Deprecated(since = "1.14", forRemoval = true)
     public abstract double getDurationModifier();
 
     /**

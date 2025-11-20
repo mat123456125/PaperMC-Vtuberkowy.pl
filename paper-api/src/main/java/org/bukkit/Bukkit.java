@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
+import io.papermc.paper.configuration.ServerConfiguration;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Warning.WarningState;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.block.data.BlockData;
@@ -46,7 +48,6 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.loot.LootTable;
 import org.bukkit.map.MapView;
-import org.bukkit.packs.DataPackManager;
 import org.bukkit.packs.ResourcePack;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.plugin.PluginManager;
@@ -189,8 +190,8 @@ public final class Bukkit {
      * uses. Normal and immediate iterator use without consequences that
      * affect the collection are fully supported. The effects following
      * (non-exhaustive) {@link Entity#teleport(Location) teleportation},
-     * {@link Player#setHealth(double) death}, and {@link Player#kickPlayer(
-     * String) kicking} are undefined. Any use of this collection from
+     * {@link Player#setHealth(double) death}, and {@link Player#kick(
+     * Component) kicking} are undefined. Any use of this collection from
      * asynchronous threads is unsafe.
      * <p>
      * For safe consequential iteration or mimicking the old array behavior,
@@ -327,18 +328,6 @@ public final class Bukkit {
     }
 
     /**
-     * Get the DataPack Manager.
-     *
-     * @deprecated use {@link #getDatapackManager()}
-     * @return the manager
-     */
-    @NotNull
-    @Deprecated(forRemoval = true, since = "1.20")
-    public static DataPackManager getDataPackManager() {
-        return server.getDataPackManager();
-    }
-
-    /**
      * Gets the resource pack configured to be sent to clients by the server.
      *
      * @return the resource pack
@@ -468,7 +457,7 @@ public final class Bukkit {
      *
      * @param message the message
      * @return the number of players
-     * @deprecated in favour of {@link Server#broadcast(net.kyori.adventure.text.Component)}
+     * @deprecated in favour of {@link Server#broadcast(Component)}
      */
     @Deprecated // Paper
     public static int broadcastMessage(@NotNull String message) {
@@ -480,7 +469,7 @@ public final class Bukkit {
      * Sends the component to all online players.
      *
      * @param component the component to send
-     * @deprecated use {@code sendMessage} methods on {@link #getServer()} that accept {@link net.kyori.adventure.text.Component}
+     * @deprecated use {@code sendMessage} methods on {@link #getServer()} that accept {@link Component}
      */
     @Deprecated
     public static void broadcast(@NotNull net.md_5.bungee.api.chat.BaseComponent component) {
@@ -491,7 +480,7 @@ public final class Bukkit {
      * Sends an array of components as a single message to all online players.
      *
      * @param components the components to send
-     * @deprecated use {@code sendMessage} methods on {@link #getServer()} that accept {@link net.kyori.adventure.text.Component}
+     * @deprecated use {@code sendMessage} methods on {@link #getServer()} that accept {@link Component}
      */
     @Deprecated
     public static void broadcast(@NotNull net.md_5.bungee.api.chat.BaseComponent... components) {
@@ -930,7 +919,6 @@ public final class Bukkit {
      * @param id the id of the map to get
      * @return a map view if it exists, or null otherwise
      */
-    // @Deprecated(since = "1.6.2") // Paper - Not a magic value
     @Nullable
     public static MapView getMap(int id) {
         return server.getMap(id);
@@ -1117,20 +1105,24 @@ public final class Bukkit {
 
     /**
      * Adds a recipe to the crafting manager.
+     * Recipes added with this method won't be sent to the client automatically.
+     * <p>
+     * Players still have to discover recipes via {@link Player#discoverRecipe(NamespacedKey)}
+     * before seeing them in their recipe book.
      *
      * @param recipe the recipe to add
-     * @return true if the recipe was added, false if it wasn't for some
-     *     reason
+     * @return true if the recipe was added, false if it wasn't for some reason
+     * @see #addRecipe(Recipe, boolean)
      */
     @Contract("null -> false")
     public static boolean addRecipe(@Nullable Recipe recipe) {
         return server.addRecipe(recipe);
     }
 
-    // Paper start - method to send recipes immediately
     /**
      * Adds a recipe to the crafting manager.
      *
+     * @apiNote resendRecipes is ignored at the moment for stability reasons, recipes will always be updated
      * @param recipe the recipe to add
      * @param resendRecipes true to update the client with the full set of recipes
      * @return true if the recipe was added, false if it wasn't for some reason
@@ -1139,7 +1131,6 @@ public final class Bukkit {
     public static boolean addRecipe(@Nullable Recipe recipe, boolean resendRecipes) {
         return server.addRecipe(recipe, resendRecipes);
     }
-    // Paper end - method to send recipes immediately
 
     /**
      * Get a list of all recipes for a given item. The stack size is ignored
@@ -1373,7 +1364,11 @@ public final class Bukkit {
      * Sets the radius, in blocks, around each worlds spawn point to protect.
      *
      * @param value new spawn radius, or 0 if none
+     * @deprecated has not functioned for a long time as the spawn radius is defined by the server.properties file.
+     * There is no API replacement for this method. It is generally recommended to implement "protection"-like behaviour
+     * via events or third-party plugin APIs.
      */
+    @Deprecated(since = "1.21.4", forRemoval = true)
     public static void setSpawnRadius(int value) {
         server.setSpawnRadius(value);
     }
@@ -1385,7 +1380,7 @@ public final class Bukkit {
      * @return true if the server should send a preview, false otherwise
      * @deprecated chat previews have been removed
      */
-    @Deprecated(since = "1.19.3")
+    @Deprecated(since = "1.19.3", forRemoval = true)
     public static boolean shouldSendChatPreviews() {
         return server.shouldSendChatPreviews();
     }
@@ -1429,6 +1424,15 @@ public final class Bukkit {
     }
 
     /**
+     * Retrieves the server configuration.
+     *
+     * @return the instance of ServerConfiguration containing the server's configuration details
+     */
+    public static @NotNull ServerConfiguration getServerConfig() {
+        return server.getServerConfig();
+    }
+
+    /**
      * Gets whether this server allows flying or not.
      *
      * @return true if the server allows flight, false otherwise
@@ -1457,7 +1461,7 @@ public final class Bukkit {
     /**
      * Broadcast a message to all players.
      * <p>
-     * This is the same as calling {@link #broadcast(net.kyori.adventure.text.Component,
+     * This is the same as calling {@link #broadcast(Component,
      * java.lang.String)} with the {@link Server#BROADCAST_CHANNEL_USERS} permission.
      *
      * @param message the message
@@ -1487,7 +1491,7 @@ public final class Bukkit {
      * @param permission the required permission {@link Permissible
      *     permissibles} must have to receive the broadcast
      * @return number of message recipients
-     * @deprecated in favour of {@link #broadcast(net.kyori.adventure.text.Component, String)}
+     * @deprecated in favour of {@link #broadcast(Component, String)}
      */
     @Deprecated // Paper
     public static int broadcast(@NotNull String message, @NotNull String permission) {
@@ -1508,7 +1512,6 @@ public final class Bukkit {
      * @return an offline player
      * @see #getOfflinePlayer(java.util.UUID)
      */
-    // @Deprecated(since = "1.7.5") // Paper
     @NotNull
     public static OfflinePlayer getOfflinePlayer(@NotNull String name) {
         return server.getOfflinePlayer(name);
@@ -1716,6 +1719,15 @@ public final class Bukkit {
     }
 
     /**
+     * Gets whether the default gamemode is being enforced.
+     *
+     * @return {@code true} if the default gamemode is being forced, {@code false} otherwise
+     */
+    public static boolean forcesDefaultGameMode() {
+        return server.forcesDefaultGameMode();
+    }
+
+    /**
      * Gets a {@link ConsoleCommandSender} that may be used as an input source
      * for this server.
      *
@@ -1735,7 +1747,7 @@ public final class Bukkit {
      * @return a command sender
      */
     @NotNull
-    public static CommandSender createCommandSender(final @NotNull java.util.function.Consumer<? super net.kyori.adventure.text.Component> feedback) {
+    public static CommandSender createCommandSender(final @NotNull java.util.function.Consumer<? super Component> feedback) {
         return server.createCommandSender(feedback);
     }
     // Paper end
@@ -1859,7 +1871,7 @@ public final class Bukkit {
      * @return The new inventory.
      * @throws IllegalArgumentException if the {@link InventoryType} cannot be
      * viewed.
-     * @deprecated in favour of {@link #createInventory(InventoryHolder, InventoryType, net.kyori.adventure.text.Component)}
+     * @deprecated in favour of {@link #createInventory(InventoryHolder, InventoryType, Component)}
      *
      * @see InventoryType#isCreatable()
      */
@@ -1911,7 +1923,7 @@ public final class Bukkit {
      *     viewed
      * @return a new inventory
      * @throws IllegalArgumentException if the size is not a multiple of 9
-     * @deprecated in favour of {@link #createInventory(InventoryHolder, InventoryType, net.kyori.adventure.text.Component)}
+     * @deprecated in favour of {@link #createInventory(InventoryHolder, InventoryType, Component)}
      */
     @Deprecated // Paper
     @NotNull
@@ -1940,7 +1952,7 @@ public final class Bukkit {
      * @param title the title of the corresponding merchant inventory, displayed
      * when the merchant inventory is viewed
      * @return a new merchant
-     * @deprecated in favour of {@link #createMerchant(net.kyori.adventure.text.Component)}. The title parameter is
+     * @deprecated in favour of {@link #createMerchant(Component)}. The title parameter is
      * no-longer needed when used with {@link MenuType#MERCHANT} and {@link MenuType.Typed#builder()}
      */
     @NotNull
@@ -2077,7 +2089,7 @@ public final class Bukkit {
      *
      * @return the server's MOTD
      */
-    @NotNull public static net.kyori.adventure.text.Component motd() {
+    @NotNull public static Component motd() {
         return server.motd();
     }
 
@@ -2116,7 +2128,7 @@ public final class Bukkit {
      * Set the message that is displayed on the server list.
      *
      * @param motd The message to be displayed
-     * @deprecated in favour of {@link #motd(net.kyori.adventure.text.Component)}
+     * @deprecated in favour of {@link #motd(Component)}
      */
     @Deprecated // Paper
     public static void setMotd(@NotNull String motd) {
@@ -2221,7 +2233,7 @@ public final class Bukkit {
      * Size and type are implementation defined. An incompatible file is
      * guaranteed to throw an implementation-defined {@link Exception}.
      *
-     * @param file the file to load the from
+     * @param file the file to load from
      * @return a cached server-icon that can be used for a {@link
      *     ServerListPingEvent#setServerIcon(CachedServerIcon)}
      * @throws IllegalArgumentException if image is null
@@ -2541,7 +2553,7 @@ public final class Bukkit {
     }
 
     /**
-     * Gets a all tags which have been defined within the server.
+     * Gets all tags which have been defined within the server.
      * <br>
      * Server implementations are allowed to handle only the registries
      * indicated in {@link Tag}.
@@ -2690,7 +2702,7 @@ public final class Bukkit {
      * @return the default message
      */
     @NotNull
-    public static net.kyori.adventure.text.Component permissionMessage() {
+    public static Component permissionMessage() {
         return server.permissionMessage();
     }
 
@@ -2738,7 +2750,7 @@ public final class Bukkit {
      * <p>
      * E.g. if the player 'jeb_' is currently playing on the server, calling {@code createProfile(null, "JEB_")} will
      * yield a profile with the name 'jeb_', their uuid and their textures.
-     * To bypass this pre-population on an case-insensitive name match, see {@link #createProfileExact(UUID, String)}.
+     * To bypass this pre-population on a case-insensitive name match, see {@link #createProfileExact(UUID, String)}.
      * <p>
      *
      * The name comparison will compare the {@link String#toLowerCase()} version of both the passed name parameter and
@@ -2976,8 +2988,19 @@ public final class Bukkit {
     }
     // Paper end - Folia region threading API
 
+    /**
+     * @deprecated All methods on this class have been deprecated, see the individual methods for replacements.
+     */
+    @Deprecated(since = "1.21.4", forRemoval = true)
     @NotNull
     public static Server.Spigot spigot() {
         return server.spigot();
+    }
+
+    /**
+     * Restarts the server. If the server administrator has not configured restarting, the server will stop.
+     */
+    public static void restart() {
+        server.restart();
     }
 }

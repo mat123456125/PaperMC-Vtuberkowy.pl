@@ -23,7 +23,7 @@ public class WorldCreator {
     private boolean generateStructures = true;
     private String generatorSettings = "";
     private boolean hardcore = false;
-    private net.kyori.adventure.util.TriState keepSpawnLoaded = net.kyori.adventure.util.TriState.NOT_SET; // Paper
+    private boolean bonusChest = false;
 
     /**
      * Creates an empty WorldCreationOptions for the given world name
@@ -123,7 +123,7 @@ public class WorldCreator {
         type = world.getWorldType();
         generateStructures = world.canGenerateStructures();
         hardcore = world.isHardcore();
-        this.keepSpawnLoaded = net.kyori.adventure.util.TriState.byBoolean(world.getKeepSpawnInMemory()); // Paper
+        bonusChest = world.hasBonusChest();
 
         return this;
     }
@@ -146,7 +146,7 @@ public class WorldCreator {
         generateStructures = creator.generateStructures();
         generatorSettings = creator.generatorSettings();
         hardcore = creator.hardcore();
-        keepSpawnLoaded = creator.keepSpawnLoaded(); // Paper
+        bonusChest = creator.bonusChest();
 
         return this;
     }
@@ -451,7 +451,7 @@ public class WorldCreator {
 
     /**
      * Gets whether the world will be hardcore or not.
-     *
+     * <p>
      * In a hardcore world the difficulty will be locked to hard.
      *
      * @return hardcore status
@@ -461,32 +461,24 @@ public class WorldCreator {
     }
 
     /**
-     * Sets whether the spawn chunks will be kept loaded. <br>
-     * Setting this to false will also stop the spawn chunks from being generated
-     * when creating a new world.
-     * <p>
-     * Has little performance benefit unless paired with a {@link ChunkGenerator}
-     * that overrides {@link ChunkGenerator#getFixedSpawnLocation(World, Random)}.
+     * Sets whether a bonus chest should be generated or not.
      *
-     * @param keepSpawnInMemory Whether the spawn chunks will be kept loaded
+     * @param bonusChest indicating whether the bonus chest should be generated
      * @return This object, for chaining
-     * @deprecated use {@link #keepSpawnLoaded(net.kyori.adventure.util.TriState)}
      */
     @NotNull
-    @Deprecated(forRemoval = true) // Paper
-    public WorldCreator keepSpawnInMemory(boolean keepSpawnInMemory) {
-        return this.keepSpawnLoaded(net.kyori.adventure.util.TriState.byBoolean(keepSpawnInMemory)); // Paper
+    public WorldCreator bonusChest(final boolean bonusChest) {
+        this.bonusChest = bonusChest;
+        return this;
     }
 
     /**
-     * Gets whether or not the spawn chunks will be kept loaded.
+     * Gets whether the bonus chest feature is enabled.
      *
-     * @return True if the spawn chunks will be kept loaded
-     * @deprecated use {@link #keepSpawnLoaded()}
+     * @return true if the bonus chest is enabled, false otherwise.
      */
-    @Deprecated(forRemoval = true) // Paper
-    public boolean keepSpawnInMemory() {
-        return this.keepSpawnLoaded() == net.kyori.adventure.util.TriState.TRUE; // Paper
+    public boolean bonusChest() {
+        return bonusChest;
     }
 
     /**
@@ -602,10 +594,12 @@ public class WorldCreator {
      * Returns the current intent to keep the world loaded, @see {@link WorldCreator#keepSpawnLoaded(net.kyori.adventure.util.TriState)}
      *
      * @return the current tristate value
+     * @deprecated completely unfunctional as the server no longer has always loaded spawn chunks.
      */
     @NotNull
+    @Deprecated(forRemoval = true, since = "1.21.9")
     public net.kyori.adventure.util.TriState keepSpawnLoaded() {
-        return keepSpawnLoaded;
+        return net.kyori.adventure.util.TriState.FALSE;
     }
 
     /**
@@ -614,13 +608,12 @@ public class WorldCreator {
      *
      * @param keepSpawnLoaded the new value
      * @return This object, for chaining
+     * @deprecated completely unfunctional as the server no longer has always loaded spawn chunks.
      */
     @NotNull
+    @Deprecated(forRemoval = true, since = "1.21.9")
     public WorldCreator keepSpawnLoaded(@NotNull net.kyori.adventure.util.TriState keepSpawnLoaded) {
-        Preconditions.checkArgument(keepSpawnLoaded != null, "keepSpawnLoaded");
-        this.keepSpawnLoaded = keepSpawnLoaded;
         return this;
     }
-
     // Paper end - keep spawn loaded tristate
 }

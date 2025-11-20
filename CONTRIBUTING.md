@@ -25,9 +25,9 @@ you will most likely use this for WSL), `homebrew` (macOS / Linux), and more:
   - [Adoptium](https://adoptium.net/) has builds for most operating systems.
   - Paper requires JDK 21 to build, however, makes use of Gradle's
     [Toolchains](https://docs.gradle.org/current/userguide/toolchains.html)
-    feature to allow building with only JRE 11 or later installed. (Gradle will
+    feature to allow building with only JRE 17 or later installed. (Gradle will
     automatically provision JDK 21 for compilation if it cannot find an existing
-    install).
+    installation).
 
 If you're on Windows, check
 [the section on WSL](#patching-and-building-is-really-slow-what-can-i-do).
@@ -208,7 +208,8 @@ required.
   with `// Paper end - <COMMIT DESCRIPTION>`.
 - One-line changes should have `// Paper - <COMMIT DESCRIPTION>` at the end of the line.
 
-> [!NOTE] These comments are incredibly important to be able to keep track of changes
+> [!NOTE]
+> These comments are incredibly important to be able to keep track of changes
 > across files and to remember what they are for, even a decade into the future.
 
 Here's an example of how to mark changes by Paper:
@@ -262,6 +263,40 @@ are assumed to be non-null by default. For less obvious placing such as on gener
 
 **For other classes**: Keep using both `@Nullable` and `@NotNull` from `org.jetbrains.annotations`. These
 will be replaced later.
+
+### API checks
+
+When performing API-related checks where an exception needs to be thrown under specific conditions, you should use the `Preconditions` class.
+
+#### Checking Method Arguments
+To validate method arguments, use `Preconditions#checkArgument`. This will throw an `IllegalArgumentException` if the condition is not met.
+> Don't use Preconditions#checkNotNull, as it throws a NullPointerException, which makes it harder to determine whether the error was caused by an internal issue or invalid arguments.
+
+ex:
+```java
+@Override
+public void sendMessage(Player player, Component message) {
+    Preconditions.checkArgument(player != null, "player cannot be null");
+    Preconditions.checkArgument(player.isOnline(), "player %s must be online", player.getName());
+    Preconditions.checkArgument(message != null, "message cannot be null");
+    // rest of code
+}
+```
+
+#### Checking Object State
+To validate the state of an object inside a method, use `Preconditions#checkState`. This will throw an `IllegalStateException` if the condition is not met.
+ex:
+```java
+private Player player;
+
+@Override
+public void sendMessage(Component message) {
+    Preconditions.checkArgument(message != null, "message cannot be null");
+    Preconditions.checkState(this.player != null, "player cannot be null");
+    Preconditions.checkState(this.player.isOnline(), "player %s must be online", this.player.getName());
+    // rest of code
+}
+```
 
 ## Access Transformers
 Sometimes, Vanilla code already contains a field, method, or type you want to access
@@ -417,6 +452,17 @@ If you use Maven to build your plugin:
   If you use Windows and don't usually build using WSL, you might not need to
   do this.
 
+## Tips and Tricks
+
+### IntelliJ IDEA
+
+- Under `Settings > Appearance & Behavior > System Settings`, disable
+  `Sync external changes: Periodically when the IDE is inactive (experimental)`.
+  When disabled, the IDE will not attempt to reindex files while patches are applying
+  unless you interact with the IDE during the process. This avoids severe slowdowns and freezes.
+- Under `Settings > Appearance & Behavior > System Settings`, you may also want to
+  disable `Reopen projects on startup` to avoid freeze loops.
+
 ## Frequently Asked Questions
 
 ### My commit doesn't need a build, what do I do?
@@ -434,11 +480,11 @@ release, either update to Windows 10/11 or move to macOS/Linux/BSD.
 In order to speed up patching process on Windows, it's recommended you get WSL 2.
 This is available in Windows 10 v2004, build 19041 or higher. (You can check
 your version by running `winver` in the run window (Windows key + R)). If you're
-using an out of date version of Windows 10, update your system with the
+using an out-of-date version of Windows 10, update your system with the
 [Windows 10 Update Assistant](https://www.microsoft.com/en-us/software-download/windows10) or [Windows 11 Update Assistant](https://www.microsoft.com/en-us/software-download/windows11).
 
 To set up WSL 2, follow the information here:
-<https://docs.microsoft.com/en-us/windows/wsl/install>
+<https://learn.microsoft.com/en-us/windows/wsl/install>
 
 You will most likely want to use the Ubuntu apps. Once it's set up, install the
 required tools with `sudo apt-get update && sudo apt-get install $TOOL_NAMES
@@ -447,5 +493,5 @@ required tools with `sudo apt-get update && sudo apt-get install $TOOL_NAMES
 everything like usual.
 
 > ❗ Do not use the `/mnt/` directory in WSL! Instead, mount the WSL directories
-> in Windows like described here:
-> <https://docs.microsoft.com/en-us/windows/wsl/filesystems#view-your-current-directory-in-windows-file-explorer>
+> in Windows as described here:
+> <https://learn.microsoft.com/en-us/windows/wsl/filesystems#view-your-current-directory-in-windows-file-explorer>

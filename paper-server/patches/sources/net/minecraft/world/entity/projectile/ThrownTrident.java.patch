@@ -1,26 +1,19 @@
 --- a/net/minecraft/world/entity/projectile/ThrownTrident.java
 +++ b/net/minecraft/world/entity/projectile/ThrownTrident.java
-@@ -32,16 +_,19 @@
- 
-     public ThrownTrident(EntityType<? extends ThrownTrident> entityType, Level level) {
-         super(entityType, level);
-+        this.setBaseDamage(net.minecraft.world.item.TridentItem.BASE_DAMAGE); // Paper - Allow trident custom damage
-     }
- 
-     public ThrownTrident(Level level, LivingEntity shooter, ItemStack pickupItemStack) {
-         super(EntityType.TRIDENT, shooter, level, pickupItemStack, null);
-+        this.setBaseDamage(net.minecraft.world.item.TridentItem.BASE_DAMAGE); // Paper - Allow trident custom damage
-         this.entityData.set(ID_LOYALTY, this.getLoyaltyFromItem(pickupItemStack));
+@@ -48,6 +_,12 @@
          this.entityData.set(ID_FOIL, pickupItemStack.hasFoil());
      }
  
-     public ThrownTrident(Level level, double x, double y, double z, ItemStack pickupItemStack) {
-         super(EntityType.TRIDENT, x, y, z, level, pickupItemStack, pickupItemStack);
-+        this.setBaseDamage(net.minecraft.world.item.TridentItem.BASE_DAMAGE); // Paper - Allow trident custom damage
-         this.entityData.set(ID_LOYALTY, this.getLoyaltyFromItem(pickupItemStack));
-         this.entityData.set(ID_FOIL, pickupItemStack.hasFoil());
-     }
-@@ -67,10 +_,10 @@
++    // Paper start - Allow trident custom damage
++    {
++        this.setBaseDamage(net.minecraft.world.item.TridentItem.BASE_DAMAGE);
++    }
++    // Paper end - Allow trident custom damage
++
+     @Override
+     protected void defineSynchedData(SynchedEntityData.Builder builder) {
+         super.defineSynchedData(builder);
+@@ -69,10 +_,10 @@
                      this.spawnAtLocation(serverLevel, this.getPickupItem(), 0.1F);
                  }
  
@@ -33,7 +26,7 @@
                      return;
                  }
  
-@@ -99,6 +_,20 @@
+@@ -101,6 +_,20 @@
          return this.entityData.get(ID_FOIL);
      }
  
@@ -54,12 +47,12 @@
      @Nullable
      @Override
      protected EntityHitResult findHitEntity(Vec3 startVec, Vec3 endVec) {
-@@ -108,7 +_,7 @@
+@@ -110,7 +_,7 @@
      @Override
      protected void onHitEntity(EntityHitResult result) {
          Entity entity = result.getEntity();
 -        float f = 8.0F;
-+        float f = (float) this.getBaseDamage(); // Paper - Allow trident custom damage
++        float f = (float) this.baseDamage; // Paper - Allow trident custom damage
          Entity owner = this.getOwner();
          DamageSource damageSource = this.damageSources().trident(this, (Entity)(owner == null ? this : owner));
          if (this.level() instanceof ServerLevel serverLevel) {

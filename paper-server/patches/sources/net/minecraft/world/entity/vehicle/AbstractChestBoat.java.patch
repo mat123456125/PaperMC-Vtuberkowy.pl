@@ -1,17 +1,12 @@
 --- a/net/minecraft/world/entity/vehicle/AbstractChestBoat.java
 +++ b/net/minecraft/world/entity/vehicle/AbstractChestBoat.java
-@@ -66,11 +_,18 @@
+@@ -67,12 +_,12 @@
+     }
  
      @Override
-     public void remove(Entity.RemovalReason reason) {
-+        // CraftBukkit start - add Bukkit remove cause
-+        this.remove(reason, null);
-+    }
-+
-+    @Override
-+    public void remove(Entity.RemovalReason reason, org.bukkit.event.entity.EntityRemoveEvent.Cause cause) {
-+        // CraftBukkit end
-         if (!this.level().isClientSide && reason.shouldDestroy()) {
+-    public void remove(Entity.RemovalReason reason) {
++    public void remove(Entity.RemovalReason reason, @Nullable org.bukkit.event.entity.EntityRemoveEvent.Cause cause) { // CraftBukkit - add Bukkit remove cause
+         if (!this.level().isClientSide() && reason.shouldDestroy()) {
              Containers.dropContents(this.level(), this, this);
          }
  
@@ -20,7 +15,7 @@
      }
  
      @Override
-@@ -97,8 +_,8 @@
+@@ -95,8 +_,8 @@
  
      @Override
      public void openCustomInventoryScreen(Player player) {
@@ -31,7 +26,7 @@
              this.gameEvent(GameEvent.CONTAINER_OPEN, player);
              PiglinAi.angerNearbyPiglins(serverLevel, player, true);
          }
-@@ -151,7 +_,7 @@
+@@ -149,7 +_,7 @@
      @Nullable
      @Override
      public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
@@ -40,9 +35,9 @@
              return null;
          } else {
              this.unpackLootTable(playerInventory.player);
-@@ -198,4 +_,58 @@
-     public void stopOpen(Player player) {
-         this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of(player));
+@@ -196,4 +_,58 @@
+     public void stopOpen(ContainerUser user) {
+         this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of(user.getLivingEntity()));
      }
 +
 +    // Paper start - LootTable API
@@ -78,7 +73,7 @@
 +    }
 +
 +    @Override
-+    public org.bukkit.inventory.InventoryHolder getOwner() {
++    public @Nullable org.bukkit.inventory.InventoryHolder getOwner() {
 +        org.bukkit.entity.Entity entity = this.getBukkitEntity();
 +        return entity instanceof final org.bukkit.inventory.InventoryHolder inventoryHolder ? inventoryHolder : null;
 +    }

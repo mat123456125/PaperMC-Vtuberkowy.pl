@@ -61,7 +61,7 @@
 +                eggEvent.setCancelled(true);
 +            }
 +            if (eggEvent.callEvent()) {
-+                eggEvent.getNewState().update(true);
++                ((org.bukkit.craftbukkit.block.CraftBlockState) eggEvent.getNewState()).place(3);
 +                // Paper end - Add DragonEggFormEvent
              }
  
@@ -91,8 +91,8 @@
      private void spawnNewGateway() {
          if (!this.gateways.isEmpty()) {
              int i = this.gateways.remove(this.gateways.size() - 1);
-@@ -413,6 +_,11 @@
-             }
+@@ -415,6 +_,11 @@
+             this.portalLocation = this.portalLocation.atY(Math.max(this.level.getMinY() + 1, this.portalLocation.getY()));
          }
  
 +        // Paper start - Prevent "softlocked" exit portal generation
@@ -103,15 +103,15 @@
          if (endPodiumFeature.place(
              FeatureConfiguration.NONE, this.level, this.level.getChunkSource().getGenerator(), RandomSource.create(), this.portalLocation
          )) {
-@@ -432,6 +_,7 @@
-             enderDragon.moveTo(this.origin.getX(), 128 + this.origin.getY(), this.origin.getZ(), this.level.random.nextFloat() * 360.0F, 0.0F);
+@@ -434,6 +_,7 @@
+             enderDragon.snapTo(this.origin.getX(), 128 + this.origin.getY(), this.origin.getZ(), this.level.random.nextFloat() * 360.0F, 0.0F);
              this.level.addFreshEntity(enderDragon);
              this.dragonUUID = enderDragon.getUUID();
 +            this.resetSpikeCrystals(); // Paper - Reset ender crystals on dragon spawn
          }
  
          return enderDragon;
-@@ -443,6 +_,10 @@
+@@ -445,6 +_,10 @@
              this.ticksSinceDragonSeen = 0;
              if (dragon.hasCustomName()) {
                  this.dragonEvent.setName(dragon.getDisplayName());
@@ -122,7 +122,7 @@
              }
          }
      }
-@@ -470,7 +_,13 @@
+@@ -472,7 +_,13 @@
          return this.previouslyKilled;
      }
  
@@ -137,12 +137,12 @@
          if (this.dragonKilled && this.respawnStage == null) {
              BlockPos blockPos = this.portalLocation;
              if (blockPos == null) {
-@@ -485,6 +_,22 @@
+@@ -487,6 +_,22 @@
  
                  blockPos = this.portalLocation;
              }
 +            // Paper start - Perf: Do crystal-portal proximity check before entity lookup
-+            if (placedEndCrystalPos != null) {
++            if (placedEndCrystalPos != null && !level.paperConfig().misc.allowRemoteEnderDragonRespawning) {
 +                // The end crystal must be 0 or 1 higher than the portal origin
 +                int dy = placedEndCrystalPos.getY() - blockPos.getY();
 +                if (dy != 0 && dy != 1) {
@@ -160,7 +160,7 @@
  
              List<EndCrystal> list = Lists.newArrayList();
              BlockPos blockPos1 = blockPos.above(1);
-@@ -492,18 +_,19 @@
+@@ -494,18 +_,19 @@
              for (Direction direction : Direction.Plane.HORIZONTAL) {
                  List<EndCrystal> entitiesOfClass = this.level.getEntitiesOfClass(EndCrystal.class, new AABB(blockPos1.relative(direction, 2)));
                  if (entitiesOfClass.isEmpty()) {
@@ -183,7 +183,7 @@
          if (this.dragonKilled && this.respawnStage == null) {
              for (BlockPattern.BlockPatternMatch blockPatternMatch = this.findExitPortal(); blockPatternMatch != null; blockPatternMatch = this.findExitPortal()) {
                  for (int i = 0; i < this.exitPortalPattern.getWidth(); i++) {
-@@ -522,7 +_,9 @@
+@@ -524,7 +_,9 @@
              this.respawnTime = 0;
              this.spawnExitPortal(false);
              this.respawnCrystals = crystals;

@@ -7,16 +7,18 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JavaOps;
 import com.mojang.serialization.JsonOps;
 import io.papermc.paper.util.MethodParameterSource;
-import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.nbt.api.BinaryTagHolder;
 import net.kyori.adventure.text.BlockNBTComponent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -35,11 +37,9 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.bukkit.support.RegistryHelper;
 import org.bukkit.support.environment.VanillaFeature;
 import org.junit.jupiter.api.Test;
@@ -59,6 +59,7 @@ import static net.kyori.adventure.key.Key.key;
 import static net.kyori.adventure.text.Component.blockNBT;
 import static net.kyori.adventure.text.Component.entityNBT;
 import static net.kyori.adventure.text.Component.keybind;
+import static net.kyori.adventure.text.Component.object;
 import static net.kyori.adventure.text.Component.score;
 import static net.kyori.adventure.text.Component.selector;
 import static net.kyori.adventure.text.Component.storageNBT;
@@ -71,6 +72,9 @@ import static net.kyori.adventure.text.event.HoverEvent.showEntity;
 import static net.kyori.adventure.text.format.Style.style;
 import static net.kyori.adventure.text.format.TextColor.color;
 import static net.kyori.adventure.text.minimessage.MiniMessage.miniMessage;
+import static net.kyori.adventure.text.object.ObjectContents.playerHead;
+import static net.kyori.adventure.text.object.ObjectContents.sprite;
+import static net.kyori.adventure.text.object.PlayerHeadObjectContents.property;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -85,7 +89,7 @@ class AdventureCodecsTest {
     void testTextColor() {
         final TextColor color = color(0x1d38df);
         final Tag result = TEXT_COLOR_CODEC.encodeStart(NbtOps.INSTANCE, color).result().orElseThrow();
-        assertEquals(color.asHexString(), result.getAsString());
+        assertEquals("\"" + color.asHexString() + "\"", result.toString());
         final net.minecraft.network.chat.TextColor nms = net.minecraft.network.chat.TextColor.CODEC.decode(NbtOps.INSTANCE, result).result().orElseThrow().getFirst();
         assertEquals(color.value(), nms.getValue());
     }
@@ -94,7 +98,7 @@ class AdventureCodecsTest {
     void testNamedTextColor() {
         final NamedTextColor color = NamedTextColor.BLUE;
         final Tag result = TEXT_COLOR_CODEC.encodeStart(NbtOps.INSTANCE, color).result().orElseThrow();
-        assertEquals(NamedTextColor.NAMES.keyOrThrow(color), result.getAsString());
+        assertEquals("\"" + NamedTextColor.NAMES.keyOrThrow(color) + "\"", result.toString());
         final net.minecraft.network.chat.TextColor nms = net.minecraft.network.chat.TextColor.CODEC.decode(NbtOps.INSTANCE, result).result().orElseThrow().getFirst();
         assertEquals(color.value(), nms.getValue());
     }
@@ -103,45 +107,69 @@ class AdventureCodecsTest {
     void testKey() {
         final Key key = key("hello", "there");
         final Tag result = KEY_CODEC.encodeStart(NbtOps.INSTANCE, key).result().orElseThrow();
-        assertEquals(key.asString(), result.getAsString());
+        assertEquals("\"" + key.asString() + "\"", result.toString());
         final ResourceLocation location = ResourceLocation.CODEC.decode(NbtOps.INSTANCE, result).result().orElseThrow().getFirst();
         assertEquals(key.asString(), location.toString());
     }
 
     @ParameterizedTest(name = PARAMETERIZED_NAME)
-    @EnumSource(value = ClickEvent.Action.class, mode = EnumSource.Mode.EXCLUDE, names = {"OPEN_FILE"})
+    @EnumSource(value = ClickEvent.Action.class, mode = EnumSource.Mode.EXCLUDE, names = {"OPEN_FILE", "SHOW_DIALOG", "CUSTOM"})
     void testClickEvent(final ClickEvent.Action action) {
-        final ClickEvent event = ClickEvent.clickEvent(action, RandomStringUtils.randomAlphanumeric(20));
-        final Tag result = CLICK_EVENT_CODEC.encodeStart(NbtOps.INSTANCE, event).result().orElseThrow();
+        final ClickEvent event = switch (action) {
+            case OPEN_URL -> openUrl("https://google.com");
+            case RUN_COMMAND -> ClickEvent.runCommand("/say hello");
+            case SUGGEST_COMMAND -> suggestCommand("/suggest hello");
+            case CHANGE_PAGE -> ClickEvent.changePage(2);
+            case COPY_TO_CLIPBOARD -> ClickEvent.copyToClipboard("clipboard content");
+            case CUSTOM -> ClickEvent.custom(key("test"), BinaryTagHolder.binaryTagHolder("3"));
+            case SHOW_DIALOG, OPEN_FILE -> throw new IllegalArgumentException();
+        };
+        final Tag result = CLICK_EVENT_CODEC.encodeStart(NbtOps.INSTANCE, event).result().orElseThrow(() -> new RuntimeException("Failed to encode ClickEvent: " + event));
         final net.minecraft.network.chat.ClickEvent nms = net.minecraft.network.chat.ClickEvent.CODEC.decode(NbtOps.INSTANCE, result).result().orElseThrow().getFirst();
-        assertEquals(event.action().toString(), nms.getAction().getSerializedName());
-        assertEquals(event.value(), nms.getValue());
+        assertEquals(event.action().toString(), nms.action().getSerializedName());
+        switch (nms) {
+            case net.minecraft.network.chat.ClickEvent.OpenUrl(URI uri) ->
+                assertEquals(((ClickEvent.Payload.Text) event.payload()).value(), uri.toString());
+            case net.minecraft.network.chat.ClickEvent.SuggestCommand(String command) ->
+                assertEquals(((ClickEvent.Payload.Text) event.payload()).value(), command);
+            case net.minecraft.network.chat.ClickEvent.RunCommand(String command) ->
+                assertEquals(((ClickEvent.Payload.Text) event.payload()).value(), command);
+            case net.minecraft.network.chat.ClickEvent.CopyToClipboard(String value) ->
+                assertEquals(((ClickEvent.Payload.Text) event.payload()).value(), value);
+            case net.minecraft.network.chat.ClickEvent.ChangePage(int page) ->
+                assertEquals(((ClickEvent.Payload.Int) event.payload()).integer(), page);
+            case net.minecraft.network.chat.ClickEvent.Custom(ResourceLocation id, Optional<Tag> payload) -> {
+                assertEquals(((ClickEvent.Payload.Custom) event.payload()).key().toString(), id.toString());
+                assertEquals(((ClickEvent.Payload.Custom) event.payload()).nbt(), payload.orElseThrow().asString());
+            }
+            default -> throw new AssertionError("Unexpected ClickEvent type: " + nms.getClass());
+        }
     }
 
     @Test
     void testShowTextHoverEvent() {
         final HoverEvent<Component> hoverEvent = HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, text("hello"));
         final Tag result = HOVER_EVENT_CODEC.encodeStart(NbtOps.INSTANCE, hoverEvent).result().orElseThrow();
-        final net.minecraft.network.chat.HoverEvent nms = net.minecraft.network.chat.HoverEvent.CODEC.decode(NbtOps.INSTANCE, result).result().orElseThrow().getFirst();
-        assertEquals(hoverEvent.action().toString(), nms.getAction().getSerializedName());
-        assertNotNull(nms.getValue(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT));
+        final net.minecraft.network.chat.HoverEvent.ShowText nms = (net.minecraft.network.chat.HoverEvent.ShowText) net.minecraft.network.chat.HoverEvent.CODEC.decode(NbtOps.INSTANCE, result).result().orElseThrow().getFirst();
+        assertEquals(hoverEvent.action().toString(), nms.action().getSerializedName());
+        assertEquals("hello", nms.value().getString());
     }
 
     @Test
-    void testShowItemHoverEvent() throws IOException {
+    void testShowItemHoverEvent() {
         final ItemStack stack = new ItemStack(Items.PUMPKIN, 3);
         stack.set(DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("NAME"));
         final HoverEvent<HoverEvent.ShowItem> hoverEvent = HoverEvent.showItem(key("minecraft:pumpkin"), 3, PaperAdventure.asAdventure(stack.getComponentsPatch()));
         final Tag result = HOVER_EVENT_CODEC.encodeStart(NbtOps.INSTANCE, hoverEvent).result().orElseThrow();
         final DataResult<Pair<net.minecraft.network.chat.HoverEvent, Tag>> dataResult = net.minecraft.network.chat.HoverEvent.CODEC.decode(NbtOps.INSTANCE, result);
         assertTrue(dataResult.result().isPresent(), () -> dataResult + " result is not present");
-        final net.minecraft.network.chat.HoverEvent nms = dataResult.result().orElseThrow().getFirst();
-        assertEquals(hoverEvent.action().toString(), nms.getAction().getSerializedName());
-        final net.minecraft.network.chat.HoverEvent.ItemStackInfo value = nms.getValue(net.minecraft.network.chat.HoverEvent.Action.SHOW_ITEM);
-        assertNotNull(value);
-        assertEquals(hoverEvent.value().count(), value.count);
-        assertEquals(hoverEvent.value().item().asString(), value.item.unwrapKey().orElseThrow().location().toString());
-        assertEquals(stack.getComponentsPatch(), value.components);
+        final net.minecraft.network.chat.HoverEvent.ShowItem nms = (net.minecraft.network.chat.HoverEvent.ShowItem) dataResult.result().orElseThrow().getFirst();
+        assertEquals(hoverEvent.action().toString(), nms.action().getSerializedName());
+        final ItemStack item = nms.item();
+        assertNotNull(item);
+        assertEquals(hoverEvent.value().count(), item.getCount());
+        assertEquals(hoverEvent.value().item().asString(), item.getItem().toString());
+        assertEquals(stack.getComponentsPatch(), item.getComponentsPatch());
     }
 
     @Test
@@ -151,12 +179,12 @@ class AdventureCodecsTest {
         final Tag result = HOVER_EVENT_CODEC.encodeStart(NbtOps.INSTANCE, hoverEvent).result().orElseThrow();
         final DataResult<Pair<net.minecraft.network.chat.HoverEvent, Tag>> dataResult = net.minecraft.network.chat.HoverEvent.CODEC.decode(NbtOps.INSTANCE, result);
         assertTrue(dataResult.result().isPresent(), () -> dataResult + " result is not present");
-        final net.minecraft.network.chat.HoverEvent nms = dataResult.result().orElseThrow().getFirst();
-        assertEquals(hoverEvent.action().toString(), nms.getAction().getSerializedName());
-        final net.minecraft.network.chat.HoverEvent.EntityTooltipInfo value = nms.getValue(net.minecraft.network.chat.HoverEvent.Action.SHOW_ENTITY);
+        final net.minecraft.network.chat.HoverEvent.ShowEntity nms = (net.minecraft.network.chat.HoverEvent.ShowEntity) dataResult.result().orElseThrow().getFirst();
+        assertEquals(hoverEvent.action().toString(), nms.action().getSerializedName());
+        final net.minecraft.network.chat.HoverEvent.EntityTooltipInfo value = nms.entity();
         assertNotNull(value);
         assertEquals(hoverEvent.value().type().asString(), BuiltInRegistries.ENTITY_TYPE.getKey(value.type).toString());
-        assertEquals(hoverEvent.value().id(), value.id);
+        assertEquals(hoverEvent.value().id(), value.uuid);
         assertEquals("NAME", value.name.orElseThrow().getString());
     }
 
@@ -285,10 +313,10 @@ class AdventureCodecsTest {
                 .clickEvent(openUrl("https://github.com"))
                 .build(),
             style()
-                .hoverEvent(HoverEvent.showEntity(HoverEvent.ShowEntity.showEntity(
-                    Key.key(Key.MINECRAFT_NAMESPACE, "pig"),
+                .hoverEvent(showEntity(HoverEvent.ShowEntity.showEntity(
+                    key(Key.MINECRAFT_NAMESPACE, "pig"),
                     UUID.randomUUID(),
-                    Component.text("Dolores", TextColor.color(0x0a1ab9))
+                    text("Dolores", color(0x0a1ab9))
                 )))
                 .build()
         );
@@ -298,7 +326,8 @@ class AdventureCodecsTest {
     @Target({ElementType.PARAMETER, ElementType.ANNOTATION_TYPE})
     @MethodParameterSource({
         "testTexts", "testTranslatables", "testKeybinds", "testScores",
-        "testSelectors", "testBlockNbts", "testEntityNbts", "testStorageNbts"
+        "testSelectors", "testBlockNbts", "testEntityNbts", "testStorageNbts",
+        "testObjects"
     })
     @interface TestComponents {
     }
@@ -402,6 +431,20 @@ class AdventureCodecsTest {
             storageNBT().nbtPath("abc").storage(key("doom:apple")).build(),
             storageNBT().nbtPath("abc").storage(key("doom:apple")).separator(text(", ")).build(),
             storageNBT().nbtPath("abc").storage(key("doom:apple")).interpret(true).build()
+        );
+    }
+
+    static List<Component> testObjects() {
+        return List.of(
+            object(sprite(key("block/fire_0"))),
+            object(sprite(key("ae2", "blocks"), key("block/controller"))),
+            object(sprite(key("blocks"), key("block/fire_0"))),
+            object(playerHead("pig")),
+            object(playerHead().build()),
+            object(playerHead().name("sheep").id(UUID.randomUUID()).build()),
+            object(playerHead(UUID.randomUUID())),
+            object(playerHead().profileProperties(List.of(property("textures", "abc"))).build()),
+            object(playerHead().texture(key("apples")).build())
         );
     }
 }

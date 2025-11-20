@@ -5,7 +5,7 @@ import org.bukkit.Server;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.Merchant;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * An InventoryViewBuilder for creating merchant views
@@ -19,13 +19,14 @@ public interface MerchantInventoryViewBuilder<V extends InventoryView> extends I
     MerchantInventoryViewBuilder<V> copy();
 
     @Override
-    MerchantInventoryViewBuilder<V> title(final @NotNull Component title);
+    MerchantInventoryViewBuilder<V> title(final @Nullable Component title);
 
     /**
      * Adds a merchant to this builder
      *
      * @param merchant the merchant
      * @return this builder
+     * @see Server#createMerchant()
      */
     MerchantInventoryViewBuilder<V> merchant(final Merchant merchant);
 
@@ -34,7 +35,7 @@ public interface MerchantInventoryViewBuilder<V extends InventoryView> extends I
      * the location.
      * <p>
      * Given checkReachable is provided and a virtual merchant is provided to
-     * the builder from {@link Server#createMerchant(net.kyori.adventure.text.Component)} this method will
+     * the builder from {@link Server#createMerchant()} this method will
      * have no effect on the actual menu status.
      *
      * @param checkReachable whether or not to check if the view is "reachable"

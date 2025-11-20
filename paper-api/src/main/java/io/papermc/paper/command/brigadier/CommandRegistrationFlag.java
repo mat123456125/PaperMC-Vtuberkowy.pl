@@ -10,5 +10,15 @@ import org.jetbrains.annotations.ApiStatus;
  */
 @ApiStatus.Internal
 public enum CommandRegistrationFlag {
-    FLATTEN_ALIASES
+
+    /**
+     * @deprecated This is the default behavior now.
+     */
+    @Deprecated(since = "1.21.4")
+    FLATTEN_ALIASES,
+    /**
+     * @deprecated Removed as it causes a warning to appear on the client now.
+     */
+    @Deprecated(since = "1.21.6", forRemoval = true)
+    SERVER_ONLY
 }

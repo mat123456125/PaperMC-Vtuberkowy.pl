@@ -1,11 +1,19 @@
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
-@@ -73,6 +_,13 @@
+@@ -68,6 +_,7 @@
+     private final TicketStorage ticketStorage;
+     private long lastInhabitedUpdate;
+     public boolean spawnEnemies = true;
++    public boolean spawnFriendlies = true; // Paper - add back spawnFriendlies field
+     private static final int CACHE_SIZE = 4;
+     private final long[] lastChunkPos = new long[4];
+     private final ChunkStatus[] lastChunkStatus = new ChunkStatus[4];
+@@ -77,6 +_,13 @@
      @Nullable
      @VisibleForDebug
      private NaturalSpawner.SpawnState lastSpawnState;
 +    // Paper start
-+    private final ca.spottedleaf.concurrentutil.map.ConcurrentLong2ReferenceChainedHashTable<net.minecraft.world.level.chunk.LevelChunk> fullChunks = new ca.spottedleaf.concurrentutil.map.ConcurrentLong2ReferenceChainedHashTable<>();
++    public final ca.spottedleaf.concurrentutil.map.ConcurrentLong2ReferenceChainedHashTable<net.minecraft.world.level.chunk.LevelChunk> fullChunks = new ca.spottedleaf.concurrentutil.map.ConcurrentLong2ReferenceChainedHashTable<>();
 +    public int getFullChunksCount() {
 +        return this.fullChunks.size();
 +    }
@@ -14,7 +22,7 @@
  
      public ServerChunkCache(
          ServerLevel level,
-@@ -121,6 +_,64 @@
+@@ -125,6 +_,64 @@
          this.clearCache();
      }
  
@@ -46,12 +54,12 @@
 +        return holder.getLatestChunk();
 +    }
 +
-+    public <T> void addTicketAtLevel(TicketType<T> ticketType, ChunkPos chunkPos, int ticketLevel, T identifier) {
-+        this.distanceManager.addTicket(ticketType, chunkPos, ticketLevel, identifier);
++    public void addTicketAtLevel(TicketType ticketType, ChunkPos chunkPos, int ticketLevel) {
++        this.ticketStorage.addTicket(new Ticket(ticketType, ticketLevel), chunkPos);
 +    }
 +
-+    public <T> void removeTicketAtLevel(TicketType<T> ticketType, ChunkPos chunkPos, int ticketLevel, T identifier) {
-+        this.distanceManager.removeTicket(ticketType, chunkPos, ticketLevel, identifier);
++    public void removeTicketAtLevel(TicketType ticketType, ChunkPos chunkPos, int ticketLevel) {
++        this.ticketStorage.removeTicket(new Ticket(ticketType, ticketLevel), chunkPos);
 +    }
 +
 +    // "real" get chunk if loaded
@@ -109,8 +117,8 @@
 +            currentlyUnloading = (oldChunkState.isOrAfter(FullChunkStatus.FULL) && !currentChunkState.isOrAfter(FullChunkStatus.FULL));
 +        }
 +        if (requireChunk && !currentlyUnloading) {
-+        // CraftBukkit end
-             this.distanceManager.addTicket(TicketType.UNKNOWN, chunkPos, i, chunkPos);
++            // CraftBukkit end
+             this.addTicket(new Ticket(TicketType.UNKNOWN, i), chunkPos);
              if (this.chunkAbsent(visibleChunkIfPresent, i)) {
                  ProfilerFiller profilerFiller = Profiler.get();
 @@ -260,7 +_,7 @@
@@ -122,15 +130,6 @@
      }
  
      @Override
-@@ -287,7 +_,7 @@
-         return this.mainThreadProcessor.pollTask();
-     }
- 
--    boolean runDistanceManagerUpdates() {
-+    public boolean runDistanceManagerUpdates() { // Paper - public
-         boolean flag = this.distanceManager.runAllUpdates(this.chunkMap);
-         boolean flag1 = this.chunkMap.promoteChunkMap();
-         this.chunkMap.runGenerationTasks();
 @@ -315,17 +_,39 @@
  
      @Override
@@ -155,7 +154,7 @@
 +        ProfilerFiller gameprofilerfiller = Profiler.get();
 +
 +        gameprofilerfiller.push("purge");
-+        this.distanceManager.purgeStaleTickets();
++        this.ticketStorage.purgeStaleTickets(this.chunkMap);
 +        this.runDistanceManagerUpdates();
 +        gameprofilerfiller.popPush("unload");
 +        this.chunkMap.tick(() -> true);
@@ -170,20 +169,21 @@
          profilerFiller.push("purge");
 -        if (this.level.tickRateManager().runsNormally() || !tickChunks) {
 +        if (this.level.tickRateManager().runsNormally() || !tickChunks || this.level.spigotConfig.unloadFrozenChunks) { // Spigot
-             this.distanceManager.purgeStaleTickets();
+             this.ticketStorage.purgeStaleTickets(this.chunkMap);
          }
  
-@@ -400,12 +_,20 @@
+@@ -381,12 +_,20 @@
+             naturalSpawnChunkCount, this.level.getAllEntities(), this::getFullChunk, new LocalMobCapCalculator(this.chunkMap)
          );
          this.lastSpawnState = spawnState;
-         profiler.popPush("spawnAndTick");
 -        boolean _boolean = this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING);
 +        boolean _boolean = this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && !this.level.players().isEmpty(); // CraftBukkit
          int _int = this.level.getGameRules().getInt(GameRules.RULE_RANDOMTICKING);
          List<MobCategory> filteredSpawningCategories;
-         if (_boolean && (this.spawnEnemies || this.spawnFriendlies)) {
+-        if (_boolean) {
 -            boolean flag = this.level.getLevelData().getGameTime() % 400L == 0L;
--            filteredSpawningCategories = NaturalSpawner.getFilteredSpawningCategories(spawnState, this.spawnFriendlies, this.spawnEnemies, flag);
+-            filteredSpawningCategories = NaturalSpawner.getFilteredSpawningCategories(spawnState, true, this.spawnEnemies, flag);
++        if (_boolean && (this.spawnEnemies || this.spawnFriendlies)) { // Paper
 +            // Paper start - PlayerNaturallySpawnCreaturesEvent
 +            for (ServerPlayer entityPlayer : this.level.players()) {
 +                int chunkRange = Math.min(level.spigotConfig.mobSpawnRange, entityPlayer.getBukkitEntity().getViewDistance());
@@ -197,16 +197,7 @@
          } else {
              filteredSpawningCategories = List.of();
          }
-@@ -413,7 +_,7 @@
-         for (LevelChunk levelChunk : chunks) {
-             ChunkPos pos = levelChunk.getPos();
-             levelChunk.incrementInhabitedTime(timeInhabited);
--            if (!filteredSpawningCategories.isEmpty() && this.level.getWorldBorder().isWithinBounds(pos)) {
-+            if (!filteredSpawningCategories.isEmpty() && this.level.getWorldBorder().isWithinBounds(pos) && this.chunkMap.anyPlayerCloseEnoughForSpawning(pos, true)) { // Spigot
-                 NaturalSpawner.spawnForChunk(this.level, levelChunk, spawnState, filteredSpawningCategories);
-             }
- 
-@@ -526,8 +_,13 @@
+@@ -559,7 +_,13 @@
  
      @Override
      public void setSpawnSettings(boolean spawnSettings) {
@@ -215,13 +206,12 @@
 +    }
 +    public void setSpawnSettings(boolean spawnSettings, boolean spawnFriendlies) {
          this.spawnEnemies = spawnSettings;
--        this.spawnFriendlies = this.spawnFriendlies;
 +        this.spawnFriendlies = spawnFriendlies;
 +        // CraftBukkit end
      }
  
      public String getChunkDebugData(ChunkPos chunkPos) {
-@@ -603,12 +_,18 @@
+@@ -632,12 +_,18 @@
  
          @Override
          public boolean pollTask() {

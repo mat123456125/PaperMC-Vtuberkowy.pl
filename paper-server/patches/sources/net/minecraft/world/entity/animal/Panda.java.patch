@@ -1,14 +1,14 @@
 --- a/net/minecraft/world/entity/animal/Panda.java
 +++ b/net/minecraft/world/entity/animal/Panda.java
-@@ -127,6 +_,7 @@
+@@ -129,6 +_,7 @@
      }
  
      public void sit(boolean sitting) {
 +        if (!new io.papermc.paper.event.entity.EntityToggleSitEvent(this.getBukkitEntity(), sitting).callEvent()) return; // Paper - Add EntityToggleSitEvent
-         this.setFlag(8, sitting);
+         this.setFlag(FLAG_SIT, sitting);
      }
  
-@@ -516,24 +_,28 @@
+@@ -518,24 +_,28 @@
  
          for (Panda panda : level.getEntitiesOfClass(Panda.class, this.getBoundingBox().inflate(10.0))) {
              if (!panda.isBaby() && panda.onGround() && !panda.isInWater() && panda.canPerformAction()) {
@@ -39,10 +39,10 @@
          }
      }
  
-@@ -624,8 +_,9 @@
+@@ -626,8 +_,9 @@
                  this.usePlayerItem(player, hand, itemInHand);
                  this.ageUp((int)(-this.getAge() / 20 * 0.1F), true);
-             } else if (!this.level().isClientSide && this.getAge() == 0 && this.canFallInLove()) {
+             } else if (!this.level().isClientSide() && this.getAge() == 0 && this.canFallInLove()) {
 +                final ItemStack breedCopy = itemInHand.copy(); // Paper - Fix EntityBreedEvent copying
                  this.usePlayerItem(player, hand, itemInHand);
 -                this.setInLove(player);
@@ -50,7 +50,7 @@
              } else {
                  if (!(this.level() instanceof ServerLevel serverLevel) || this.isSitting() || this.isInWater()) {
                      return InteractionResult.PASS;
-@@ -635,7 +_,9 @@
+@@ -637,7 +_,9 @@
                  this.eat(true);
                  ItemStack itemBySlot = this.getItemBySlot(EquipmentSlot.MAINHAND);
                  if (!itemBySlot.isEmpty() && !player.hasInfiniteMaterials()) {
@@ -60,16 +60,16 @@
                  }
  
                  this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(itemInHand.getItem(), 1));
-@@ -861,7 +_,7 @@
+@@ -859,7 +_,7 @@
          @Override
          protected void alertOther(Mob mob, LivingEntity target) {
              if (mob instanceof Panda && mob.isAggressive()) {
 -                mob.setTarget(target);
-+                mob.setTarget(target, org.bukkit.event.entity.EntityTargetEvent.TargetReason.TARGET_ATTACKED_ENTITY, true); // CraftBukkit
++                mob.setTarget(target, org.bukkit.event.entity.EntityTargetEvent.TargetReason.TARGET_ATTACKED_ENTITY); // CraftBukkit
              }
          }
      }
-@@ -1090,7 +_,9 @@
+@@ -1088,7 +_,9 @@
          public void stop() {
              ItemStack itemBySlot = Panda.this.getItemBySlot(EquipmentSlot.MAINHAND);
              if (!itemBySlot.isEmpty()) {

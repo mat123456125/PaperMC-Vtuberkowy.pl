@@ -3,11 +3,12 @@ package io.papermc.paper.configuration;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.mojang.logging.LogUtils;
+import io.papermc.paper.FeatureHooks;
 import io.papermc.paper.configuration.legacy.MaxEntityCollisionsInitializer;
 import io.papermc.paper.configuration.legacy.RequiresSpigotInitialization;
 import io.papermc.paper.configuration.mapping.MergeMap;
 import io.papermc.paper.configuration.serializer.NbtPathSerializer;
-import io.papermc.paper.configuration.serializer.collections.MapSerializer;
+import io.papermc.paper.configuration.serializer.collection.map.ThrowExceptions;
 import io.papermc.paper.configuration.transformation.world.FeatureSeedsGeneration;
 import io.papermc.paper.configuration.type.BooleanOrDefault;
 import io.papermc.paper.configuration.type.DespawnRange;
@@ -30,6 +31,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import net.minecraft.Util;
@@ -52,6 +54,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.NaturalSpawner;
+import net.minecraft.world.level.block.BambooStalkBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
@@ -169,7 +172,7 @@ public class WorldConfiguration extends ConfigurationPart {
             public ArrowDespawnRate nonPlayerArrowDespawnRate = ArrowDespawnRate.def(WorldConfiguration.this.spigotConfig);
             public ArrowDespawnRate creativeArrowDespawnRate = ArrowDespawnRate.def(WorldConfiguration.this.spigotConfig);
             public boolean filterBadTileEntityNbtFromFallingBlocks = true;
-            public List<NbtPathArgument.NbtPath> filteredEntityTagNbtPaths = NbtPathSerializer.fromString(List.of("Pos", "Motion", "SleepingX", "SleepingY", "SleepingZ"));
+            public List<NbtPathArgument.NbtPath> filteredEntityTagNbtPaths = NbtPathSerializer.fromString(List.of("Pos", "Motion", "sleeping_pos"));
             public boolean disableMobSpawnerSpawnEggTransformation = false;
             public boolean perPlayerMobSpawns = true;
             public boolean scanForLegacyEnderDragon = true;
@@ -191,15 +194,14 @@ public class WorldConfiguration extends ConfigurationPart {
                 }
             }
 
-            @MapSerializer.ThrowExceptions
-            public Reference2ObjectMap<EntityType<?>, IntOr.Disabled> despawnTime = Util.make(new Reference2ObjectOpenHashMap<>(), map -> {
+            public @ThrowExceptions Reference2ObjectMap<EntityType<?>, IntOr.Disabled> despawnTime = Util.make(new Reference2ObjectOpenHashMap<>(), map -> {
                 map.put(EntityType.SNOWBALL, IntOr.Disabled.DISABLED);
                 map.put(EntityType.LLAMA_SPIT, IntOr.Disabled.DISABLED);
             });
 
             @PostProcess
             public void precomputeDespawnDistances() throws SerializationException {
-                for (Map.Entry<MobCategory, DespawnRangePair> entry : this.despawnRanges.entrySet()) {
+                for (final Map.Entry<MobCategory, DespawnRangePair> entry : this.despawnRanges.entrySet()) {
                     final MobCategory category = entry.getKey();
                     final DespawnRangePair range = entry.getValue();
                     range.hard().preComputed(category.getDespawnDistance(), category.getSerializedName());
@@ -236,7 +238,7 @@ public class WorldConfiguration extends ConfigurationPart {
 
             public class WanderingTrader extends ConfigurationPart {
                 public int spawnMinuteLength = 1200;
-                public int spawnDayLength = 24000;
+                public int spawnDayLength = net.minecraft.world.entity.npc.WanderingTraderSpawner.DEFAULT_SPAWN_DELAY;
                 public int spawnChanceFailureIncrement = 25;
                 public int spawnChanceMin = 25;
                 public int spawnChanceMax = 75;
@@ -327,6 +329,11 @@ public class WorldConfiguration extends ConfigurationPart {
                     public int day = 5;
                 }
             }
+
+            @Comment("Adds a cooldown to bees being released after a failed release, which can occur if the hive is blocked or it being night.")
+            public boolean cooldownFailedBeehiveReleases = true;
+            @Comment("The delay before retrying POI acquisition when entity navigation is stuck. This will reduce pathfinding performance impact. Measured in ticks.")
+            public IntOr.Disabled stuckEntityPoiRetryDelay = new IntOr.Disabled(OptionalInt.of(200));
         }
 
         public TrackingRangeY trackingRangeY;
@@ -386,7 +393,7 @@ public class WorldConfiguration extends ConfigurationPart {
         public Bamboo bamboo;
 
         public class Bamboo extends ConfigurationPart {
-            public int max = 16;
+            public int max = BambooStalkBlock.MAX_HEIGHT;
             public int min = 11;
         }
     }
@@ -508,6 +515,11 @@ public class WorldConfiguration extends ConfigurationPart {
             map.put(EntityType.SMALL_FIREBALL, -1);
         });
         public boolean flushRegionsOnSave = false;
+
+        @PostProcess
+        private void postProcess() {
+            FeatureHooks.setPlayerChunkUnloadDelay(this.delayChunkUnloadsBy.ticks());
+        }
     }
 
     public FishingTimeRange fishingTimeRange;
@@ -555,7 +567,6 @@ public class WorldConfiguration extends ConfigurationPart {
     public Misc misc;
 
     public class Misc extends ConfigurationPart {
-        public int lightQueueSize = 20;
         public boolean updatePathfindingOnBlockUpdate = true;
         public boolean showSignClickCommandFailureMsgsToPlayer = false;
         public RedstoneImplementation redstoneImplementation = RedstoneImplementation.VANILLA;
@@ -563,9 +574,9 @@ public class WorldConfiguration extends ConfigurationPart {
         public boolean disableEndCredits = false;
         public DoubleOr.Default maxLeashDistance = DoubleOr.Default.USE_DEFAULT;
         public boolean disableSprintInterruptionOnAttack = false;
-        public int shieldBlockingDelay = 5;
         public boolean disableRelativeProjectileVelocity = false;
         public boolean legacyEnderPearlBehavior = false;
+        public boolean allowRemoteEnderDragonRespawning = false;
 
         public enum RedstoneImplementation {
             VANILLA, EIGENCRAFT, ALTERNATE_CURRENT

@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
+import io.papermc.paper.configuration.ServerConfiguration;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -49,7 +50,6 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.loot.LootTable;
 import org.bukkit.map.MapView;
-import org.bukkit.packs.DataPackManager;
 import org.bukkit.packs.ResourcePack;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.plugin.PluginManager;
@@ -151,8 +151,8 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * uses. Normal and immediate iterator use without consequences that
      * affect the collection are fully supported. The effects following
      * (non-exhaustive) {@link Entity#teleport(Location) teleportation},
-     * {@link Player#setHealth(double) death}, and {@link Player#kickPlayer(
-     * String) kicking} are undefined. Any use of this collection from
+     * {@link Player#setHealth(double) death}, and {@link Player#kick(
+     * Component) kicking} are undefined. Any use of this collection from
      * asynchronous threads is unsafe.
      * <p>
      * For safe consequential iteration or mimicking the old array behavior,
@@ -240,8 +240,10 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
 
     /**
      * Gets whether this server allows the Nether or not.
+     * Separate from the portal game rule.
      *
      * @return whether this server allows the Nether or not
+     * @see GameRule#ALLOW_ENTERING_NETHER_USING_PORTALS
      */
     public boolean getAllowNether();
 
@@ -267,16 +269,6 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      */
     @NotNull
     public List<String> getInitialDisabledPacks();
-
-    /**
-     * Get the DataPack Manager.
-     *
-     * @deprecated use {@link #getDatapackManager()}
-     * @return the manager
-     */
-    @NotNull
-    @Deprecated(forRemoval = true, since = "1.20") // Paper
-    public DataPackManager getDataPackManager();
 
     /**
      * Get the ServerTick Manager.
@@ -387,7 +379,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @deprecated use {@link #broadcast(net.kyori.adventure.text.Component)}
      */
     @Deprecated // Paper
-    public int broadcastMessage(@NotNull String message);
+    default int broadcastMessage(@NotNull String message) {
+        return this.broadcast(message, BROADCAST_CHANNEL_USERS);
+    }
 
     // Paper start
     /**
@@ -422,7 +416,7 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @param message MiniMessage content
      */
     default void sendRichMessage(final @NotNull String message) {
-        this.sendMessage(MiniMessage.miniMessage().deserialize(message));
+        this.sendMessage(MiniMessage.miniMessage().deserialize(message, this));
     }
 
     /**
@@ -435,7 +429,7 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @param resolvers resolvers to use
      */
     default void sendRichMessage(final @NotNull String message, final @NotNull TagResolver... resolvers) {
-        this.sendMessage(MiniMessage.miniMessage().deserialize(message, resolvers));
+        this.sendMessage(MiniMessage.miniMessage().deserialize(message, this, resolvers));
     }
 
     /**
@@ -495,7 +489,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @deprecated Deprecated in favor of {@link #getTicksPerSpawns(SpawnCategory)}
      */
     @Deprecated(since = "1.18.1")
-    public int getTicksPerAnimalSpawns();
+    default int getTicksPerAnimalSpawns() {
+        return this.getTicksPerSpawns(SpawnCategory.ANIMAL);
+    }
 
     /**
      * Gets the default ticks per monster spawns value.
@@ -518,7 +514,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @deprecated Deprecated in favor of {@link #getTicksPerSpawns(SpawnCategory)}
      */
     @Deprecated(since = "1.18.1")
-    public int getTicksPerMonsterSpawns();
+    default int getTicksPerMonsterSpawns() {
+        return this.getTicksPerSpawns(SpawnCategory.MONSTER);
+    }
 
     /**
      * Gets the default ticks per water mob spawns value.
@@ -540,7 +538,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @deprecated Deprecated in favor of {@link #getTicksPerSpawns(SpawnCategory)}
      */
     @Deprecated(since = "1.18.1")
-    public int getTicksPerWaterSpawns();
+    default int getTicksPerWaterSpawns() {
+        return this.getTicksPerSpawns(SpawnCategory.WATER_ANIMAL);
+    }
 
     /**
      * Gets the default ticks per water ambient mob spawns value.
@@ -562,7 +562,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @deprecated Deprecated in favor of {@link #getTicksPerSpawns(SpawnCategory)}
      */
     @Deprecated(since = "1.18.1")
-    public int getTicksPerWaterAmbientSpawns();
+    default int getTicksPerWaterAmbientSpawns() {
+        return this.getTicksPerSpawns(SpawnCategory.WATER_AMBIENT);
+    }
 
     /**
      * Gets the default ticks per water underground creature spawns value.
@@ -584,7 +586,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @deprecated Deprecated in favor of {@link #getTicksPerSpawns(SpawnCategory)}
      */
     @Deprecated(since = "1.18.1")
-    public int getTicksPerWaterUndergroundCreatureSpawns();
+    default int getTicksPerWaterUndergroundCreatureSpawns() {
+        return this.getTicksPerSpawns(SpawnCategory.WATER_UNDERGROUND_CREATURE);
+    }
 
     /**
      * Gets the default ticks per ambient mob spawns value.
@@ -606,7 +610,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @deprecated Deprecated in favor of {@link #getTicksPerSpawns(SpawnCategory)}
      */
     @Deprecated(since = "1.18.1")
-    public int getTicksPerAmbientSpawns();
+    default int getTicksPerAmbientSpawns() {
+        return this.getTicksPerSpawns(SpawnCategory.AMBIENT);
+    }
 
     /**
      * Gets the default ticks per {@link SpawnCategory} spawns value.
@@ -770,6 +776,22 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
     public boolean unloadWorld(@NotNull World world, boolean save);
 
     /**
+     * Gets the world that players respawn in.
+     *
+     * @return the world that players respawn in
+     * @see World#getSpawnLocation()
+     */
+    public @NotNull World getRespawnWorld();
+
+    /**
+     * Sets the world that players respawn in.
+     *
+     * @param world the world that players should respawn in
+     * @see World#setSpawnLocation(Location)
+     */
+    public void setRespawnWorld(@NotNull World world);
+
+    /**
      * Gets the world with the given name.
      *
      * @param name the name of the world to retrieve
@@ -828,9 +850,8 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @param id the id of the map to get
      * @return a map view if it exists, or null otherwise
      */
-    // @Deprecated(since = "1.6.2") // Paper - Not a magic value
     @Nullable
-    public MapView getMap(int id);
+    MapView getMap(int id);
 
     /**
      * Create a new map with an automatically assigned ID.
@@ -859,7 +880,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      */
     @Deprecated // Paper
     @NotNull
-    public ItemStack createExplorerMap(@NotNull World world, @NotNull Location location, @NotNull StructureType structureType);
+    default ItemStack createExplorerMap(@NotNull World world, @NotNull Location location, @NotNull StructureType structureType) {
+        return this.createExplorerMap(world, location, structureType, 100, true);
+    }
 
     /**
      * Create a new explorer map targeting the closest nearby structure of a
@@ -988,26 +1011,26 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
     public boolean dispatchCommand(@NotNull CommandSender sender, @NotNull String commandLine) throws CommandException;
 
     /**
-     * Adds a recipe to the crafting manager. Recipes added with
-     * this method won't be sent to the client automatically. Use
-     * {@link #updateRecipes()} or {@link #updateResources()} to
-     * update clients to new recipes added.
+     * Adds a recipe to the crafting manager.
+     * Recipes added with this method won't be sent to the client automatically.
      * <p>
-     * Player's still have to discover recipes via {@link Player#discoverRecipe(NamespacedKey)}
+     * Players still have to discover recipes via {@link Player#discoverRecipe(NamespacedKey)}
      * before seeing them in their recipe book.
      *
      * @param recipe the recipe to add
-     * @return true if the recipe was added, false if it wasn't for some
-     *     reason
+     * @return true if the recipe was added, false if it wasn't for some reason
      * @see #addRecipe(Recipe, boolean)
      */
     @Contract("null -> false")
-    public boolean addRecipe(@Nullable Recipe recipe);
+    default boolean addRecipe(@Nullable Recipe recipe) {
+        return this.addRecipe(recipe, false);
+    }
 
     // Paper start - method to send recipes immediately
     /**
      * Adds a recipe to the crafting manager.
      *
+     * @apiNote resendRecipes is ignored for now for stability reasons, recipes will always be updated
      * @param recipe the recipe to add
      * @param resendRecipes true to update the client with the full set of recipes
      * @return true if the recipe was added, false if it wasn't for some reason
@@ -1084,7 +1107,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * an ItemStack of {@link Material#AIR} is returned.
      */
     @NotNull
-    public ItemStack craftItem(@NotNull ItemStack @NotNull [] craftingMatrix, @NotNull World world, @NotNull Player player);
+    default ItemStack craftItem(@NotNull ItemStack @NotNull [] craftingMatrix, @NotNull World world, @NotNull Player player) {
+        return this.craftItemResult(craftingMatrix, world, player).getResult();
+    }
 
     /**
      * Get the crafted item using the list of {@link ItemStack} provided.
@@ -1105,7 +1130,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * an ItemStack of {@link Material#AIR} is returned.
      */
     @NotNull
-    public ItemStack craftItem(@NotNull ItemStack @NotNull [] craftingMatrix, @NotNull World world);
+    default ItemStack craftItem(@NotNull ItemStack @NotNull [] craftingMatrix, @NotNull World world) {
+        return this.craftItemResult(craftingMatrix, world).getResult();
+    }
 
     /**
      * Get the crafted item using the list of {@link ItemStack} provided.
@@ -1182,7 +1209,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @param key NamespacedKey of recipe to remove.
      * @return True if recipe was removed
      */
-    public boolean removeRecipe(@NotNull NamespacedKey key);
+    default boolean removeRecipe(@NotNull NamespacedKey key) {
+        return this.removeRecipe(key, false);
+    }
 
     // Paper start - method to resend recipes
     /**
@@ -1229,8 +1258,10 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @return true if the server should send a preview, false otherwise
      * @deprecated chat previews have been removed
      */
-    @Deprecated(since = "1.19.3")
-    public boolean shouldSendChatPreviews();
+    @Deprecated(since = "1.19.3", forRemoval = true)
+    default boolean shouldSendChatPreviews() {
+        return false;
+    }
 
     /**
      * Gets whether the server only allow players with Mojang-signed public key
@@ -1263,6 +1294,13 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
     public boolean getOnlineMode();
 
     /**
+     * Retrieves the server configuration.
+     *
+     * @return the instance of ServerConfiguration containing the server's configuration details
+     */
+    @NotNull ServerConfiguration getServerConfig();
+
+    /**
      * Gets whether this server allows flying or not.
      *
      * @return true if the server allows flight, false otherwise
@@ -1292,7 +1330,10 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @deprecated in favour of {@link #broadcast(net.kyori.adventure.text.Component, String)}
      */
     @Deprecated // Paper
-    public int broadcast(@NotNull String message, @NotNull String permission);
+    default int broadcast(@NotNull String message, @NotNull String permission) {
+        return this.broadcast(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message), permission);
+    }
+
     // Paper start
     /**
      * Broadcast a message to all players.
@@ -1303,7 +1344,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @param message the message
      * @return the number of players
      */
-    int broadcast(net.kyori.adventure.text.@NotNull Component message);
+    default int broadcast(net.kyori.adventure.text.@NotNull Component message) {
+        return this.broadcast(message, BROADCAST_CHANNEL_USERS);
+    }
 
     /**
      * Broadcasts the specified message to every user with the given
@@ -1496,14 +1539,21 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @return the default game mode
      */
     @NotNull
-    public GameMode getDefaultGameMode();
+    GameMode getDefaultGameMode();
 
     /**
      * Sets the default {@link GameMode} for new players.
      *
      * @param mode the new game mode
      */
-    public void setDefaultGameMode(@NotNull GameMode mode);
+    void setDefaultGameMode(@NotNull GameMode mode);
+
+    /**
+     * Gets whether the default gamemode is being enforced.
+     *
+     * @return {@code true} if the default gamemode is being forced, {@code false} otherwise
+     */
+    boolean forcesDefaultGameMode();
 
     /**
      * Gets a {@link ConsoleCommandSender} that may be used as an input source
@@ -1736,7 +1786,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @deprecated Deprecated in favor of {@link #getSpawnLimit(SpawnCategory)}
      */
     @Deprecated(since = "1.18.1")
-    int getMonsterSpawnLimit();
+    default int getMonsterSpawnLimit() {
+        return this.getSpawnLimit(SpawnCategory.MONSTER);
+    }
 
     /**
      * Gets user-specified limit for number of animals that can spawn in a
@@ -1746,7 +1798,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @deprecated Deprecated in favor of {@link #getSpawnLimit(SpawnCategory)}
      */
     @Deprecated(since = "1.18.1")
-    int getAnimalSpawnLimit();
+    default int getAnimalSpawnLimit() {
+        return this.getSpawnLimit(SpawnCategory.ANIMAL);
+    }
 
     /**
      * Gets user-specified limit for number of water animals that can spawn in
@@ -1756,7 +1810,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @deprecated Deprecated in favor of {@link #getSpawnLimit(SpawnCategory)}
      */
     @Deprecated(since = "1.18.1")
-    int getWaterAnimalSpawnLimit();
+    default int getWaterAnimalSpawnLimit() {
+        return this.getSpawnLimit(SpawnCategory.WATER_ANIMAL);
+    }
 
     /**
      * Gets user-specified limit for number of water ambient mobs that can spawn
@@ -1766,7 +1822,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @deprecated Deprecated in favor of {@link #getSpawnLimit(SpawnCategory)}
      */
     @Deprecated(since = "1.18.1")
-    int getWaterAmbientSpawnLimit();
+    default int getWaterAmbientSpawnLimit() {
+        return this.getSpawnLimit(SpawnCategory.WATER_AMBIENT);
+    }
 
     /**
      * Get user-specified limit for number of water creature underground that can spawn
@@ -1775,7 +1833,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @deprecated Deprecated in favor of {@link #getSpawnLimit(SpawnCategory)}
      */
     @Deprecated(since = "1.18.1")
-    int getWaterUndergroundCreatureSpawnLimit();
+    default int getWaterUndergroundCreatureSpawnLimit() {
+        return this.getSpawnLimit(SpawnCategory.WATER_UNDERGROUND_CREATURE);
+    }
 
     /**
      * Gets user-specified limit for number of ambient mobs that can spawn in
@@ -1785,7 +1845,9 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * @deprecated Deprecated in favor of {@link #getSpawnLimit(SpawnCategory)}
      */
     @Deprecated(since = "1.18.1")
-    int getAmbientSpawnLimit();
+    default int getAmbientSpawnLimit() {
+        return this.getSpawnLimit(SpawnCategory.AMBIENT);
+    }
 
     /**
      * Gets user-specified limit for number of {@link SpawnCategory} mobs that can spawn in
@@ -2221,7 +2283,7 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
     <T extends Keyed> Tag<T> getTag(@NotNull String registry, @NotNull NamespacedKey tag, @NotNull Class<T> clazz);
 
     /**
-     * Gets a all tags which have been defined within the server.
+     * Gets all tags which have been defined within the server.
      * <br>
      * Server implementations are allowed to handle only the registries
      * indicated in {@link Tag}.
@@ -2305,24 +2367,56 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
     // Spigot start
     public class Spigot {
 
+        /**
+         * @deprecated Server config options may be renamed or removed without notice. Prefer using existing API
+         *  wherever possible, rather than directly reading from a server config.
+         *
+         * @see #getServerConfig()
+         * @return The server's spigot config.
+         */
+        @Deprecated(since = "1.21.4", forRemoval = true)
         @NotNull
         public org.bukkit.configuration.file.YamlConfiguration getConfig() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        /**
+         * @deprecated Server config options may be renamed or removed without notice. Prefer using existing API
+         *  wherever possible, rather than directly reading from a server config.
+         *
+         * @see #getServerConfig()
+         * @return The server's bukkit config.
+         */
         // Paper start
+        @Deprecated(since = "1.21.4", forRemoval = true)
         @NotNull
         public org.bukkit.configuration.file.YamlConfiguration getBukkitConfig()
         {
             throw new UnsupportedOperationException( "Not supported yet." );
         }
 
+        /**
+         * @deprecated Server config options may be renamed or removed without notice. Prefer using existing API
+         *  wherever possible, rather than directly reading from a server config.
+         *
+         * @see #getServerConfig()
+         * @return The server's spigot config.
+         */
+        @Deprecated(since = "1.21.4", forRemoval = true)
         @NotNull
         public org.bukkit.configuration.file.YamlConfiguration getSpigotConfig()
         {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        /**
+         * @deprecated Server config options may be renamed or removed without notice. Prefer using existing API
+         *  wherever possible, rather than directly reading from a server config.
+         *
+         * @see #getServerConfig()
+         * @return The server's paper config.
+         */
+        @Deprecated(since = "1.21.4", forRemoval = true)
         @NotNull
         public org.bukkit.configuration.file.YamlConfiguration getPaperConfig()
         {
@@ -2354,15 +2448,27 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
 
         /**
          * Restart the server. If the server administrator has not configured restarting, the server will stop.
+         *
+         * @deprecated Use {@link Server#restart()} instead.
          */
+        @Deprecated(since = "1.21.4", forRemoval = true)
         public void restart() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 
+    /**
+     * @deprecated All methods on this class have been deprecated, see the individual methods for replacements.
+     */
+    @Deprecated(since = "1.21.4", forRemoval = true)
     @NotNull
     Spigot spigot();
     // Spigot end
+
+    /**
+     * Restarts the server. If the server administrator has not configured restarting, the server will stop.
+     */
+    void restart();
 
     void reloadPermissions(); // Paper
 
@@ -2434,7 +2540,7 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      * <p>
      * E.g. if the player 'jeb_' is currently playing on the server, calling {@code createProfile(null, "JEB_")} will
      * yield a profile with the name 'jeb_', their uuid and their textures.
-     * To bypass this pre-population on an case-insensitive name match, see {@link #createProfileExact(UUID, String)}.
+     * To bypass this pre-population on a case-insensitive name match, see {@link #createProfileExact(UUID, String)}.
      * <p>
      *
      * The name comparison will compare the {@link String#toLowerCase()} version of both the passed name parameter and

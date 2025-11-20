@@ -1,20 +1,30 @@
 --- a/net/minecraft/server/level/TicketType.java
 +++ b/net/minecraft/server/level/TicketType.java
-@@ -7,6 +_,7 @@
- import net.minecraft.world.level.ChunkPos;
+@@ -19,6 +_,11 @@
+     public static final TicketType PORTAL = register("portal", 300L, FLAG_PERSIST | FLAG_LOADING | FLAG_SIMULATION | FLAG_KEEP_DIMENSION_ACTIVE);
+     public static final TicketType ENDER_PEARL = register("ender_pearl", 40L, FLAG_LOADING | FLAG_SIMULATION | FLAG_KEEP_DIMENSION_ACTIVE);
+     public static final TicketType UNKNOWN = register("unknown", 1L, FLAG_CAN_EXPIRE_IF_UNLOADED | FLAG_LOADING);
++    public static final TicketType PLUGIN = register("plugin", 0L, FLAG_LOADING | FLAG_SIMULATION); // CraftBukkit
++    public static final TicketType POST_TELEPORT = register("post_teleport", 5L, FLAG_LOADING | FLAG_SIMULATION); // Paper
++    public static final TicketType PLUGIN_TICKET = register("plugin_ticket", NO_TIMEOUT, FLAG_LOADING | FLAG_SIMULATION); // Paper
++    public static final TicketType FUTURE_AWAIT = register("future_await", NO_TIMEOUT, FLAG_LOADING | FLAG_SIMULATION); // Paper
++    public static final TicketType CHUNK_LOAD = register("chunk_load", NO_TIMEOUT, FLAG_LOADING); // Paper - moonrise
  
- public class TicketType<T> {
-+    public static final TicketType<Long> FUTURE_AWAIT = create("future_await", Long::compareTo); // Paper
-     private final String name;
-     private final Comparator<T> comparator;
-     public long timeout;
-@@ -17,6 +_,9 @@
-     public static final TicketType<BlockPos> PORTAL = create("portal", Vec3i::compareTo, 300);
-     public static final TicketType<ChunkPos> ENDER_PEARL = create("ender_pearl", Comparator.comparingLong(ChunkPos::toLong), 40);
-     public static final TicketType<ChunkPos> UNKNOWN = create("unknown", Comparator.comparingLong(ChunkPos::toLong), 1);
-+    public static final TicketType<Unit> PLUGIN = TicketType.create("plugin", (a, b) -> 0); // CraftBukkit
-+    public static final TicketType<org.bukkit.plugin.Plugin> PLUGIN_TICKET = TicketType.create("plugin_ticket", (plugin1, plugin2) -> plugin1.getClass().getName().compareTo(plugin2.getClass().getName())); // CraftBukkit
-+    public static final TicketType<Integer> POST_TELEPORT = TicketType.create("post_teleport", Integer::compare, 5); // Paper - post teleport ticket type
+     private static TicketType register(String name, long timeout, int flags) {
+         return Registry.register(BuiltInRegistries.TICKET_TYPE, name, new TicketType(timeout, flags));
+@@ -44,7 +_,14 @@
+         return (this.flags & 16) != 0;
+     }
  
-     public static <T> TicketType<T> create(String name, Comparator<T> comparator) {
-         return new TicketType<>(name, comparator, 0L);
++    // Paper start - chunk-gc config
++    public static int PLUGIN_TYPE_TIMEOUT = 600;
++    @Override
++    public long timeout() {
++        return this == PLUGIN ? PLUGIN_TYPE_TIMEOUT : this.timeout;
++    }
+     public boolean hasTimeout() {
+-        return this.timeout != 0L;
++        return this.timeout() != 0L;
++        // Paper end - chunk-gc config
+     }
+ }

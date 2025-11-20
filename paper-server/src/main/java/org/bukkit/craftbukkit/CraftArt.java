@@ -25,7 +25,7 @@ public class CraftArt extends OldEnumHolderable<Art, PaintingVariant> implements
     }
 
     public static Holder<PaintingVariant> bukkitToMinecraftHolder(Art bukkit) {
-        return CraftRegistry.bukkitToMinecraftHolder(bukkit, Registries.PAINTING_VARIANT);
+        return CraftRegistry.bukkitToMinecraftHolder(bukkit);
     }
 
     public CraftArt(Holder<PaintingVariant> paintingVariant) {
@@ -42,7 +42,6 @@ public class CraftArt extends OldEnumHolderable<Art, PaintingVariant> implements
         return this.getHandle().height();
     }
 
-    // Paper start - Expand Art API
     @Override
     public Component title() {
         return this.getHandle().title().map(PaperAdventure::asAdventure).orElse(null);
@@ -53,10 +52,10 @@ public class CraftArt extends OldEnumHolderable<Art, PaintingVariant> implements
         return this.getHandle().author().map(PaperAdventure::asAdventure).orElse(null);
     }
 
+    @Override
     public net.kyori.adventure.key.Key assetId() {
         return PaperAdventure.asAdventure(this.getHandle().assetId());
     }
-    // Paper end - Expand Art API
 
     @Override
     public int getId() {

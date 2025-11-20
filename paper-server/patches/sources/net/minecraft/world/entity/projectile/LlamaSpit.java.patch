@@ -14,7 +14,7 @@
          if (this.level().getBlockStates(this.getBoundingBox()).noneMatch(BlockBehaviour.BlockStateBase::isAir)) {
 -            this.discard();
 +            this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
-         } else if (this.isInWaterOrBubble()) {
+         } else if (this.isInWater()) {
 -            this.discard();
 +            this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
          } else {
@@ -23,7 +23,7 @@
 @@ -76,7 +_,7 @@
      protected void onHitBlock(BlockHitResult result) {
          super.onHitBlock(result);
-         if (!this.level().isClientSide) {
+         if (!this.level().isClientSide()) {
 -            this.discard();
 +            this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.HIT); // CraftBukkit - add Bukkit remove cause
          }

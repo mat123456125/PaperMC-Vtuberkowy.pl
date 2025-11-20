@@ -24,7 +24,7 @@ import org.jspecify.annotations.Nullable;
 @ApiStatus.Internal
 interface ItemComponentTypesBridge {
 
-    Optional<ItemComponentTypesBridge> BRIDGE = ServiceLoader.load(ItemComponentTypesBridge.class).findFirst();
+    Optional<ItemComponentTypesBridge> BRIDGE = ServiceLoader.load(ItemComponentTypesBridge.class, ItemComponentTypesBridge.class.getClassLoader()).findFirst();
 
     static ItemComponentTypesBridge bridge() {
         return BRIDGE.orElseThrow();
@@ -33,8 +33,6 @@ interface ItemComponentTypesBridge {
     ChargedProjectiles.Builder chargedProjectiles();
 
     PotDecorations.Builder potDecorations();
-
-    Unbreakable.Builder unbreakable();
 
     ItemLore.Builder lore();
 
@@ -72,6 +70,10 @@ interface ItemComponentTypesBridge {
 
     ResolvableProfile.Builder resolvableProfile();
 
+    ResolvableProfile.SkinPatchBuilder skinPatch();
+
+    ResolvableProfile.SkinPatch emptySkinPatch();
+
     ResolvableProfile resolvableProfile(PlayerProfile profile);
 
     BannerPatternLayers.Builder bannerPatternLayers();
@@ -92,7 +94,7 @@ interface ItemComponentTypesBridge {
 
     MapId mapId(int id);
 
-    UseRemainder useRemainder(ItemStack itemStack);
+    UseRemainder useRemainder(ItemStack stack);
 
     Consumable.Builder consumable();
 
@@ -109,4 +111,10 @@ interface ItemComponentTypesBridge {
     DeathProtection.Builder deathProtection();
 
     OminousBottleAmplifier ominousBottleAmplifier(int amplifier);
+
+    BlocksAttacks.Builder blocksAttacks();
+
+    TooltipDisplay.Builder tooltipDisplay();
+
+    Weapon.Builder weapon();
 }
